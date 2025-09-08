@@ -1,0 +1,178 @@
+[gd_scene load_steps=12 format=3 uid="uid://csdfoho5xn84a"]
+
+[ext_resource type="Texture2D" uid="uid://dxhifmxgh6njv" path="res://assets/hero/hero-stop.png" id="1_6t23p"]
+[ext_resource type="Script" uid="uid://celct6gmomfti" path="res://characters/player.gd" id="1_n8jd0"]
+[ext_resource type="Texture2D" uid="uid://cdw8slmi04sav" path="res://assets/hero/hero.png" id="2_n8jd0"]
+[ext_resource type="Texture2D" uid="uid://caprw2a4igmou" path="res://assets/hero/hero-d-u1.png" id="3_q605b"]
+[ext_resource type="Texture2D" uid="uid://djs77eonlxpk6" path="res://assets/hero/hero-d-u2.png" id="4_eho78"]
+[ext_resource type="Texture2D" uid="uid://cf7j2siuht1tm" path="res://assets/hero/hero-l1.png" id="5_8sqrr"]
+[ext_resource type="Texture2D" uid="uid://8e4lkr5ipw3v" path="res://assets/hero/hero-l2.png" id="6_6rrl0"]
+[ext_resource type="Texture2D" uid="uid://b8rkyxljegw7a" path="res://assets/hero/hero-r1.png" id="7_eus45"]
+[ext_resource type="Texture2D" uid="uid://bc7hne1ugncpx" path="res://assets/hero/hero-r2.png" id="8_vcag3"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_h076o"]
+radius = 12.0
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lcfw7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_6t23p")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_6t23p")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_n8jd0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_n8jd0")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_q605b")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_n8jd0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_eho78")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_n8jd0")
+}],
+"loop": true,
+"name": &"walk_down",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_6rrl0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_eho78")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_8sqrr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_eho78")
+}],
+"loop": true,
+"name": &"walk_down_left",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("8_vcag3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_q605b")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_eus45")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_q605b")
+}],
+"loop": true,
+"name": &"walk_down_right",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_n8jd0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_8sqrr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_6rrl0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_8sqrr")
+}],
+"loop": true,
+"name": &"walk_left",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_n8jd0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_eus45")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_vcag3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_eus45")
+}],
+"loop": true,
+"name": &"walk_right",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_n8jd0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_q605b")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_n8jd0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_eho78")
+}],
+"loop": true,
+"name": &"walk_up",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("5_8sqrr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_q605b")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_6rrl0")
+}],
+"loop": true,
+"name": &"walk_up_left",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("7_eus45")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_eho78")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_vcag3")
+}],
+"loop": true,
+"name": &"walk_up_right",
+"speed": 5.0
+}]
+
+[node name="Player" type="CharacterBody2D"]
+z_index = 1
+script = ExtResource("1_n8jd0")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_h076o")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -6)
+sprite_frames = SubResource("SpriteFrames_lcfw7")
+animation = &"idle"
+
+[node name="Camera2D" type="Camera2D" parent="."]
