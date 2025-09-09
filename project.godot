@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="ZPG"
+config/name="ZPG start"
 run/main_scene="uid://b8x80r74q14n0"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 
@@ -22,10 +22,12 @@ window/stretch/scale=1.5
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/gamedev_assistant/plugin.cfg")
+enabled=PackedStringArray()
 
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
+rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+textures/webp_compression/compression_method=3
