@@ -1,13 +1,23 @@
-[gd_scene load_steps=4 format=3 uid="uid://b8x80r74q14n0"]
+[gd_scene load_steps=5 format=3 uid="uid://b8x80r74q14n0"]
 
 [ext_resource type="PackedScene" uid="uid://rumxl4al7h24" path="res://Map/MapGenerator.tscn" id="1_h7iqs"]
+[ext_resource type="PackedScene" uid="uid://cjweo8veldb7t" path="res://characters/MonsterSpawner.tscn" id="2_4fuuu"]
 [ext_resource type="PackedScene" uid="uid://cvp5skpdpugyd" path="res://characters/monster.tscn" id="3_4fuuu"]
 [ext_resource type="PackedScene" uid="uid://csdfoho5xn84a" path="res://characters/player.tscn" id="3_dxrkv"]
 
 [node name="Game" type="Node2D"]
 
-[node name="MapGenerator" parent="." instance=ExtResource("1_h7iqs")]
-
 [node name="Player" parent="." groups=["player"] instance=ExtResource("3_dxrkv")]
+collision_mask = 14
+push_radius = 100.0
 
-[node name="Monster" parent="." groups=["monster"] instance=ExtResource("3_4fuuu")]
+[node name="Monster" parent="." groups=["monster", "monsters"] instance=ExtResource("3_4fuuu")]
+collision_layer = 4
+collision_mask = 15
+mass = 30.0
+friction = 0.5
+
+[node name="MapGenerator" parent="." instance=ExtResource("1_h7iqs")]
+debug_draw_heightmap = true
+
+[node name="MonsterSpawner" parent="." instance=ExtResource("2_4fuuu")]
