@@ -1,11 +1,14 @@
-[gd_scene load_steps=5 format=3 uid="uid://b8x80r74q14n0"]
+[gd_scene load_steps=7 format=3 uid="uid://b8x80r74q14n0"]
 
+[ext_resource type="Script" uid="uid://mn7r6mnashnw" path="res://game/Game.gd" id="1_dakft"]
 [ext_resource type="PackedScene" uid="uid://rumxl4al7h24" path="res://Map/MapGenerator.tscn" id="1_h7iqs"]
 [ext_resource type="PackedScene" uid="uid://cjweo8veldb7t" path="res://characters/MonsterSpawner.tscn" id="2_4fuuu"]
 [ext_resource type="PackedScene" uid="uid://cvp5skpdpugyd" path="res://characters/monster.tscn" id="3_4fuuu"]
 [ext_resource type="PackedScene" uid="uid://csdfoho5xn84a" path="res://characters/player.tscn" id="3_dxrkv"]
+[ext_resource type="PackedScene" uid="uid://bhp4ejewfxw3m" path="res://game/Menu.tscn" id="6_u5opy"]
 
 [node name="Game" type="Node2D"]
+script = ExtResource("1_dakft")
 
 [node name="Player" parent="." groups=["player"] instance=ExtResource("3_dxrkv")]
 collision_mask = 14
@@ -21,3 +24,6 @@ friction = 0.5
 debug_draw_heightmap = true
 
 [node name="MonsterSpawner" parent="." instance=ExtResource("2_4fuuu")]
+
+[node name="Menu" parent="." instance=ExtResource("6_u5opy")]
+process_mode = 2
