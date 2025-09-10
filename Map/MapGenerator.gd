@@ -1,4 +1,4 @@
-# res://Map/MapGenerator.gd
+#MapGenerator.gd
 extends Node2D
 
 ## Размер одного тайла в пикселях (должен совпадать с MonsterSpawner)

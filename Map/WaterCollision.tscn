@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://b1fpgbveastun"]
+
+[ext_resource type="Script" uid="uid://bdjmphyf0yeci" path="res://Map/WaterCollision.gd" id="1_ia60w"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_43twb"]
+
+[node name="WaterCollision" type="Area2D"]
+script = ExtResource("1_ia60w")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+scale = Vector2(0.32, 0.32)
+shape = SubResource("RectangleShape2D_43twb")
+one_way_collision_margin = 0.0

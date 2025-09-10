@@ -1,0 +1,49 @@
+[gd_scene load_steps=2 format=3 uid="uid://b66asw6va3c5m"]
+
+[ext_resource type="Script" uid="uid://d3qdmklsshmex" path="res://characters/PlayerHUD.gd" id="1_l3jug"]
+
+[node name="PlayerHud" type="CanvasLayer"]
+script = ExtResource("1_l3jug")
+
+[node name="HealthBar" type="TextureProgressBar" parent="."]
+modulate = Color(1, 0.176471, 0, 1)
+self_modulate = Color(1, 0.176471, 0, 1)
+offset_left = 640.0
+offset_top = 3.0
+offset_right = 796.0
+offset_bottom = 24.0
+value = 100.0
+
+[node name="HealthLabel" type="Label" parent="."]
+offset_left = 609.0
+offset_right = 715.0
+offset_bottom = 23.0
+text = "HP:"
+
+[node name="ExpBar" type="TextureProgressBar" parent="."]
+modulate = Color(0, 0.486275, 1, 1)
+self_modulate = Color(0, 0.486275, 1, 1)
+offset_left = 640.0
+offset_top = 28.0
+offset_right = 796.0
+offset_bottom = 47.0
+
+[node name="LevelLabel" type="Label" parent="."]
+offset_left = 602.0
+offset_top = 24.0
+offset_right = 677.0
+offset_bottom = 47.0
+text = "EXP:"
+
+[node name="StatsContainer" type="VBoxContainer" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="DamageLabel" type="Label" parent="StatsContainer"]
+layout_mode = 2
+
+[node name="DefenseLabel" type="Label" parent="StatsContainer"]
+layout_mode = 2
+
+[node name="ExpLabel" type="Label" parent="StatsContainer"]
+layout_mode = 2

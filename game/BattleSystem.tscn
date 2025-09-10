@@ -1,0 +1,39 @@
+[gd_scene load_steps=2 format=3 uid="uid://bv7kqjo7coheg"]
+
+[ext_resource type="Script" uid="uid://bbann7k5xnbo1" path="res://game/BattleSystem.gd" id="1_20w7j"]
+
+[node name="BattleSystem" type="CanvasLayer"]
+script = ExtResource("1_20w7j")
+
+[node name="BattleUI" type="Panel" parent="."]
+offset_left = 64.0
+offset_top = 128.0
+offset_right = 736.0
+offset_bottom = 512.0
+
+[node name="PlayerStats" type="VBoxContainer" parent="BattleUI"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 232.0
+offset_right = 192.0
+offset_bottom = 376.0
+
+[node name="EnemyStats" type="VBoxContainer" parent="BattleUI"]
+layout_mode = 0
+offset_left = 480.0
+offset_top = 232.0
+offset_right = 664.0
+offset_bottom = 376.0
+
+[node name="BattleLog" type="RichTextLabel" parent="BattleUI"]
+layout_mode = 0
+offset_left = 184.0
+offset_top = 88.0
+offset_right = 480.0
+offset_bottom = 296.0
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Timer" type="Timer" parent="."]
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
