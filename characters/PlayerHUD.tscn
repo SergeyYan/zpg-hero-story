@@ -1,0 +1,47 @@
+[gd_scene load_steps=2 format=3 uid="uid://b66asw6va3c5m"]
+
+[ext_resource type="Script" uid="uid://d3qdmklsshmex" path="res://characters/PlayerHUD.gd" id="1_l3jug"]
+
+[node name="PlayerHud" type="CanvasLayer"]
+script = ExtResource("1_l3jug")
+
+[node name="HealthBar" type="ProgressBar" parent="."]
+offset_left = 544.0
+offset_top = 24.0
+offset_right = 792.0
+offset_bottom = 51.0
+value = 100.0
+
+[node name="HealthLabel" type="Label" parent="."]
+offset_left = 544.0
+offset_right = 650.0
+offset_bottom = 23.0
+text = "HP:"
+
+[node name="ExpBar" type="ProgressBar" parent="."]
+offset_left = 544.0
+offset_top = 80.0
+offset_right = 792.0
+offset_bottom = 107.0
+
+[node name="LevelLabel" type="Label" parent="."]
+offset_left = 544.0
+offset_top = 56.0
+offset_right = 619.0
+offset_bottom = 79.0
+text = "EXP:"
+
+[node name="StatsContainer" type="VBoxContainer" parent="."]
+offset_left = 672.0
+offset_top = 115.0
+offset_right = 792.0
+offset_bottom = 192.0
+
+[node name="DamageLabel" type="Label" parent="StatsContainer"]
+layout_mode = 2
+
+[node name="DefenseLabel" type="Label" parent="StatsContainer"]
+layout_mode = 2
+
+[node name="ExpLabel" type="Label" parent="StatsContainer"]
+layout_mode = 2

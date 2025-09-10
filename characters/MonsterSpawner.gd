@@ -1,4 +1,4 @@
-# res://Map/MonsterSpawner.gd
+#MonsterSpawner.gd
 extends Node
 
 ## Радиус в чанках вокруг игрока, в котором могут появляться монстры

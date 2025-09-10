@@ -1,4 +1,4 @@
-# Menu.gd
+#Menu.gd
 extends CanvasLayer
 
 signal resume_game
