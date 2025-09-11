@@ -2,6 +2,7 @@
 extends Node2D
 
 var pause_menu: CanvasLayer
+@onready var level_up_menu: LevelUpMenu = $LevelUpMenu
 
 func _ready():
 	# Проверяем, нет ли уже меню в дереве
@@ -29,20 +30,58 @@ func _ready():
 		print("Результаты подключения: ", connect_result1, ", ", connect_result2, ", ", connect_result3)
 	else:
 		push_error("Меню не найдено для подключения сигналов")
+	
+	# ПОДКЛЮЧАЕМ СИГНАЛ LEVEL UP
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats:
+		player_stats.level_up.connect(_on_player_level_up)
+		print("Сигнал level_up подключен")
+	else:
+		print("PlayerStats не найден для подключения level_up")
 
+# ← ДОБАВЛЯЕМ ЭТУ ФУНКЦИЮ В Game.gd!
+func _on_player_level_up(level: int, available_points: int):
+	print("Игрок получил уровень! Доступно очков: ", available_points)
+	
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if not player_stats:
+		push_error("PlayerStats не найден!")
+		return
+	
+	if level_up_menu and level_up_menu.has_method("show_menu"):
+		level_up_menu.show_menu(player_stats, available_points)
+	else:
+		push_error("LevelUpMenu не найден или не имеет метода show_menu!")
+	
+	# Улучшаем монстров - передаем ТЕКУЩИЙ уровень (не +1)
+	_upgrade_monsters(level)  # ← level, а не level + 1
+
+func _upgrade_monsters(player_level: int):
+	# Увеличиваем силу монстров в зависимости от уровня игрока
+	var monsters = get_tree().get_nodes_in_group("monsters")
+	print("Найдено монстров для улучшения: ", monsters.size())
+	
+	for monster in monsters:
+		if monster.has_method("apply_level_scaling"):
+			print("Улучшаем монстра: ", monster.name)
+			monster.apply_level_scaling(player_level)
+		else:
+			print("Монстр ", monster.name, " не имеет метода apply_level_scaling")
 
 func _input(event):
 	if event.is_action_pressed("ui_cancel"):
 		print("=== ОБРАБОТКА ESC ===")
 		
+		# ЕСЛИ открыто меню прокачки - не обрабатываем ESC
+		if level_up_menu and level_up_menu.visible:
+			return
+		
 		if get_tree().paused:
-			# Если игра на паузе - возобновляем
 			print("Возобновляем игру")
 			get_tree().paused = false
 			if pause_menu and pause_menu.has_method("hide_menu"):
 				pause_menu.hide_menu()
 		else:
-			# Если игра не на паузе - ставим на паузу
 			print("Ставим игру на паузу")
 			get_tree().paused = true
 			if pause_menu and pause_menu.has_method("show_menu"):

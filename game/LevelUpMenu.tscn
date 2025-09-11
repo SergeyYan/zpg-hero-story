@@ -1,0 +1,87 @@
+[gd_scene load_steps=2 format=3 uid="uid://cx0spg7oxsiid"]
+
+[ext_resource type="Script" uid="uid://baqdapvh5tjas" path="res://game/LevelUpMenu.gd" id="1_huaid"]
+
+[node name="LevelUpMenu" type="CanvasLayer"]
+script = ExtResource("1_huaid")
+
+[node name="Panel" type="Panel" parent="."]
+offset_left = 160.0
+offset_top = 192.0
+offset_right = 608.0
+offset_bottom = 448.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 0
+offset_left = 96.0
+offset_right = 352.0
+offset_bottom = 256.0
+alignment = 1
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Получен уровень!"
+horizontal_alignment = 1
+
+[node name="HBOXstr" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Strength" type="Label" parent="Panel/VBoxContainer/HBOXstr"]
+layout_mode = 2
+text = "Сила:"
+vertical_alignment = 1
+
+[node name="StrengthLabel" type="Label" parent="Panel/VBoxContainer/HBOXstr"]
+layout_mode = 2
+
+[node name="StrengthButton" type="Button" parent="Panel/VBoxContainer/HBOXstr"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "+1"
+
+[node name="HBOXfort" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Fortitude" type="Label" parent="Panel/VBoxContainer/HBOXfort"]
+layout_mode = 2
+text = "Крепость:"
+vertical_alignment = 1
+
+[node name="FortitudeLabel" type="Label" parent="Panel/VBoxContainer/HBOXfort"]
+layout_mode = 2
+
+[node name="FortitudeButton" type="Button" parent="Panel/VBoxContainer/HBOXfort"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "+1"
+
+[node name="HBOXend" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Endurance" type="Label" parent="Panel/VBoxContainer/HBOXend"]
+layout_mode = 2
+text = "Выносливость:"
+vertical_alignment = 1
+
+[node name="EnduranceLabel" type="Label" parent="Panel/VBoxContainer/HBOXend"]
+layout_mode = 2
+
+[node name="EnduranceButton" type="Button" parent="Panel/VBoxContainer/HBOXend"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "+1"
+
+[node name="PointsLabel" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Очков: "
+vertical_alignment = 1
+
+[node name="ConfirmButton" type="Button" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Подтвердить"
+
+[connection signal="pressed" from="Panel/VBoxContainer/HBOXstr/StrengthButton" to="." method="_on_strength_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/HBOXfort/FortitudeButton" to="." method="_on_fortitude_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/HBOXend/EnduranceButton" to="." method="_on_endurance_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/ConfirmButton" to="." method="_on_confirm_button_pressed"]

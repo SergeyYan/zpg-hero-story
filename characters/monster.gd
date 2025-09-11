@@ -37,7 +37,7 @@ func _ready() -> void:
 			set_physics_process(false)
 			return
 	
-	print("MonsterStats загружен: ", monster_stats.enemy_name)
+#	print("MonsterStats загружен: ", monster_stats.enemy_name)
 	
 	player = get_tree().get_first_node_in_group(PLAYER_GROUP)
 	if not is_instance_valid(player):
@@ -70,12 +70,6 @@ func _physics_process(delta: float) -> void:
 				_stop_aggro_effect()
 				_is_aggro = false
 	
-	# Применяем толчок с учетом дельты времени
-#	if _push_velocity.length() > 5.0:
-#		velocity += _push_velocity * delta
-#		_push_velocity *= 0.9
-#	else:
-#		_push_velocity = Vector2.ZERO
 	
 	if chasing:
 		# Режим преследования
@@ -146,7 +140,7 @@ func die():
 	# ПРОВЕРЯЕМ, не в бою ли мы
 	var battle_system = get_tree().get_first_node_in_group("battle_system")
 	if battle_system and battle_system.visible:
-		print("⚔️ Монстр убит в бою - отключаем коллизии")
+#		print("⚔️ Монстр убит в бою - отключаем коллизии")
 		# ОТКЛЮЧАЕМ КОЛЛИЗИИ чтобы не запускать новые бои
 		collision_layer = 0  # Отключаем все слои
 		collision_mask = 0   # Отключаем все маски
@@ -178,3 +172,35 @@ func toggle_aggro_visibility() -> void:
 func set_aggro_visibility(visible: bool) -> void:
 	show_aggro_radius = visible
 	queue_redraw()
+
+
+func apply_level_scaling(player_level: int):
+	if not monster_stats:
+		return
+	
+	# Работаем с экспортированными переменными
+	monster_stats.strength = 1
+	monster_stats.fortitude = 1  
+	monster_stats.endurance = 1
+	
+	var total_points = player_level * 3 - 3
+	
+	if total_points > 0:
+		for i in range(total_points):
+			var random_stat = randi() % 3
+			match random_stat:
+				0: monster_stats.strength += 1
+				1: monster_stats.fortitude += 1
+				2: monster_stats.endurance += 1
+	
+	# ОБНОВЛЯЕМ stats_system с новыми значениями
+	monster_stats.stats_system.strength = monster_stats.strength
+	monster_stats.stats_system.fortitude = monster_stats.fortitude  
+	monster_stats.stats_system.endurance = monster_stats.endurance
+	
+	# ВАЖНО: УСТАНАВЛИВАЕМ ПОЛНОЕ ЗДОРОВЬЕ, а не пропорциональное!
+	monster_stats.current_health = monster_stats.get_max_health()  # ← Полное здоровье!
+	
+	print("Монстр Ур.", player_level, ": С", monster_stats.strength, 
+		  " К", monster_stats.fortitude, " В", monster_stats.endurance,
+		  " HP: ", monster_stats.current_health, "/", monster_stats.get_max_health())

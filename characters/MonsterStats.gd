@@ -23,7 +23,7 @@ func _ready():
 	stats_system.fortitude = fortitude  
 	stats_system.endurance = endurance
 	
-	current_health = get_max_health()
+	current_health = get_max_health()  # ← Уже правильно - полное здоровье!
 
 func get_max_health() -> int: return stats_system.get_max_health()
 func get_damage() -> int: return stats_system.get_damage()

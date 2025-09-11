@@ -124,14 +124,16 @@ func _physics_process(delta: float) -> void:
 	moved_distance += distance_to_move
 	if moved_distance >= target_distance:
 		_start_pause()
-		
-			
-	# ПОСТОЯННАЯ регенерация вне боя (независимо от движения)
-	if not is_in_battle() and not is_paused:
+	
+	
+func _process(delta: float) -> void:
+	# Регенерация здоровья вне боя - работает ВСЕГДА!
+	# Убираем проверку на is_paused - она только для движения!
+	if not is_in_battle():  # ← Только проверка на бой!
 		var player_stats = get_tree().get_first_node_in_group("player_stats")
 		if player_stats and player_stats.current_health < player_stats.get_max_health():
-			player_stats.regenerate_health(delta)  # Передаем delta для плавной регенераци
-
+#			print("Регенерация активна (стояние)")
+			player_stats.regenerate_health(delta)
 
 
 func is_in_battle() -> bool:
@@ -145,7 +147,7 @@ func set_water_slowdown(factor: float) -> void:
 	
 	if abs(_water_slowdown - factor) > 0.01:  # Изменяем только при значимой разнице
 		_water_slowdown = factor
-		print("Скорость изменена: ", factor)
+#		print("Скорость изменена: ", factor)
 
 func is_in_water() -> bool:
 	return _water_slowdown < 1.0
