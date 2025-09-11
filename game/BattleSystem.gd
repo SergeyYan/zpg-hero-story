@@ -40,15 +40,15 @@ var enemy_attack_messages = [
 ]
 
 var player_critical_messages = [
-	"🔥 ГЕРОЙ НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона!",
-	"💥 ГЕРОЙ НАНОСИТ СМЕРТЕЛЬНЫЙ УДАР! %d урона!",
-	"⭐ ГЕРОЙ ДЕЛАЕТ ИДЕАЛЬНЫЙ УДАР! %d урона!"
+	"🔥 ГЕРОЙ НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона! 🔥",
+	"💥 ГЕРОЙ НАНОСИТ СМЕРТЕЛЬНЫЙ УДАР! %d урона! 💥",
+	"⭐ ГЕРОЙ ДЕЛАЕТ ИДЕАЛЬНЫЙ УДАР! %d урона! ⭐"
 ]
 
 var enemy_critical_messages = [
-	"🔥 %s НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона!",
-	"💥 %s НАНОСИТ СМЕРТЕЛЬНЫЙ УДАР! %d урона!",
-	"⭐ %s ДЕЛАЕТ ИДЕАЛЬНЫЙ УДАР! %d урона!"
+	"🔥 %s НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона! 🔥",
+	"💥 %s НАНОСИТ СМЕРТЕЛЬНЫЙ УДАР! %d урона! 💥",
+	"⭐ %s ДЕЛАЕТ ИДЕАЛЬНЫЙ УДАР! %d урона! ⭐"
 ]
 
 
@@ -89,16 +89,23 @@ func update_stats():
 		return
 	
 	_update_stat_display(player_stats_container, "Игрок", 
-		player_stats_instance.current_health, player_stats_instance.get_max_health(),  # ← get_max_health()
-		player_stats_instance.get_damage(), player_stats_instance.get_defense())       # ← get_damage() и get_defense()
+		player_stats_instance.current_health, player_stats_instance.get_max_health(),
+		player_stats_instance.stats_system.strength,      # ← Реальная сила
+		player_stats_instance.stats_system.fortitude,     # ← Реальная крепость
+		player_stats_instance.stats_system.endurance      # ← Реальная выносливость
+	)
 	
-	# Обновляем статистику врага - ИСПОЛЬЗУЕМ ГЕТТЕРЫ!
+	# ПЕРЕДАЕМ РЕАЛЬНЫЕ ХАРАКТЕРИСТИКИ монстра
 	_update_stat_display(enemy_stats, current_enemy_stats.enemy_name, 
-		current_enemy_stats.current_health, current_enemy_stats.get_max_health(),      # ← get_max_health()
-		current_enemy_stats.get_damage(), current_enemy_stats.get_defense())           # ← get_damage() и get_defense()
+		current_enemy_stats.current_health, current_enemy_stats.get_max_health(),
+		current_enemy_stats.stats_system.strength,        # ← Реальная сила
+		current_enemy_stats.stats_system.fortitude,       # ← Реальная крепость  
+		current_enemy_stats.stats_system.endurance        # ← Реальная выносливость
+	)
 
 func _update_stat_display(container: VBoxContainer, name: String, 
-						 health: int, max_health: int, damage: int, defense: int):
+						 health: int, max_health: int, 
+						 strength: int, fortitude: int, endurance: int):  # ← Новые параметры!
 	for child in container.get_children():
 		child.queue_free()
 	
@@ -110,13 +117,19 @@ func _update_stat_display(container: VBoxContainer, name: String,
 	health_label.text = "HP: %d/%d" % [health, max_health]
 	container.add_child(health_label)
 	
-	var damage_label = Label.new()
-	damage_label.text = "Урон: %d" % damage
-	container.add_child(damage_label)
+	# ПОКАЗЫВАЕМ РЕАЛЬНЫЕ ХАРАКТЕРИСТИКИ
+	var strength_label = Label.new()
+	strength_label.text = "Сила: %d" % strength
+	container.add_child(strength_label)
 	
-	var defense_label = Label.new()
-	defense_label.text = "Защита: %d" % defense
-	container.add_child(defense_label)
+	var fortitude_label = Label.new()
+	fortitude_label.text = "Крепость: %d" % fortitude
+	container.add_child(fortitude_label)
+	
+	var endurance_label = Label.new()
+	endurance_label.text = "Выносливость: %d" % endurance
+	container.add_child(endurance_label)
+
 
 func _on_timer_timeout():
 	# ПРОВЕРКА: если игрок умер - немедленно заканчиваем бой
@@ -156,7 +169,7 @@ func player_attack():
 	
 	var damage = max(1, player_stats_instance.get_damage() - current_enemy_stats.get_defense())
 	if randf() < 0.1:
-		damage = int(damage * 1.5)
+		damage = int(damage * 2)
 		var message = get_random_attack_message(player_critical_messages) % damage
 		battle_log.text += message + "\n"
 	else:

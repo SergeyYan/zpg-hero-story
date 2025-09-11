@@ -11,7 +11,7 @@ var stats_system: StatsSystem = StatsSystem.new()
 @export var enemy_name: String = "Монстр"
 @export var strength: int = 1
 @export var fortitude: int = 1
-@export var endurance: int = 1
+@export var endurance: int = 2
 @export var exp_reward: int = 25
 
 var current_health: int

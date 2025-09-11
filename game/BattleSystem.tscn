@@ -6,33 +6,46 @@
 script = ExtResource("1_20w7j")
 
 [node name="BattleUI" type="Panel" parent="."]
-offset_left = 64.0
-offset_top = 128.0
-offset_right = 736.0
-offset_bottom = 512.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -304.0
+offset_top = -172.0
+offset_right = 304.0
+offset_bottom = 148.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="PlayerStats" type="VBoxContainer" parent="BattleUI"]
 layout_mode = 0
-offset_left = 8.0
-offset_top = 232.0
-offset_right = 192.0
-offset_bottom = 376.0
+offset_left = 32.0
+offset_top = 176.0
+offset_right = 216.0
+offset_bottom = 320.0
+alignment = 1
 
 [node name="EnemyStats" type="VBoxContainer" parent="BattleUI"]
 layout_mode = 0
-offset_left = 480.0
-offset_top = 232.0
-offset_right = 664.0
-offset_bottom = 376.0
+offset_left = 440.0
+offset_top = 176.0
+offset_right = 624.0
+offset_bottom = 320.0
+alignment = 1
 
 [node name="BattleLog" type="RichTextLabel" parent="BattleUI"]
 layout_mode = 0
-offset_left = 184.0
-offset_top = 88.0
+offset_left = 128.0
+offset_top = 24.0
 offset_right = 480.0
-offset_bottom = 232.0
+offset_bottom = 160.0
+theme_override_constants/table_v_separation = 10
+theme_override_constants/table_h_separation = 10
+theme_override_constants/shadow_outline_size = 5
+scroll_active = false
 scroll_following = true
-autowrap_mode = 2
+tab_size = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 
