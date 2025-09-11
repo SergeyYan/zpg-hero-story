@@ -24,6 +24,8 @@ offset_left = 16.0
 offset_top = 8.0
 offset_right = 240.0
 offset_bottom = 61.0
+text = "персонаж погиб 
+как храбрый воин."
 horizontal_alignment = 1
 
 [node name="RestartButton" type="Button" parent="Panel"]
@@ -32,6 +34,7 @@ offset_left = 16.0
 offset_top = 72.0
 offset_right = 240.0
 offset_bottom = 114.0
+text = "начать заново"
 
 [node name="QuitButton" type="Button" parent="Panel"]
 layout_mode = 0
@@ -39,6 +42,7 @@ offset_left = 16.0
 offset_top = 128.0
 offset_right = 240.0
 offset_bottom = 175.0
+text = "выйти из игры"
 
 [connection signal="pressed" from="Panel/RestartButton" to="." method="_on_restart_button_pressed"]
 [connection signal="pressed" from="Panel/QuitButton" to="." method="_on_quit_button_pressed"]

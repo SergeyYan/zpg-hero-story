@@ -31,6 +31,7 @@ offset_left = 184.0
 offset_top = 88.0
 offset_right = 480.0
 offset_bottom = 296.0
+scroll_following = true
 horizontal_alignment = 1
 vertical_alignment = 1
 

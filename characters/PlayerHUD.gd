@@ -1,16 +1,17 @@
-#PlayerHUD.gd
 extends CanvasLayer
 
 @onready var health_bar: ProgressBar = $HealthBar
 @onready var health_label: Label = $HealthLabel
 @onready var level_label: Label = $LevelLabel
 @onready var exp_bar: ProgressBar = $ExpBar
-@onready var damage_label: Label = $StatsContainer/DamageLabel
-@onready var defense_label: Label = $StatsContainer/DefenseLabel
-@onready var exp_label: Label = $StatsContainer/ExpLabel
-@onready var stats_container: VBoxContainer = $StatsContainer  # ← Добавили!
 
-var player_stats_instance: PlayerStats  # Экземпляр PlayerStats
+# ОСТАВЛЯЕМ только labels характеристик
+@onready var strength_label: Label = $StatsContainer/StrengthLabel
+@onready var fortitude_label: Label = $StatsContainer/FortitudeLabel  
+@onready var endurance_label: Label = $StatsContainer/EnduranceLabel
+@onready var regen_label: Label = $StatsContainer/RegenLabel
+
+var player_stats_instance: PlayerStats
 
 func _ready():
 	# Находим экземпляр PlayerStats
@@ -19,31 +20,59 @@ func _ready():
 		push_error("PlayerStats not found!")
 		return
 	
-	# Подключаемся к сигналам
+	## Подключаемся к сигналам
 	player_stats_instance.health_changed.connect(update_health)
 	player_stats_instance.level_up.connect(update_level)
+	player_stats_instance.exp_gained.connect(_on_exp_gained)  # ← Подключаем новый сигнал!
+	
+	# Инициализируем бары
+	health_bar.max_value = player_stats_instance.get_max_health()
+	exp_bar.max_value = player_stats_instance.exp_to_level
 	
 	update_display()
 
 func update_health(health: int):
+	# ОБНОВЛЯЕМ максимальное значение здоровья при изменении
+	health_bar.max_value = player_stats_instance.get_max_health()
 	health_bar.value = health
-	health_label.text = "HP: %d/%d" % [health, player_stats_instance.max_health]
+	health_label.text = "HP: %d/%d" % [health, player_stats_instance.get_max_health()]
 
 func update_level(new_level: int):
 	level_label.text = "Level: %d" % new_level
 	update_exp_display()
+	update_stats_display()  # ← Обновляем характеристики при уровне
 
 func update_exp_display():
-	exp_bar.value = player_stats_instance.current_exp
+	# ОБНОВЛЯЕМ максимальное значение опыта
 	exp_bar.max_value = player_stats_instance.exp_to_level
-	exp_label.text = "Exp: %d/%d" % [player_stats_instance.current_exp, player_stats_instance.exp_to_level]
+	exp_bar.value = player_stats_instance.current_exp
+	# Можно добавить визуальный эффект при получении опыта
+	_create_exp_gain_effect()
+
+func _create_exp_gain_effect():
+	# Визуальный эффект для получения опыта
+	var tween = create_tween()
+	tween.tween_property(exp_bar, "value", player_stats_instance.current_exp, 0.3)
+#	tween.tween_callback(_check_level_up)
+
+func update_stats_display():
+	# Обновляем ТОЛЬКО характеристики (без damage/defense)
+	if strength_label:
+		strength_label.text = "Сила: %d" % player_stats_instance.stats_system.strength
+	if fortitude_label:
+		fortitude_label.text = "Крепость: %d" % player_stats_instance.stats_system.fortitude
+	if endurance_label:
+		endurance_label.text = "Выносливость: %d" % player_stats_instance.stats_system.endurance
+	if regen_label:
+		regen_label.text = "Восстановление: %.1f/s" % player_stats_instance.get_health_regen()
 
 func update_display():
 	update_health(player_stats_instance.current_health)
 	update_level(player_stats_instance.level)
 	update_exp_display()
-	
-	# Просто обновляем существующие лейблы без создания новых
-	damage_label.text = "Damage: %d" % player_stats_instance.damage
-	defense_label.text = "Defense: %d" % player_stats_instance.defense
-	exp_label.text = "Exp: %d/%d" % [player_stats_instance.current_exp, player_stats_instance.exp_to_level]
+	update_stats_display()
+
+# ДОБАВЛЯЕМ обработку получения опыта
+func _on_exp_gained():
+	# Создаем эффект получения опыта
+	_create_exp_gain_effect()

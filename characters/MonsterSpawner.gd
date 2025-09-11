@@ -2,11 +2,11 @@
 extends Node
 
 ## Радиус в чанках вокруг игрока, в котором могут появляться монстры
-@export var SPAWN_RADIUS := 13
+@export var SPAWN_RADIUS := 16
 ## Радиус в чанках, за пределами которого монстры удаляются
-@export var DESPAWN_RADIUS := 15
+@export var DESPAWN_RADIUS := 18
 ## Максимальное количество монстров на карте одновременно
-@export var MAX_MONSTERS := 5
+@export var MAX_MONSTERS := 4
 ## Шанс спавна монстра в подходящем чанке (0.0 - 1.0)
 @export var SPAWN_CHANCE := 0.1
 ## Интервал обновления системы спавна в секундах
@@ -140,13 +140,20 @@ func _process_spawn_queue() -> void:
 ## @param chunk: Чанк карты (Vector2i), где нужно создать монстра
 func _spawn_monster(chunk: Vector2i) -> void:
 	var monster = load(MONSTER_SCENE).instantiate()
-	# Спавним на краю радиуса деспавна вокруг игрока
-	var spawn_radius = (DESPAWN_RADIUS - 2) * TILE_SIZE
-	var angle = _rng.randf_range(0, TAU)  # TAU = 2 * PI
+	
+	# УВЕЛИЧИВАЕМ радиус спавна чтобы монстры не появлялись внутри игрока
+	var spawn_radius = (DESPAWN_RADIUS - 5) * TILE_SIZE  # ← Увеличиваем отступ
+	var angle = _rng.randf_range(0, TAU)
 	var pos = _player.global_position + Vector2.from_angle(angle) * spawn_radius
 	
+	# ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: не спавнить слишком близко к игроку
+	var min_distance = 200.0  # Минимальная дистанция от игрока
+	if pos.distance_to(_player.global_position) < min_distance:
+		# Если слишком близко - выбираем новую позицию
+		angle = _rng.randf_range(0, TAU)
+		pos = _player.global_position + Vector2.from_angle(angle) * min_distance
+	
 	monster.position = pos
-	# Отложенное добавление для безопасности
 	call_deferred("_add_monster_to_scene", monster, chunk)
 
 

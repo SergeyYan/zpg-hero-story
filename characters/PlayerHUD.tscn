@@ -32,16 +32,19 @@ offset_bottom = 79.0
 text = "EXP:"
 
 [node name="StatsContainer" type="VBoxContainer" parent="."]
-offset_left = 672.0
-offset_top = 115.0
-offset_right = 792.0
-offset_bottom = 192.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 173.0
+offset_bottom = 174.0
 
-[node name="DamageLabel" type="Label" parent="StatsContainer"]
+[node name="StrengthLabel" type="Label" parent="StatsContainer"]
 layout_mode = 2
 
-[node name="DefenseLabel" type="Label" parent="StatsContainer"]
+[node name="FortitudeLabel" type="Label" parent="StatsContainer"]
 layout_mode = 2
 
-[node name="ExpLabel" type="Label" parent="StatsContainer"]
+[node name="EnduranceLabel" type="Label" parent="StatsContainer"]
+layout_mode = 2
+
+[node name="RegenLabel" type="Label" parent="StatsContainer"]
 layout_mode = 2
