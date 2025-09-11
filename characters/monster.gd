@@ -1,3 +1,4 @@
+#monster.gd
 extends CharacterBody2D
 
 @export var speed := 50.0
@@ -5,8 +6,8 @@ extends CharacterBody2D
 @export var aggro_range := 100.0
 @export var show_aggro_radius := true
 
-# Используем общий MonsterStats из Game.tscn
-var monster_stats: MonsterStats
+# Ссылка на дочерний MonsterStats
+@onready var monster_stats: MonsterStats = $MonsterStats
 
 var _rng := RandomNumberGenerator.new()
 var _velocity := Vector2.ZERO
@@ -18,16 +19,23 @@ var _push_velocity := Vector2.ZERO
 var _aggro_tween: Tween
 var _is_aggro := false
 
+# Защита от повторных вызовов боя
+var is_in_battle: bool = false
+var battle_cooldown: float = 0.0
+
 func _ready() -> void:
 	add_to_group("monsters")
 	_rng.randomize()
 	_pick_new_direction()
 	
-	# НАХОДИМ ОБЩИЙ MonsterStats ИЗ ГРУППЫ
-	monster_stats = get_tree().get_first_node_in_group("monster_stats")
+	# ПРОВЕРКА MonsterStats
 	if not monster_stats:
-		push_error("MonsterStats not found in group 'monster_stats'!")
-		return
+		# Пытаемся найти в дочерних нодах
+		monster_stats = get_node_or_null("MonsterStats")
+		if not monster_stats:
+			push_error("MonsterStats not found as child node!")
+			set_physics_process(false)
+			return
 	
 	print("MonsterStats загружен: ", monster_stats.enemy_name)
 	
@@ -36,6 +44,16 @@ func _ready() -> void:
 		push_warning("Игрок не найден! Добавьте его в группу '%s'." % PLAYER_GROUP)
 
 func _physics_process(delta: float) -> void:
+	# ПРОВЕРКА: если нет статистики - не обрабатываем
+	if not monster_stats:
+		return
+	
+	# Обновляем кулдаун боя
+	if battle_cooldown > 0.0:
+		battle_cooldown -= delta
+		if battle_cooldown <= 0.0:
+			is_in_battle = false
+	
 	# Проверяем, находится ли игрок в зоне агрессии
 	if player && is_instance_valid(player):
 		var distance = global_position.distance_to(player.global_position)
@@ -53,11 +71,11 @@ func _physics_process(delta: float) -> void:
 				_is_aggro = false
 	
 	# Применяем толчок с учетом дельты времени
-	if _push_velocity.length() > 5.0:
-		velocity += _push_velocity * delta
-		_push_velocity *= 0.9
-	else:
-		_push_velocity = Vector2.ZERO
+#	if _push_velocity.length() > 5.0:
+#		velocity += _push_velocity * delta
+#		_push_velocity *= 0.9
+#	else:
+#		_push_velocity = Vector2.ZERO
 	
 	if chasing:
 		# Режим преследования
@@ -102,17 +120,23 @@ func _stop_aggro_effect():
 	_aggro_tween = create_tween()
 	_aggro_tween.tween_property(self, "modulate", Color.WHITE, 0.3)
 
-# Проверка столкновений
+# Проверка столкновений с защитой от повторных вызовов
 func _check_collisions():
+	# Более строгая проверка
+	if is_in_battle or battle_cooldown > 0.0 or not monster_stats:
+		return
+	
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)
 		var body = collision.get_collider()
 		
-		if body and body.is_in_group("player"):
+		if body and body.is_in_group("player") and is_instance_valid(body):
 			var battle_system = get_tree().get_first_node_in_group("battle_system")
-			if battle_system and not battle_system.visible:
-				battle_system.start_battle(self)
-			return
+			if battle_system and is_instance_valid(battle_system) and not battle_system.visible:
+				is_in_battle = true
+				battle_cooldown = 2.0
+				battle_system.start_battle(self, monster_stats)
+				return  # Выходим после первого найденного столкновения
 
 func take_damage(amount: int):
 	if monster_stats:
@@ -129,6 +153,11 @@ func die():
 		hide()  # Скрываем, но не удаляем
 	else:
 		queue_free()  # Удаляем только если не в бою
+
+# Метод для завершения боя (вызывается из BattleSystem)
+func end_battle():
+	is_in_battle = false
+	battle_cooldown = 5.0  # Больший кулдаун после боя
 
 func _pick_new_direction() -> void:
 	_velocity = Vector2.from_angle(_rng.randf_range(0, 2 * PI)) * speed

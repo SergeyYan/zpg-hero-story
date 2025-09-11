@@ -14,6 +14,9 @@ var is_paused: bool = false
 var pause_time: float = 0.0
 var pause_timer: float = 0.0
 
+var regen_timer: float = 0.0
+var regen_interval: float = 1.0  # Раз в секунду
+
 @onready var anim_sprite: AnimatedSprite2D = $AnimatedSprite2D
 
 func _ready() -> void:
@@ -41,7 +44,7 @@ func _choose_new_direction() -> void:
 
 func _start_pause() -> void:
 	is_paused = true
-	pause_time = randf_range(0.0, 3.0)
+	pause_time = randf_range(0.0, 2.0)
 	pause_timer = 0.0
 	velocity = Vector2.ZERO
 	anim_sprite.play("idle")
@@ -92,22 +95,16 @@ func _play_animation(anim_name: String) -> void:
 			anim_sprite.stop()
 
 func _physics_process(delta: float) -> void:
+	# ПРОВЕРКА: если игра на паузе - не двигаемся
+	if get_tree().paused:
+		velocity = Vector2.ZERO
+		return
+	
 	var current_speed = speed * _water_slowdown  # Учитываем замедление воды
 	
 	# Оптимизированная проверка воды
 	if _water_slowdown < 1.0:
 		modulate = Color(0.8, 0.9, 1.0, 0.9)  # Синий оттенок в воде
-	else:
-		var in_water = false
-		# Быстрая проверка только если нужно
-		for water in get_tree().get_nodes_in_group("water_collisions"):
-			if global_position.distance_squared_to(water.global_position) < 100:  # 10^2
-				in_water = true
-				break
-		
-		if not in_water:
-			_water_slowdown = 1.0
-			modulate = Color(1, 1, 1, 1)  # Нормальный цвет
 	
 	if is_paused:
 		pause_timer += delta
@@ -127,6 +124,20 @@ func _physics_process(delta: float) -> void:
 	moved_distance += distance_to_move
 	if moved_distance >= target_distance:
 		_start_pause()
+		
+			
+	# ПОСТОЯННАЯ регенерация вне боя (независимо от движения)
+	if not is_in_battle() and not is_paused:
+		var player_stats = get_tree().get_first_node_in_group("player_stats")
+		if player_stats and player_stats.current_health < player_stats.get_max_health():
+			player_stats.regenerate_health(delta)  # Передаем delta для плавной регенераци
+
+
+
+func is_in_battle() -> bool:
+	# Проверяем, находится ли игрок в бою
+	var battle_system = get_tree().get_first_node_in_group("battle_system")
+	return battle_system and battle_system.visible
 
 func set_water_slowdown(factor: float) -> void:
 	# Ограничиваем фактор между 0.1 и 1.0

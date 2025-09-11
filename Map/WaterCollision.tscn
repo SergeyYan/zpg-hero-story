@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://bdjmphyf0yeci" path="res://Map/WaterCollision.gd" id="1_ia60w"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_43twb"]
+size = Vector2(100, 100)
 
 [node name="WaterCollision" type="Area2D"]
 script = ExtResource("1_ia60w")

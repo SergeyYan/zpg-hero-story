@@ -1,3 +1,4 @@
+#BattleSystem.gd
 extends CanvasLayer
 
 signal battle_ended(victory: bool)
@@ -17,22 +18,30 @@ func _ready():
 	player_stats_instance = get_tree().get_first_node_in_group("player_stats")
 	if not player_stats_instance:
 		push_error("PlayerStats not found! Make sure PlayerStats node is in 'player_stats' group")
-
-func start_battle(enemy: Node):
-	print("⚔️ start_battle вызван с врагом: ", enemy.name)
-	current_enemy = enemy
 	
-	# НАХОДИМ MonsterStats врага
-	current_enemy_stats = enemy.get_node_or_null("MonsterStats")
-	if not current_enemy_stats:
-		push_error("MonsterStats not found in enemy!")
+	hide()  # ← ДОБАВИТЬ ЭТУ СТРОКУ!
+
+func start_battle(enemy: Node, enemy_stats_ref: MonsterStats):
+	if player_stats_instance.current_health <= 0:
+		print("Игрок мёртв, бой не начинается")
+		return
+	# Добавить проверку на валидность enemy
+	if not is_instance_valid(enemy) or not is_instance_valid(enemy_stats_ref):
+		print("Враг невалиден, бой не начинается")
+		return
+	# ЗАЩИТА: не начинаем бой в первые секунды игры
+	if get_tree().get_frame() < 60:  # Первые 60 кадров (≈1 секунда)
+		print("Слишком рано для боя, пропускаем")
 		return
 	
+	current_enemy = enemy
+	current_enemy_stats = enemy_stats_ref
 	show()
 	get_tree().paused = true
 	update_stats()
 	battle_log.text = "Бой начался против %s!\n" % current_enemy_stats.enemy_name
 	timer.start(1.0)
+	
 
 func update_stats():
 	# ПРОВЕРКА НА ВАЛИДНОСТЬ ВРАГА И ЕГО СТАТИСТИК
@@ -40,15 +49,14 @@ func update_stats():
 		end_battle(false)
 		return
 	
-	# Обновляем статистику игрока
 	_update_stat_display(player_stats_container, "Игрок", 
-		player_stats_instance.current_health, player_stats_instance.max_health,
-		player_stats_instance.damage, player_stats_instance.defense)
+		player_stats_instance.current_health, player_stats_instance.get_max_health(),  # ← get_max_health()
+		player_stats_instance.get_damage(), player_stats_instance.get_defense())       # ← get_damage() и get_defense()
 	
-	# Обновляем статистику врага
+	# Обновляем статистику врага - ИСПОЛЬЗУЕМ ГЕТТЕРЫ!
 	_update_stat_display(enemy_stats, current_enemy_stats.enemy_name, 
-		current_enemy_stats.current_health, current_enemy_stats.max_health,
-		current_enemy_stats.damage, current_enemy_stats.defense)
+		current_enemy_stats.current_health, current_enemy_stats.get_max_health(),      # ← get_max_health()
+		current_enemy_stats.get_damage(), current_enemy_stats.get_defense())           # ← get_damage() и get_defense()
 
 func _update_stat_display(container: VBoxContainer, name: String, 
 						 health: int, max_health: int, damage: int, defense: int):
@@ -72,9 +80,8 @@ func _update_stat_display(container: VBoxContainer, name: String,
 	container.add_child(defense_label)
 
 func _on_timer_timeout():
-	# ПРОВЕРКА: если враг или его статистика удалены
-	if not is_instance_valid(current_enemy) or not current_enemy_stats:
-		print("❌ Враг удален во время боя")
+	# ПРОВЕРКА: если игрок умер - немедленно заканчиваем бой
+	if player_stats_instance.current_health <= 0:
 		end_battle(false)
 		return
 	
@@ -105,7 +112,7 @@ func player_attack():
 		end_battle(false)
 		return
 	
-	var damage = max(1, player_stats_instance.damage - current_enemy_stats.defense)
+	var damage = max(1, player_stats_instance.get_damage() - current_enemy_stats.get_defense())
 	current_enemy_stats.take_damage(damage)  # ← Вызываем у MonsterStats!
 	battle_log.text += "Вы нанесли %d урона!\n" % damage
 
@@ -114,7 +121,7 @@ func enemy_attack():
 		end_battle(false)
 		return
 	
-	var damage = max(1, current_enemy_stats.damage - player_stats_instance.defense)
+	var damage = max(1, current_enemy_stats.get_damage() - player_stats_instance.get_defense())
 	player_stats_instance.take_damage(damage)
 	battle_log.text += "%s нанес вам %d урона!\n" % [current_enemy_stats.enemy_name, damage]
 
@@ -124,7 +131,6 @@ func end_battle(victory: bool):
 		player_stats_instance.add_exp(exp_gained)
 		battle_log.text += "Победа! Получено %d опыта.\n" % exp_gained
 		
-		# УДАЛЯЕМ монстра после победы
 		if is_instance_valid(current_enemy):
 			current_enemy.queue_free()
 	else:
@@ -132,9 +138,12 @@ func end_battle(victory: bool):
 	
 	timer.stop()
 	battle_ended.emit(victory)
-	get_tree().paused = false
+	
+	# ВАЖНО: снимаем паузу в ЛЮБОМ случае после боя!
+	get_tree().paused = false  # ← СНИМАЕМ ПАУЗУ всегда после завершения боя
+	print("Бой завершен, пауза снята")
+	
 	hide()
 	
-	# СБРАСЫВАЕМ ССЫЛКИ
 	current_enemy = null
 	current_enemy_stats = null
