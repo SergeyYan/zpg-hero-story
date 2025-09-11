@@ -37,10 +37,10 @@ func _connect_to_player_stats():
 		print("GameOverMenu: PlayerStats не найден")
 
 func show_game_over():
-	print("GameOverMenu: получен сигнал player_died")
+#	print("GameOverMenu: получен сигнал player_died")
 	
 	# УБИРАЕМ ВСЮ ПАУЗУ - она мешает работе кнопок!
-	# get_tree().paused = true  ← ЗАКОММЕНТИРОВАТЬ или УДАЛИТЬ
+	get_tree().paused = false  
 	
 	show()
 	
@@ -51,7 +51,7 @@ func show_game_over():
 	# Фокусируемся на кнопке рестарта
 	if restart_button:
 		restart_button.grab_focus()
-		print("Фокус на кнопке рестарта")
+#		print("Фокус на кнопке рестарта")
 
 	# Останавливаем только игровые процессы, но не UI
 	_stop_game_processes()

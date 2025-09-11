@@ -13,6 +13,45 @@ var current_enemy: Node = null
 var current_enemy_stats: MonsterStats = null  # ← ДОБАВИЛИ!
 var is_player_turn: bool = true
 
+var player_attack_messages = [
+	"Герой нанес %d урона!",
+	"Герой с разбегу ударил на %d урона!",
+	"Герой на отмашь ударил на %d урона!",
+	"Герой нанес мощный удар на %d урона!",
+	"Герой бросил камень в голову на %d урона!",
+	"Герой упал на коленку врага и нанесли %d урона!",
+	"Герой плюнул прямо в бубен на %d урона!",
+	"Разящий удар героя в пах на %d урона!",
+	"Сокрушительный удар по самолюбию врага на %d урона!",
+	"Враг спотыкнулся и получил %d урона!"
+]
+
+var enemy_attack_messages = [
+	"%s нанес вам %d урона!",
+	"%s атакует и наносит %d урона!",
+	"%s бьет вас на %d урона!",
+	"Атака %sа в голову наносит %d урона!",
+	"%s царапает вас на %d урона!",
+	"%s кусает вас на %d урона!",
+	"Щелчок %sа наносит %d урона!",
+	"%s толкает вас на %d урона!",
+	"Бросок пыли %sа наносит %d урона!",
+	"%s прыгает вам на шею, нанесен %d урона пояснице!"
+]
+
+var player_critical_messages = [
+	"🔥 ГЕРОЙ НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона!",
+	"💥 ГЕРОЙ НАНОСИТ СМЕРТЕЛЬНЫЙ УДАР! %d урона!",
+	"⭐ ГЕРОЙ ДЕЛАЕТ ИДЕАЛЬНЫЙ УДАР! %d урона!"
+]
+
+var enemy_critical_messages = [
+	"🔥 %s НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона!",
+	"💥 %s НАНОСИТ СМЕРТЕЛЬНЫЙ УДАР! %d урона!",
+	"⭐ %s ДЕЛАЕТ ИДЕАЛЬНЫЙ УДАР! %d урона!"
+]
+
+
 func _ready():
 	add_to_group("battle_system")
 	player_stats_instance = get_tree().get_first_node_in_group("player_stats")
@@ -107,14 +146,23 @@ func _on_timer_timeout():
 		is_player_turn = !is_player_turn
 		timer.start(1.0)
 
+func get_random_attack_message(messages_array: Array) -> String:
+	return messages_array[randi() % messages_array.size()]
+
 func player_attack():
 	if not is_instance_valid(current_enemy) or not current_enemy_stats:
 		end_battle(false)
 		return
 	
 	var damage = max(1, player_stats_instance.get_damage() - current_enemy_stats.get_defense())
-	current_enemy_stats.take_damage(damage)  # ← Вызываем у MonsterStats!
-	battle_log.text += "Вы нанесли %d урона!\n" % damage
+	if randf() < 0.1:
+		damage = int(damage * 1.5)
+		var message = get_random_attack_message(player_critical_messages) % damage
+		battle_log.text += message + "\n"
+	else:
+		var message = get_random_attack_message(player_attack_messages) % damage
+		battle_log.text += message + "\n"
+	current_enemy_stats.take_damage(damage)
 
 func enemy_attack():
 	if not is_instance_valid(current_enemy) or not current_enemy_stats:
@@ -122,8 +170,14 @@ func enemy_attack():
 		return
 	
 	var damage = max(1, current_enemy_stats.get_damage() - player_stats_instance.get_defense())
+	if randf() < 0.1:
+		damage = int(damage * 1.5)
+		var message = get_random_attack_message(enemy_critical_messages) % [current_enemy_stats.enemy_name, damage]
+		battle_log.text += message + "\n"
+	else:
+		var message = get_random_attack_message(enemy_attack_messages) % [current_enemy_stats.enemy_name, damage]
+		battle_log.text += message + "\n"
 	player_stats_instance.take_damage(damage)
-	battle_log.text += "%s нанес вам %d урона!\n" % [current_enemy_stats.enemy_name, damage]
 
 func end_battle(victory: bool):
 	if victory and current_enemy_stats:
@@ -139,9 +193,16 @@ func end_battle(victory: bool):
 	timer.stop()
 	battle_ended.emit(victory)
 	
-	# ВАЖНО: снимаем паузу в ЛЮБОМ случае после боя!
-	get_tree().paused = false  # ← СНИМАЕМ ПАУЗУ всегда после завершения боя
-	print("Бой завершен, пауза снята")
+	# ВАЖНО: НЕ снимаем паузу если началась прокачка уровня!
+	# Паузу будет управлять LevelUpMenu
+	if not player_stats_instance.current_health <= 0:
+		# Только если игрок не умер И не началась прокачка
+		var player_stats = get_tree().get_first_node_in_group("player_stats")
+		if player_stats and player_stats.available_points <= 0:  # ← Проверяем что нет очков для прокачки
+			get_tree().paused = false
+			print("Бой завершен, пауза снята")
+		else:
+			print("Бой завершен, пауза остается для прокачки")
 	
 	hide()
 	

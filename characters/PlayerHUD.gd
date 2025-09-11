@@ -20,10 +20,11 @@ func _ready():
 		push_error("PlayerStats not found!")
 		return
 	
-	## Подключаемся к сигналам
+	# Подключаемся к сигналам
 	player_stats_instance.health_changed.connect(update_health)
 	player_stats_instance.level_up.connect(update_level)
-	player_stats_instance.exp_gained.connect(_on_exp_gained)  # ← Подключаем новый сигнал!
+	player_stats_instance.exp_gained.connect(_on_exp_gained)
+	player_stats_instance.stats_changed.connect(update_stats_display)  # ← НОВОЕ ПОДКЛЮЧЕНИЕ!
 	
 	# Инициализируем бары
 	health_bar.max_value = player_stats_instance.get_max_health()
@@ -37,10 +38,11 @@ func update_health(health: int):
 	health_bar.value = health
 	health_label.text = "HP: %d/%d" % [health, player_stats_instance.get_max_health()]
 
-func update_level(new_level: int):
+func update_level(new_level: int, available_points: int):  # ← Добавляем второй параметр
 	level_label.text = "Level: %d" % new_level
 	update_exp_display()
-	update_stats_display()  # ← Обновляем характеристики при уровне
+	update_stats_display()  # ← Обновляем характеристики и очки!
+	# available_points можно не использовать, т.к. берем из player_stats_instance
 
 func update_exp_display():
 	# ОБНОВЛЯЕМ максимальное значение опыта
@@ -56,7 +58,7 @@ func _create_exp_gain_effect():
 #	tween.tween_callback(_check_level_up)
 
 func update_stats_display():
-	# Обновляем ТОЛЬКО характеристики (без damage/defense)
+	# Обновляем ТОЛЬКО характеристики
 	if strength_label:
 		strength_label.text = "Сила: %d" % player_stats_instance.stats_system.strength
 	if fortitude_label:
@@ -68,7 +70,7 @@ func update_stats_display():
 
 func update_display():
 	update_health(player_stats_instance.current_health)
-	update_level(player_stats_instance.level)
+	update_level(player_stats_instance.level, player_stats_instance.available_points)  # ← Добавляем второй аргумент!
 	update_exp_display()
 	update_stats_display()
 

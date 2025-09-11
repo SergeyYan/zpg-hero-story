@@ -128,7 +128,7 @@ func _process_spawn_queue() -> void:
 	if _spawn_queue.is_empty():
 		return
 	
-	print("Спавним ", _spawn_queue.size(), " монстров. Всего: ", _count_monsters())
+#	print("Спавним ", _spawn_queue.size(), " монстров. Всего: ", _count_monsters())
 	
 	for chunk in _spawn_queue:
 		_spawn_monster(chunk)
@@ -140,6 +140,13 @@ func _process_spawn_queue() -> void:
 ## @param chunk: Чанк карты (Vector2i), где нужно создать монстра
 func _spawn_monster(chunk: Vector2i) -> void:
 	var monster = load(MONSTER_SCENE).instantiate()
+	
+	# Улучшаем нового монстра под уровень игрока
+	var player = get_tree().get_first_node_in_group("player")
+	if player:
+		var player_stats = get_tree().get_first_node_in_group("player_stats")
+		if player_stats and monster.has_method("apply_level_scaling"):
+			monster.apply_level_scaling(player_stats.level)  # Используем текущий уровень игрока
 	
 	# УВЕЛИЧИВАЕМ радиус спавна чтобы монстры не появлялись внутри игрока
 	var spawn_radius = (DESPAWN_RADIUS - 5) * TILE_SIZE  # ← Увеличиваем отступ
