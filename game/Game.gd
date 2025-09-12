@@ -1,10 +1,13 @@
 #Game.gd
 extends Node2D
 
+var main_menu: CanvasLayer  # ← ДОБАВЛЯЕМ
 var pause_menu: CanvasLayer
 @onready var level_up_menu: LevelUpMenu = $LevelUpMenu
 
 func _ready():
+
+	get_tree().paused = true  # ← Пауза при запуске
 	# Проверяем, нет ли уже меню в дереве
 	if has_node("Menu"):
 		pause_menu = get_node("Menu")
@@ -39,6 +42,33 @@ func _ready():
 	else:
 		print("PlayerStats не найден для подключения level_up")
 
+
+func _on_new_game_pressed():
+	print("Начинаем новую игру...")
+	get_tree().paused = false  # ← Снимаем паузу
+	
+	if main_menu:
+		main_menu.hide()  # ← Скрываем меню, НЕ удаляем!
+	
+	# Сброс прогресса (если нужно)
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats:
+		player_stats.current_health = player_stats.get_max_health()
+		player_stats.current_exp = 0
+		player_stats.level = 1
+		player_stats.available_points = 3
+		print("Новая игра начата")
+
+func _on_load_game_pressed():
+	print("Загрузка игры...")
+	get_tree().paused = false
+	if main_menu:
+		main_menu.hide()
+
+func _on_quit_game_pressed():
+	print("Выход из игры...")
+	get_tree().quit()
+
 # ← ДОБАВЛЯЕМ ЭТУ ФУНКЦИЮ В Game.gd!
 func _on_player_level_up(level: int, available_points: int):
 	print("Игрок получил уровень! Доступно очков: ", available_points)
@@ -53,27 +83,33 @@ func _on_player_level_up(level: int, available_points: int):
 	else:
 		push_error("LevelUpMenu не найден или не имеет метода show_menu!")
 	
-	# Улучшаем монстров - передаем ТЕКУЩИЙ уровень (не +1)
+	# Улучшаем монстров - передаем ТЕКУЩИЙ уровень
 	_upgrade_monsters(level)  # ← level, а не level + 1
+	
+	# ТЕПЕРЬ ТАКЖЕ ОБНОВЛЯЕМ СПАВНЕР
+	var spawner = get_tree().get_first_node_in_group("monster_spawner")
+	if spawner:
+		spawner.set("player_level", level)  # Обновляем уровень в спавнере
+		print("Спавнер обновлен до уровня: ", level)
 
 func _upgrade_monsters(player_level: int):
 	# Увеличиваем силу монстров в зависимости от уровня игрока
 	var monsters = get_tree().get_nodes_in_group("monsters")
-	print("Найдено монстров для улучшения: ", monsters.size())
+	print("Улучшаем монстров до уровня игрока: ", player_level)
 	
 	for monster in monsters:
 		if monster.has_method("apply_level_scaling"):
-			print("Улучшаем монстра: ", monster.name)
-			monster.apply_level_scaling(player_level)
-		else:
-			print("Монстр ", monster.name, " не имеет метода apply_level_scaling")
+			monster.apply_level_scaling(player_level)  # ← Тот же уровень
 
 func _input(event):
 	if event.is_action_pressed("ui_cancel"):
-		print("=== ОБРАБОТКА ESC ===")
+		# Если открыто главное меню - не обрабатываем ESC
+		if main_menu and main_menu.visible:
+			return
 		
 		# ЕСЛИ открыто меню прокачки - не обрабатываем ESC
-		if level_up_menu and level_up_menu.visible:
+		var level_up_menu_node = get_tree().get_first_node_in_group("level_up_menu")
+		if level_up_menu_node and level_up_menu_node.visible:
 			return
 		
 		if get_tree().paused:

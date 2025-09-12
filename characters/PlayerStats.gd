@@ -1,3 +1,4 @@
+#PlayerStat.gd
 extends Node
 class_name PlayerStats
 
@@ -46,7 +47,7 @@ func _ready():
 	level_up.emit(level, available_points)  # ← Сигнал при старте
 
 func take_damage(amount: int):
-	var actual_damage = max(1, amount - get_defense())
+	var actual_damage = max(1, amount)
 	current_health -= actual_damage
 	health_changed.emit(current_health)
 	

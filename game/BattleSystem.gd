@@ -3,6 +3,10 @@ extends CanvasLayer
 
 signal battle_ended(victory: bool)
 
+const CRITICAL_CHANCE := 0.1
+const PLAYER_CRITICAL_MULTIPLIER := 2.0
+const ENEMY_CRITICAL_MULTIPLIER := 1.5
+
 @onready var player_stats_container: VBoxContainer = $BattleUI/PlayerStats
 @onready var enemy_stats: VBoxContainer = $BattleUI/EnemyStats
 @onready var battle_log: RichTextLabel = $BattleUI/BattleLog
@@ -62,15 +66,15 @@ func _ready():
 
 func start_battle(enemy: Node, enemy_stats_ref: MonsterStats):
 	if player_stats_instance.current_health <= 0:
-		print("Игрок мёртв, бой не начинается")
+		#print("Игрок мёртв, бой не начинается")
 		return
 	# Добавить проверку на валидность enemy
 	if not is_instance_valid(enemy) or not is_instance_valid(enemy_stats_ref):
-		print("Враг невалиден, бой не начинается")
+		#print("Враг невалиден, бой не начинается")
 		return
 	# ЗАЩИТА: не начинаем бой в первые секунды игры
 	if get_tree().get_frame() < 60:  # Первые 60 кадров (≈1 секунда)
-		print("Слишком рано для боя, пропускаем")
+		#print("Слишком рано для боя, пропускаем")
 		return
 	
 	current_enemy = enemy
@@ -167,30 +171,42 @@ func player_attack():
 		end_battle(false)
 		return
 	
-	var damage = max(1, player_stats_instance.get_damage() - current_enemy_stats.get_defense())
+	# РАСЧЕТ УРОНА
+	var base_damage = player_stats_instance.get_damage()
+	var enemy_defense = current_enemy_stats.get_defense()
+	var actual_damage = max(1, base_damage - enemy_defense)
+	
 	if randf() < 0.1:
-		damage = int(damage * 2)
-		var message = get_random_attack_message(player_critical_messages) % damage
+		var critical_damage = int(actual_damage * PLAYER_CRITICAL_MULTIPLIER)
+		var message = get_random_attack_message(player_critical_messages) % critical_damage
 		battle_log.text += message + "\n"
+		current_enemy_stats.take_damage(critical_damage)
 	else:
-		var message = get_random_attack_message(player_attack_messages) % damage
+		# ПОКАЗЫВАЕМ ФАКТИЧЕСКИЙ урон (после защиты)
+		var message = get_random_attack_message(player_attack_messages) % actual_damage
 		battle_log.text += message + "\n"
-	current_enemy_stats.take_damage(damage)
+		current_enemy_stats.take_damage(actual_damage)
 
 func enemy_attack():
 	if not is_instance_valid(current_enemy) or not current_enemy_stats:
 		end_battle(false)
 		return
 	
-	var damage = max(1, current_enemy_stats.get_damage() - player_stats_instance.get_defense())
+	# РАСЧЕТ УРОНА
+	var base_damage = current_enemy_stats.get_damage()
+	var player_defense = player_stats_instance.get_defense()
+	var actual_damage = max(1, base_damage - player_defense)
+	
 	if randf() < 0.1:
-		damage = int(damage * 1.5)
-		var message = get_random_attack_message(enemy_critical_messages) % [current_enemy_stats.enemy_name, damage]
+		var critical_damage = int(actual_damage * ENEMY_CRITICAL_MULTIPLIER)
+		var message = get_random_attack_message(enemy_critical_messages) % [current_enemy_stats.enemy_name, critical_damage]
 		battle_log.text += message + "\n"
+		player_stats_instance.take_damage(critical_damage)
 	else:
-		var message = get_random_attack_message(enemy_attack_messages) % [current_enemy_stats.enemy_name, damage]
+		# ПОКАЗЫВАЕМ ФАКТИЧЕСКИЙ урон (после защиты)
+		var message = get_random_attack_message(enemy_attack_messages) % [current_enemy_stats.enemy_name, actual_damage]
 		battle_log.text += message + "\n"
-	player_stats_instance.take_damage(damage)
+		player_stats_instance.take_damage(actual_damage)
 
 func end_battle(victory: bool):
 	if victory and current_enemy_stats:

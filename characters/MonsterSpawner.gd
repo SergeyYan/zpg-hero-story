@@ -24,6 +24,8 @@ var _rng := RandomNumberGenerator.new()
 var _update_cooldown := 0.0
 ## Очередь чанков для отложенного спавна монстров
 var _spawn_queue: Array = []
+# Добавляем свойство для хранения уровня игрока
+var player_level: int = 1
 
 
 ## Инициализация спавнера
@@ -141,12 +143,11 @@ func _process_spawn_queue() -> void:
 func _spawn_monster(chunk: Vector2i) -> void:
 	var monster = load(MONSTER_SCENE).instantiate()
 	
-	# Улучшаем нового монстра под уровень игрока
-	var player = get_tree().get_first_node_in_group("player")
-	if player:
-		var player_stats = get_tree().get_first_node_in_group("player_stats")
-		if player_stats and monster.has_method("apply_level_scaling"):
-			monster.apply_level_scaling(player_stats.level)  # Используем текущий уровень игрока
+	# Используем сохраненный player_level вместо поиска игрока каждый раз
+	var monster_stats = monster.get_node("MonsterStats")
+	if monster_stats and monster_stats.has_method("set_monster_level"):
+		monster_stats.set_monster_level(player_level)
+		print("Новый монстр создан с уровнем: ", player_level)
 	
 	# УВЕЛИЧИВАЕМ радиус спавна чтобы монстры не появлялись внутри игрока
 	var spawn_radius = (DESPAWN_RADIUS - 5) * TILE_SIZE  # ← Увеличиваем отступ

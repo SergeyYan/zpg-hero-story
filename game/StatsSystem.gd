@@ -1,3 +1,4 @@
+#StatsSystem.gd
 extends Resource
 class_name StatsSystem
 
