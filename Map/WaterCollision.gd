@@ -2,9 +2,14 @@
 extends Area2D
 
 @export var water_type := "deep"
-@export var slow_factor := 0.6 if water_type == "deep" else 0.8
+@export var slow_factor := 0.5
 
 func _ready():
+	if water_type == "deep":
+		slow_factor = 0.5
+	elif water_type != "deep" && water_type == "shallow":
+		slow_factor = 0.7
+
 	# Проверяем, не подключены ли уже сигналы
 	if not is_connected("body_entered", _on_body_entered):
 		connect("body_entered", _on_body_entered)

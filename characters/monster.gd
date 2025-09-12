@@ -1,7 +1,7 @@
 #monster.gd
 extends CharacterBody2D
 
-@export var speed := 50.0
+@export var speed := 85.0
 @export var change_dir_time := 3.5
 @export var aggro_range := 100.0
 @export var show_aggro_radius := true
@@ -178,29 +178,10 @@ func apply_level_scaling(player_level: int):
 	if not monster_stats:
 		return
 	
-	# Работаем с экспортированными переменными
-	monster_stats.strength = 1
-	monster_stats.fortitude = 1  
-	monster_stats.endurance = 1
-	
-	var total_points = player_level * 3 - 3
-	
-	if total_points > 0:
-		for i in range(total_points):
-			var random_stat = randi() % 3
-			match random_stat:
-				0: monster_stats.strength += 1
-				1: monster_stats.fortitude += 1
-				2: monster_stats.endurance += 1
-	
-	# ОБНОВЛЯЕМ stats_system с новыми значениями
-	monster_stats.stats_system.strength = monster_stats.strength
-	monster_stats.stats_system.fortitude = monster_stats.fortitude  
-	monster_stats.stats_system.endurance = monster_stats.endurance
-	
-	# ВАЖНО: УСТАНАВЛИВАЕМ ПОЛНОЕ ЗДОРОВЬЕ, а не пропорциональное!
-	monster_stats.current_health = monster_stats.get_max_health()  # ← Полное здоровье!
+	# ПРОСТО УСТАНАВЛИВАЕМ УРОВЕНЬ - MonsterStats сам все пересчитает
+	monster_stats.set_monster_level(player_level)
 	
 	print("Монстр Ур.", player_level, ": С", monster_stats.strength, 
 		  " К", monster_stats.fortitude, " В", monster_stats.endurance,
-		  " HP: ", monster_stats.current_health, "/", monster_stats.get_max_health())
+		  " HP: ", monster_stats.current_health, "/", monster_stats.get_max_health(),
+		  " EXP: ", monster_stats.exp_reward)

@@ -5,6 +5,10 @@ extends CharacterBody2D
 
 var _water_slowdown := 1.0
 var speed: float = SPEED  # Базовая скорость
+var _is_in_water: bool = false  # ← НОВАЯ ПЕРЕМЕННАЯ: находимся ли в воде
+var _drying_timer: float = 0.0  # ← Таймер высыхания
+var _drying_delay: float = 0.5  # ← Время до высыхания после выхода (0.5 секунды)
+var _water_tile_count: int = 0  # ← СЧЕТЧИК водных тайлов
 
 var target_distance: float = 0.0
 var moved_distance: float = 0.0
@@ -95,16 +99,30 @@ func _play_animation(anim_name: String) -> void:
 			anim_sprite.stop()
 
 func _physics_process(delta: float) -> void:
+	# ЛОГИКА ВЫСЫХАНИЯ (5 секунд)
+	# ЛОГИКА ВЫСЫХАНИЯ
+	if _water_tile_count <= 0 and _drying_timer >= 0:
+		_drying_timer += delta
+		#print("Таймер высыхания: ", _drying_timer, "/", _drying_delay, " (замедление: ", _water_slowdown, ")")
+		
+		if _drying_timer >= _drying_delay:
+			_water_slowdown = 1.0
+			_drying_timer = -1.0
+			#print("Игрок полностью высох")
+	
+	# ОТДЕЛЬНО управляем цветом
+	if _water_slowdown < 1.0:
+		modulate = Color(0.8, 0.9, 1.0, 0.9)  # Синий оттенок
+	else:
+		modulate = Color.WHITE  # Нормальный цвет
+	
 	# ПРОВЕРКА: если игра на паузе - не двигаемся
 	if get_tree().paused:
 		velocity = Vector2.ZERO
 		return
 	
 	var current_speed = speed * _water_slowdown  # Учитываем замедление воды
-	
-	# Оптимизированная проверка воды
-	if _water_slowdown < 1.0:
-		modulate = Color(0.8, 0.9, 1.0, 0.9)  # Синий оттенок в воде
+		
 	
 	if is_paused:
 		pause_timer += delta
@@ -145,9 +163,30 @@ func set_water_slowdown(factor: float) -> void:
 	# Ограничиваем фактор между 0.1 и 1.0
 	factor = clamp(factor, 0.1, 1.0)
 	
-	if abs(_water_slowdown - factor) > 0.01:  # Изменяем только при значимой разнице
-		_water_slowdown = factor
-#		print("Скорость изменена: ", factor)
-
-func is_in_water() -> bool:
-	return _water_slowdown < 1.0
+	# ОБНОВЛЯЕМ СЧЕТЧИК
+	if factor < 1.0:
+		_water_tile_count += 1  # Вошли в воду
+	else:
+		_water_tile_count -= 1  # Вышли из воды
+	
+	# ЕСЛИ все еще в воде - не запускаем высыхание
+	if _water_tile_count > 0 and factor == 1.0:
+		#print("Игнорируем выход из воды - все еще в другом тайле воды")
+		return
+	
+	# ОСНОВНАЯ ЛОГИКА
+	if abs(_water_slowdown - factor) > 0.01:
+		if factor < 1.0:
+			# ВОШЛИ В ВОДУ - применяем замедление сразу
+			_water_slowdown = factor
+			_drying_timer = -1.0
+			#print("Вошел в воду, таймер высыхания остановлен")
+		elif _water_tile_count <= 0 and _drying_timer < 0:
+			# ВЫШЛИ ИЗ ВОДЫ (и нет других водных тайлов) - запускаем таймер
+			_drying_timer = 0.0
+			#print("Начало высыхания, таймер запущен (замедление: ", _water_slowdown, ")")
+		else:
+			# Другие случаи
+			_water_slowdown = factor
+		
+		#print("Водных тайлов: ", _water_tile_count, ", замедление: ", _water_slowdown)

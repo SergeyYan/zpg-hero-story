@@ -1,3 +1,4 @@
+#PlayerHUD.gd
 extends CanvasLayer
 
 @onready var health_bar: ProgressBar = $HealthBar
@@ -70,7 +71,7 @@ func update_stats_display():
 
 func update_display():
 	update_health(player_stats_instance.current_health)
-	update_level(player_stats_instance.level, player_stats_instance.available_points)  # ← Добавляем второй аргумент!
+	update_level(player_stats_instance.level, player_stats_instance.available_points)  # player_stats_instance.available_points ← Добавляем второй аргумент!
 	update_exp_display()
 	update_stats_display()
 
