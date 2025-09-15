@@ -12,6 +12,8 @@ signal points_distributed
 @onready var fortitude_button: Button = $Panel/VBoxContainer/HBOXfort/FortitudeButton
 @onready var endurance_button: Button = $Panel/VBoxContainer/HBOXend/EnduranceButton
 @onready var confirm_button: Button = $Panel/VBoxContainer/ConfirmButton
+@onready var luck_label: Label = $Panel/VBoxContainer/HBOXluck/LuckLable
+@onready var luck_button: Button = $Panel/VBoxContainer/HBOXluck/LuckButton
 
 var player_stats: PlayerStats
 var available_points: int = 0
@@ -40,12 +42,14 @@ func update_display():
 		strength_label.text = "Сила: %d" % player_stats.stats_system.strength
 		fortitude_label.text = "Крепость: %d" % player_stats.stats_system.fortitude
 		endurance_label.text = "Выносливость: %d" % player_stats.stats_system.endurance
+		luck_label.text = "Удача: %d (%.1f%%)" % [player_stats.stats_system.luck, player_stats.stats_system.get_crit_chance() * 100]
 	points_label.text = "Очков: %d" % available_points
 	
 	# Кнопки активны только если есть очки
 	strength_button.disabled = available_points <= 0
 	fortitude_button.disabled = available_points <= 0  
 	endurance_button.disabled = available_points <= 0
+	luck_button.disabled = available_points <= 0  # ← Новая кнопка
 	confirm_button.disabled = available_points > 0
 
 func _on_strength_button_pressed():
@@ -64,6 +68,12 @@ func _on_endurance_button_pressed():
 	if available_points > 0:
 		player_stats.increase_endurance()  # ← Используем метод PlayerStats!
 		available_points = player_stats.available_points  
+		update_display()
+
+func _on_luck_button_pressed():
+	if available_points > 0:
+		player_stats.increase_luck()
+		available_points = player_stats.available_points
 		update_display()
 
 func _on_confirm_button_pressed():

@@ -10,6 +10,7 @@ extends CanvasLayer
 @onready var strength_label: Label = $StatsContainer/StrengthLabel
 @onready var fortitude_label: Label = $StatsContainer/FortitudeLabel  
 @onready var endurance_label: Label = $StatsContainer/EnduranceLabel
+@onready var luck_label: Label = $StatsContainer/LuckLabel
 @onready var regen_label: Label = $StatsContainer/RegenLabel
 
 var player_stats_instance: PlayerStats
@@ -66,6 +67,8 @@ func update_stats_display():
 		fortitude_label.text = "Крепость: %d" % player_stats_instance.stats_system.fortitude
 	if endurance_label:
 		endurance_label.text = "Выносливость: %d" % player_stats_instance.stats_system.endurance
+	if luck_label:
+		luck_label.text = "Удача: %d" % player_stats_instance.stats_system.luck
 	if regen_label:
 		regen_label.text = "Восстановление: %.1f/s" % player_stats_instance.get_health_regen()
 

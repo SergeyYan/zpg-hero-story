@@ -1,6 +1,72 @@
-[gd_scene load_steps=2 format=3 uid="uid://3mjqyq4itqfw"]
+[gd_scene load_steps=12 format=3 uid="uid://3mjqyq4itqfw"]
 
 [ext_resource type="Script" uid="uid://ds37a1byh54n4" path="res://Menu/MainMenu.gd" id="1_e1xpn"]
+[ext_resource type="Texture2D" uid="uid://cdw8slmi04sav" path="res://assets/hero/hero.png" id="2_um3lu"]
+[ext_resource type="Texture2D" uid="uid://dxhifmxgh6njv" path="res://assets/hero/hero-stop.png" id="3_sfxdn"]
+[ext_resource type="Texture2D" uid="uid://cf7j2siuht1tm" path="res://assets/hero/hero-l1.png" id="4_u0a2j"]
+[ext_resource type="Texture2D" uid="uid://8e4lkr5ipw3v" path="res://assets/hero/hero-l2.png" id="5_fgdcb"]
+[ext_resource type="Texture2D" uid="uid://b8rkyxljegw7a" path="res://assets/hero/hero-r1.png" id="6_gk4pn"]
+[ext_resource type="Texture2D" uid="uid://bc7hne1ugncpx" path="res://assets/hero/hero-r2.png" id="7_xcttp"]
+[ext_resource type="Script" uid="uid://bdrd7le8umv0y" path="res://Menu/DanceMenu.gd" id="8_sfxdn"]
+[ext_resource type="Texture2D" uid="uid://lr33of2c2hs6" path="res://assets/monster/monster.png" id="9_u0a2j"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_gcihc"]
+animations = [{
+"frames": [{
+"duration": 2.0,
+"texture": ExtResource("2_um3lu")
+}, {
+"duration": 2.0,
+"texture": ExtResource("3_sfxdn")
+}, {
+"duration": 1.5,
+"texture": ExtResource("2_um3lu")
+}, {
+"duration": 1.5,
+"texture": ExtResource("3_sfxdn")
+}, {
+"duration": 1.5,
+"texture": ExtResource("2_um3lu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_u0a2j")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_fgdcb")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_u0a2j")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_um3lu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_gk4pn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_xcttp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_gk4pn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_um3lu")
+}],
+"loop": true,
+"name": &"Dance",
+"speed": 5.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_fgdcb"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("9_u0a2j")
+}],
+"loop": true,
+"name": &"MonsterDance",
+"speed": 5.0
+}]
 
 [node name="MainMenu" type="CanvasLayer"]
 script = ExtResource("1_e1xpn")
@@ -58,6 +124,32 @@ theme_override_font_sizes/font_size = 10
 text = "By Blago                         v0_033"
 horizontal_alignment = 2
 vertical_alignment = 1
+
+[node name="MenuPlayer" type="CharacterBody2D" parent="CenterContainer"]
+
+[node name="DanceMenu" type="AnimatedSprite2D" parent="CenterContainer/MenuPlayer"]
+position = Vector2(400, 440)
+scale = Vector2(5, 5)
+sprite_frames = SubResource("SpriteFrames_gcihc")
+animation = &"Dance"
+script = ExtResource("8_sfxdn")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CenterContainer/MenuPlayer"]
+z_index = -1
+position = Vector2(816, 480)
+scale = Vector2(3, 3)
+sprite_frames = SubResource("SpriteFrames_fgdcb")
+animation = &"MonsterDance"
+frame_progress = 0.98611
+
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="CenterContainer/MenuPlayer"]
+z_index = -1
+position = Vector2(-16, 480)
+scale = Vector2(3, 3)
+sprite_frames = SubResource("SpriteFrames_fgdcb")
+animation = &"MonsterDance"
+frame_progress = 0.98611
+flip_h = true
 
 [connection signal="pressed" from="CenterContainer/VBoxContainer/NewGameButton" to="." method="_on_new_game_button_pressed"]
 [connection signal="pressed" from="CenterContainer/VBoxContainer/LoadGameButton" to="." method="_on_load_game_button_pressed"]

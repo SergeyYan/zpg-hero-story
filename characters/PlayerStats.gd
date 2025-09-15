@@ -34,6 +34,7 @@ func _ready():
 	stats_system.strength = 1
 	stats_system.fortitude = 0
 	stats_system.endurance = 0
+	stats_system.luck = 0
 	stats_system.base_health = 5  # ↓ Базовое здоровье
 	
 	current_health = get_max_health()
@@ -114,5 +115,11 @@ func increase_fortitude():
 func increase_endurance():
 	if available_points > 0:
 		stats_system.endurance += 1
+		available_points -= 1
+		stats_changed.emit()
+
+func increase_luck():
+	if available_points > 0:
+		stats_system.luck += 1
 		available_points -= 1
 		stats_changed.emit()
