@@ -3,12 +3,11 @@ extends CanvasLayer
 
 signal battle_ended(victory: bool)
 
-const CRITICAL_CHANCE := 0.1
 const PLAYER_CRITICAL_MULTIPLIER := 2.0
 const ENEMY_CRITICAL_MULTIPLIER := 1.5
 
-@onready var player_stats_container: VBoxContainer = $BattleUI/PlayerStats
-@onready var enemy_stats: VBoxContainer = $BattleUI/EnemyStats
+@onready var player_stats_container: VBoxContainer = $StatsPlayer/PlayerStats
+@onready var enemy_stats: VBoxContainer = $StatsMonster/EnemyStats
 @onready var battle_log: RichTextLabel = $BattleUI/BattleLog
 @onready var timer: Timer = $Timer
 
@@ -96,7 +95,8 @@ func update_stats():
 		player_stats_instance.current_health, player_stats_instance.get_max_health(),
 		player_stats_instance.stats_system.strength,      # ← Реальная сила
 		player_stats_instance.stats_system.fortitude,     # ← Реальная крепость
-		player_stats_instance.stats_system.endurance      # ← Реальная выносливость
+		player_stats_instance.stats_system.endurance,      # ← Реальная выносливость
+		player_stats_instance.stats_system.luck           # ← ДОБАВЛЯЕМ УДАЧУ
 	)
 	
 	# ПЕРЕДАЕМ РЕАЛЬНЫЕ ХАРАКТЕРИСТИКИ монстра
@@ -104,12 +104,13 @@ func update_stats():
 		current_enemy_stats.current_health, current_enemy_stats.get_max_health(),
 		current_enemy_stats.stats_system.strength,        # ← Реальная сила
 		current_enemy_stats.stats_system.fortitude,       # ← Реальная крепость  
-		current_enemy_stats.stats_system.endurance        # ← Реальная выносливость
+		current_enemy_stats.stats_system.endurance,        # ← Реальная выносливость
+		current_enemy_stats.stats_system.luck             # ← ДОБАВЛЯЕМ УДАЧУ
 	)
 
 func _update_stat_display(container: VBoxContainer, name: String, 
 						 health: int, max_health: int, 
-						 strength: int, fortitude: int, endurance: int):  # ← Новые параметры!
+						 strength: int, fortitude: int, endurance: int, luck: int):  # ← Новые параметры!
 	for child in container.get_children():
 		child.queue_free()
 	
@@ -134,6 +135,9 @@ func _update_stat_display(container: VBoxContainer, name: String,
 	endurance_label.text = "Выносливость: %d" % endurance
 	container.add_child(endurance_label)
 
+	var luck_label = Label.new()
+	luck_label.text = "Удача: %d" % luck
+	container.add_child(luck_label)
 
 func _on_timer_timeout():
 	# ПРОВЕРКА: если игрок умер - немедленно заканчиваем бой
@@ -175,9 +179,10 @@ func player_attack():
 	var base_damage = player_stats_instance.get_damage()
 	var enemy_defense = current_enemy_stats.get_defense()
 	var actual_damage = max(1, base_damage - enemy_defense)
+	var crit_chance = player_stats_instance.stats_system.get_crit_chance()
 	
-	if randf() < 0.1:
-		var critical_damage = int(actual_damage * PLAYER_CRITICAL_MULTIPLIER)
+	if randf() < crit_chance:
+		var critical_damage = int((base_damage * PLAYER_CRITICAL_MULTIPLIER) - enemy_defense)
 		var message = get_random_attack_message(player_critical_messages) % critical_damage
 		battle_log.text += message + "\n"
 		current_enemy_stats.take_damage(critical_damage)
@@ -196,9 +201,10 @@ func enemy_attack():
 	var base_damage = current_enemy_stats.get_damage()
 	var player_defense = player_stats_instance.get_defense()
 	var actual_damage = max(1, base_damage - player_defense)
+	var crit_chance = current_enemy_stats.stats_system.get_crit_chance()
 	
-	if randf() < 0.1:
-		var critical_damage = int(actual_damage * ENEMY_CRITICAL_MULTIPLIER)
+	if randf() < crit_chance:
+		var critical_damage = int((base_damage * ENEMY_CRITICAL_MULTIPLIER) - player_defense)
 		var message = get_random_attack_message(enemy_critical_messages) % [current_enemy_stats.enemy_name, critical_damage]
 		battle_log.text += message + "\n"
 		player_stats_instance.take_damage(critical_damage)

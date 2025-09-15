@@ -1,6 +1,33 @@
-[gd_scene load_steps=2 format=3 uid="uid://0p735beyx2tm"]
+[gd_scene load_steps=7 format=3 uid="uid://0p735beyx2tm"]
 
 [ext_resource type="Script" uid="uid://dbg2sionio24l" path="res://Menu/GameOverMenu.gd" id="1_g6o1s"]
+[ext_resource type="Texture2D" uid="uid://cdw8slmi04sav" path="res://assets/hero/hero.png" id="2_wy1nv"]
+[ext_resource type="Texture2D" uid="uid://cf7j2siuht1tm" path="res://assets/hero/hero-l1.png" id="3_ohd7m"]
+[ext_resource type="Texture2D" uid="uid://8e4lkr5ipw3v" path="res://assets/hero/hero-l2.png" id="4_7unyg"]
+[ext_resource type="Script" uid="uid://580o38d81gwv" path="res://Menu/Death.gd" id="5_cqdyc"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_huh68"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_wy1nv")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_ohd7m")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_7unyg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_ohd7m")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_wy1nv")
+}],
+"loop": true,
+"name": &"death",
+"speed": 5.0
+}]
 
 [node name="GameOverMenu" type="CanvasLayer"]
 script = ExtResource("1_g6o1s")
@@ -43,6 +70,17 @@ offset_top = 128.0
 offset_right = 240.0
 offset_bottom = 175.0
 text = "выйти из игры"
+
+[node name="CharacterBody2D" type="CharacterBody2D" parent="."]
+
+[node name="death" type="AnimatedSprite2D" parent="CharacterBody2D"]
+position = Vector2(407, 488)
+rotation = 1.5708
+scale = Vector2(5, 5)
+sprite_frames = SubResource("SpriteFrames_huh68")
+animation = &"death"
+frame_progress = 0.339649
+script = ExtResource("5_cqdyc")
 
 [connection signal="pressed" from="Panel/RestartButton" to="." method="_on_restart_button_pressed"]
 [connection signal="pressed" from="Panel/QuitButton" to="." method="_on_quit_button_pressed"]

@@ -173,6 +173,6 @@ shape = SubResource("CircleShape2D_h076o")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -6)
 sprite_frames = SubResource("SpriteFrames_lcfw7")
-animation = &"idle"
+animation = &"walk_down_left"
 
 [node name="Camera2D" type="Camera2D" parent="."]

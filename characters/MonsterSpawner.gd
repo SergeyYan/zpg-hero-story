@@ -2,9 +2,9 @@
 extends Node
 
 ## Радиус в чанках вокруг игрока, в котором могут появляться монстры
-@export var SPAWN_RADIUS := 16
+@export var SPAWN_RADIUS := 18
 ## Радиус в чанках, за пределами которого монстры удаляются
-@export var DESPAWN_RADIUS := 18
+@export var DESPAWN_RADIUS := 20
 ## Максимальное количество монстров на карте одновременно
 @export var MAX_MONSTERS := 4
 ## Шанс спавна монстра в подходящем чанке (0.0 - 1.0)
@@ -53,7 +53,7 @@ func _cleanup_existing_monsters() -> void:
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint() or not _player:
 		return
-	
+
 	_update_cooldown += delta
 	# Добавляем небольшую случайность к интервалу для разнообразия
 	if _update_cooldown < UPDATE_INTERVAL + _rng.randf_range(-0.05, 0.05):
@@ -175,6 +175,10 @@ func _add_monster_to_scene(monster: Node, chunk: Vector2i) -> void:
 		_monsters[chunk] = []
 	_monsters[chunk].append(monster)
 
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.level > 1:
+		var monster_stats = monster.get_node("MonsterStats")
+		monster_stats.set_monster_level(player_stats.level)
 
 ## Возвращает общее количество активных монстров
 ## @return: Количество монстров (int)

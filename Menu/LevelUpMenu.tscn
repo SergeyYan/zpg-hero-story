@@ -7,7 +7,7 @@ script = ExtResource("1_huaid")
 
 [node name="Panel" type="Panel" parent="."]
 offset_left = 160.0
-offset_top = 192.0
+offset_top = 128.0
 offset_right = 608.0
 offset_bottom = 448.0
 
@@ -26,11 +26,6 @@ horizontal_alignment = 1
 [node name="HBOXstr" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 
-[node name="Strength" type="Label" parent="Panel/VBoxContainer/HBOXstr"]
-layout_mode = 2
-text = "Сила:"
-vertical_alignment = 1
-
 [node name="StrengthLabel" type="Label" parent="Panel/VBoxContainer/HBOXstr"]
 layout_mode = 2
 
@@ -41,11 +36,6 @@ text = "+1"
 
 [node name="HBOXfort" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
-
-[node name="Fortitude" type="Label" parent="Panel/VBoxContainer/HBOXfort"]
-layout_mode = 2
-text = "Крепость:"
-vertical_alignment = 1
 
 [node name="FortitudeLabel" type="Label" parent="Panel/VBoxContainer/HBOXfort"]
 layout_mode = 2
@@ -58,15 +48,21 @@ text = "+1"
 [node name="HBOXend" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 
-[node name="Endurance" type="Label" parent="Panel/VBoxContainer/HBOXend"]
-layout_mode = 2
-text = "Выносливость:"
-vertical_alignment = 1
-
 [node name="EnduranceLabel" type="Label" parent="Panel/VBoxContainer/HBOXend"]
 layout_mode = 2
 
 [node name="EnduranceButton" type="Button" parent="Panel/VBoxContainer/HBOXend"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "+1"
+
+[node name="HBOXluck" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="LuckLable" type="Label" parent="Panel/VBoxContainer/HBOXluck"]
+layout_mode = 2
+
+[node name="LuckButton" type="Button" parent="Panel/VBoxContainer/HBOXluck"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "+1"
@@ -84,4 +80,5 @@ text = "Подтвердить"
 [connection signal="pressed" from="Panel/VBoxContainer/HBOXstr/StrengthButton" to="." method="_on_strength_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HBOXfort/FortitudeButton" to="." method="_on_fortitude_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HBOXend/EnduranceButton" to="." method="_on_endurance_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/HBOXluck/LuckButton" to="." method="_on_luck_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/ConfirmButton" to="." method="_on_confirm_button_pressed"]

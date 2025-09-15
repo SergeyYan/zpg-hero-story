@@ -182,6 +182,6 @@ func apply_level_scaling(player_level: int):
 	monster_stats.set_monster_level(player_level)
 	
 	print("Монстр Ур.", player_level, ": С", monster_stats.strength, 
-		  " К", monster_stats.fortitude, " В", monster_stats.endurance,
+		  " К", monster_stats.fortitude, " В", monster_stats.endurance, " У", monster_stats.luck,
 		  " HP: ", monster_stats.current_health, "/", monster_stats.get_max_health(),
 		  " EXP: ", monster_stats.exp_reward)

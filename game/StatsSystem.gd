@@ -6,29 +6,38 @@ class_name StatsSystem
 var strength: int = 1        # Сила - увеличивает урон
 var fortitude: int = 1       # Крепость - увеличивает броню  
 var endurance: int = 1       # Выносливость - увеличивает здоровье и регенерацию
+var luck: int = 1            # Удача - увеличивает шанс крита  # ← НОВОЕ!
 
 # Производные характеристики
 var base_health: int = 1   # Базовое здоровье
 var base_damage: int = 1    # Базовый урон
 var base_defense: int = 1    # Базовая защита
+var base_crit_chance: float = 0.01  # ← Базовый шанс крита 1%
 
 # Расчетные значения
 func get_max_health() -> int:
 	return base_health + (endurance * 5)
 
+#Механика атака
 func get_damage() -> int:
 	# Сила: 1 = 1-3 урона, 5 = 5-15, 10 = 10-30
 	var base_dmg = base_damage + strength
 	var min_damage = max(1, base_dmg)  # Минимальный урон
-	var max_damage = base_dmg * 3      # Максимальный урон (×3)
+	var max_damage = base_dmg + 3      # Максимальный урон (×3)
 	return randi_range(min_damage, max_damage)
 
+#Механика защита
 func get_defense() -> int:
 	# Крепость: 1 = 1-3 защиты, 5 = 5-15, 10 = 10-30  
 	var base_def = base_defense + fortitude
 	var min_defense = max(1, base_def)  # Минимальная защита
-	var max_defense = base_def * 3      # Максимальная защита (×3)
+	var max_defense = base_def + 3      # Максимальная защита (×3)
 	return randi_range(min_defense, max_defense)
 
+#Механика регенерации
 func get_health_regen() -> float:
 	return endurance * 0.5  # 0.5 здоровья в секунду за 1 выносливости
+
+#Механика критического удара
+func get_crit_chance() -> float:
+	return base_crit_chance + (luck * 0.01)  # 1% за каждую удачу
