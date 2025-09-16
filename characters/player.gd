@@ -107,7 +107,7 @@ func _physics_process(delta: float) -> void:
 		
 		if _drying_timer >= _drying_delay:
 			_water_slowdown = 1.0
-			_drying_timer = -1.0
+			_drying_timer = -0.5
 			#print("Игрок полностью высох")
 	
 	# ОТДЕЛЬНО управляем цветом

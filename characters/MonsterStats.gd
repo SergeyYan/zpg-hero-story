@@ -89,7 +89,7 @@ func _scale_stats_by_level():
 	stats_system.endurance = endurance
 	stats_system.luck = luck
 	
-	exp_reward = 5 * (strength + fortitude + endurance + luck)
+	exp_reward = 5 * (strength + fortitude + endurance + luck) + (endurance * 5)
 	current_health = get_max_health()
 
 func _generate_random_stats():
@@ -119,7 +119,7 @@ func _generate_random_stats():
 	stats_system.fortitude = fortitude
 	stats_system.endurance = endurance
 	stats_system.luck = luck
-	exp_reward = 10 * (strength + fortitude + endurance + luck)
+	exp_reward = 10 * (strength + fortitude + endurance + luck) + (endurance * 5)
 	current_health = get_max_health()
 
 func get_max_health() -> int: return stats_system.get_max_health()

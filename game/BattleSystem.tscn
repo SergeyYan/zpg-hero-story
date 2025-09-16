@@ -27,6 +27,7 @@ offset_bottom = 240.0
 theme_override_constants/table_v_separation = 10
 theme_override_constants/table_h_separation = 10
 theme_override_constants/shadow_outline_size = 5
+bbcode_enabled = true
 scroll_active = false
 scroll_following = true
 tab_size = 2
@@ -62,6 +63,7 @@ offset_bottom = 592.0
 
 [node name="EnemyStats" type="VBoxContainer" parent="StatsMonster"]
 self_modulate = Color(0, 0, 0, 1)
+layout_mode = 0
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 200.0

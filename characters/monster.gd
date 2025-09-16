@@ -3,7 +3,7 @@ extends CharacterBody2D
 
 @export var speed := 85.0
 @export var change_dir_time := 3.5
-@export var aggro_range := 100.0
+@export var aggro_range := 150.0
 @export var show_aggro_radius := true
 
 # Ссылка на дочерний MonsterStats

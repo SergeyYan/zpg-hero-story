@@ -77,6 +77,18 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Подтвердить"
 
+[node name="VBoxTimer" type="VBoxContainer" parent="Panel"]
+layout_mode = 0
+offset_left = 96.0
+offset_top = 264.0
+offset_right = 352.0
+offset_bottom = 304.0
+
+[node name="TimerLabel" type="Label" parent="Panel/VBoxTimer"]
+layout_mode = 2
+
+[node name="AutoDistributeTimer" type="Timer" parent="Panel/VBoxTimer"]
+
 [connection signal="pressed" from="Panel/VBoxContainer/HBOXstr/StrengthButton" to="." method="_on_strength_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HBOXfort/FortitudeButton" to="." method="_on_fortitude_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HBOXend/EnduranceButton" to="." method="_on_endurance_button_pressed"]
