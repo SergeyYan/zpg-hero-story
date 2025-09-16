@@ -80,6 +80,12 @@ func add_exp(amount: int):
 	current_exp += amount
 	exp_gained.emit()  # ← Испускаем сигнал при получении опыта!
 	if current_exp >= exp_to_level:
+		# Запоминаем что нужно прокачаться, но ждем конца боя
+		print("Достигнут новый уровень, но ждем конца боя")
+		# Уровень будет вызван после боя
+
+func complete_level_up_after_battle():  # ← НОВАЯ ФУНКЦИЯ
+	if current_exp >= exp_to_level:
 		_level_up()
 
 func _level_up():

@@ -17,41 +17,41 @@ var current_enemy_stats: MonsterStats = null  # ← ДОБАВИЛИ!
 var is_player_turn: bool = true
 
 var player_attack_messages = [
-	"Герой нанес %d урона!",
-	"Герой с разбегу ударил на %d урона!",
-	"Герой на отмашь ударил на %d урона!",
-	"Герой нанес мощный удар на %d урона!",
-	"Герой бросил камень в голову на %d урона!",
-	"Герой упал на коленку врага и нанесли %d урона!",
-	"Герой плюнул прямо в бубен на %d урона!",
-	"Разящий удар героя в пах на %d урона!",
-	"Сокрушительный удар по самолюбию врага на %d урона!",
-	"Враг спотыкнулся и получил %d урона!"
+	"[color=#ff6b6b]Герой нанес ⚔️ %d урона![/color]",  # ← Красный
+	"[color=#ff6b6b]Герой с разбегу ударил на ⚔️ %d урона![/color]",
+	"[color=#ff6b6b]Герой на отмашь ударил на ⚔️ %d урона![/color]", 
+	"[color=#ff6b6b]Герой нанес мощный удар на ⚔️ %d урона![/color]",
+	"[color=#ff6b6b]Герой бросил камень в голову на ⚔️ %d урона![/color]",
+	"[color=#ff6b6b]Герой упал на коленку врага и нанесли ⚔️ %d урона![/color]",
+	"[color=#ff6b6b]Герой плюнул прямо в бубен на ⚔️ %d урона![/color]",
+	"[color=#ff6b6b]Разящий удар героя в пах на ⚔️ %d урона![/color]",
+	"[color=#ff6b6b]Сокрушительный удар по самолюбию врага на ⚔️ %d урона![/color]",
+	"[color=#ff6b6b]Враг спотыкнулся и получил ⚔️ %d урона![/color]"
 ]
 
 var enemy_attack_messages = [
-	"%s нанес вам %d урона!",
-	"%s атакует и наносит %d урона!",
-	"%s бьет вас на %d урона!",
-	"Атака %sа в голову наносит %d урона!",
-	"%s царапает вас на %d урона!",
-	"%s кусает вас на %d урона!",
-	"Щелчок %sа наносит %d урона!",
-	"%s толкает вас на %d урона!",
-	"Бросок пыли %sа наносит %d урона!",
-	"%s прыгает вам на шею, нанесен %d урона пояснице!"
+	"[color=#ffd93d]%s нанес вам ⚔️ %d урона![/color]",  # ← Желтый
+	"[color=#ffd93d]%s атакует и наносит ⚔️ %d урона![/color]",
+	"[color=#ffd93d]%s бьет вас на ⚔️ %d урона![/color]",
+	"[color=#ffd93d]Атака %sа в голову наносит ⚔️ %d урона![/color]",
+	"[color=#ffd93d]%s царапает вас на ⚔️ %d урона![/color]",
+	"[color=#ffd93d]%s кусает вас на ⚔️ %d урона![/color]",
+	"[color=#ffd93d]Щелчок %sа наносит ⚔️ %d урона![/color]",
+	"[color=#ffd93d]%s толкает вас на ⚔️ %d урона![/color]",
+	"[color=#ffd93d]Бросок пыли %sа наносит ⚔️ %d урона![/color]",
+	"[color=#ffd93d]%s прыгает вам на шею, нанесен ⚔️ %d урона пояснице![/color]"
 ]
 
 var player_critical_messages = [
-	"🔥 ГЕРОЙ НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона! 🔥",
-	"💥 ГЕРОЙ НАНОСИТ СМЕРТЕЛЬНЫЙ УДАР! %d урона! 💥",
-	"⭐ ГЕРОЙ ДЕЛАЕТ ИДЕАЛЬНЫЙ УДАР! %d урона! ⭐"
+	"[color=#ff0000][b]🔥 ГЕРОЙ НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона! 🔥[/b][/color]",  # ← Красный + жирный
+	"[color=#ff0000][b]💥 ГЕРОЙ НАНОСИТ СМЕРТЕЛЬНЫЙ УДАР! %d урона! 💥[/b][/color]",
+	"[color=#ff0000][b]⭐ ГЕРОЙ ДЕЛАЕТ ИДЕАЛЬНЫЙ УДАР! %d урона! ⭐[/b][/color]"
 ]
 
 var enemy_critical_messages = [
-	"🔥 %s НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона! 🔥",
-	"💥 %s НАНОСИТ СМЕРТЕЛЬНЫЙ УДАР! %d урона! 💥",
-	"⭐ %s ДЕЛАЕТ ИДЕАЛЬНЫЙ УДАР! %d урона! ⭐"
+	"[color=#ffcc00][b]🔥 %s НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона! 🔥[/b][/color]",  # ← Желтый + жирный
+	"[color=#ffcc00][b]💥 %s НАНОСИТ СМЕРТЕЛЬНЫЙ УДАР! %d урона! 💥[/b][/color]",
+	"[color=#ffcc00][b]⭐ %s ДЕЛАЕТ ИДЕАЛЬНЫЙ УДАР! %d урона! ⭐[/b][/color]"
 ]
 
 
@@ -119,24 +119,24 @@ func _update_stat_display(container: VBoxContainer, name: String,
 	container.add_child(name_label)
 	
 	var health_label = Label.new()
-	health_label.text = "HP: %d/%d" % [health, max_health]
+	health_label.text = "HP: %d/%d ❤️" % [health, max_health]
 	container.add_child(health_label)
 	
 	# ПОКАЗЫВАЕМ РЕАЛЬНЫЕ ХАРАКТЕРИСТИКИ
 	var strength_label = Label.new()
-	strength_label.text = "Сила: %d" % strength
+	strength_label.text = "Сила: %d ⚔️" % strength
 	container.add_child(strength_label)
 	
 	var fortitude_label = Label.new()
-	fortitude_label.text = "Крепость: %d" % fortitude
+	fortitude_label.text = "Крепость: %d 🛡️" % fortitude
 	container.add_child(fortitude_label)
 	
 	var endurance_label = Label.new()
-	endurance_label.text = "Выносливость: %d" % endurance
+	endurance_label.text = "Выносливость: %d 💪" % endurance
 	container.add_child(endurance_label)
 
 	var luck_label = Label.new()
-	luck_label.text = "Удача: %d" % luck
+	luck_label.text = "Удача: %d 🎲" % luck
 	container.add_child(luck_label)
 
 func _on_timer_timeout():
@@ -183,6 +183,7 @@ func player_attack():
 	
 	if randf() < crit_chance:
 		var critical_damage = int((base_damage * PLAYER_CRITICAL_MULTIPLIER) - enemy_defense)
+		critical_damage = max(1, critical_damage)
 		var message = get_random_attack_message(player_critical_messages) % critical_damage
 		battle_log.text += message + "\n"
 		current_enemy_stats.take_damage(critical_damage)
@@ -205,6 +206,7 @@ func enemy_attack():
 	
 	if randf() < crit_chance:
 		var critical_damage = int((base_damage * ENEMY_CRITICAL_MULTIPLIER) - player_defense)
+		critical_damage = max(1, critical_damage)
 		var message = get_random_attack_message(enemy_critical_messages) % [current_enemy_stats.enemy_name, critical_damage]
 		battle_log.text += message + "\n"
 		player_stats_instance.take_damage(critical_damage)
@@ -218,28 +220,24 @@ func end_battle(victory: bool):
 	if victory and current_enemy_stats:
 		var exp_gained = current_enemy_stats.exp_reward
 		player_stats_instance.add_exp(exp_gained)
-		battle_log.text += "Победа! Получено %d опыта.\n" % exp_gained
+		battle_log.text += "[color=#00ff00]Победа! Получено %d опыта.[/color]\n" % exp_gained
 		
 		if is_instance_valid(current_enemy):
 			current_enemy.queue_free()
 	else:
-		battle_log.text += "Вы проиграли...\n"
+		battle_log.text += "[color=#ff0000]Вы проиграли...[/color]\n"
 	
 	timer.stop()
-	battle_ended.emit(victory)
 	
-	# ВАЖНО: НЕ снимаем паузу если началась прокачка уровня!
-	# Паузу будет управлять LevelUpMenu
-	if not player_stats_instance.current_health <= 0:
-		# Только если игрок не умер И не началась прокачка
-		var player_stats = get_tree().get_first_node_in_group("player_stats")
-		if player_stats and player_stats.available_points <= 0:  # ← Проверяем что нет очков для прокачки
-			get_tree().paused = false
-			print("Бой завершен, пауза снята")
-		else:
-			print("Бой завершен, пауза остается для прокачки")
+	# ← ДОБАВЛЯЕМ ТАЙМЕР ПАУЗЫ ДЛЯ ЧТЕНИЯ
+	await get_tree().create_timer(2.5).timeout
+	
+	# ← ВЫЗЫВАЕМ ПРОКАЧКУ ПОСЛЕ БОЯ
+	if victory and player_stats_instance:
+		player_stats_instance.complete_level_up_after_battle()
 	
 	hide()
-	
+	battle_ended.emit(victory)
 	current_enemy = null
 	current_enemy_stats = null
+	

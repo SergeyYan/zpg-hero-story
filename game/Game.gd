@@ -42,6 +42,25 @@ func _ready():
 	else:
 		print("PlayerStats не найден для подключения level_up")
 
+	var battle_system = get_tree().get_first_node_in_group("battle_system")
+	if battle_system:
+		battle_system.battle_ended.connect(_on_battle_ended)
+
+
+func _on_battle_ended(victory: bool):
+	print("Бой завершен, результат: ", victory)
+	
+	# ← ДАЕМ ВРЕМЯ LevelUpMenu ОТКРЫТЬСЯ через сигнал level_up
+	await get_tree().create_timer(0.1).timeout  # ← Маленькая задержка
+	
+	# ← ТЕПЕРЬ проверяем очки после того как level_up отработал
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.available_points <= 0:
+		get_tree().paused = false
+		print("Пауза снята - нет очков для прокачки")
+	else:
+		print("Пауза остается - есть очки для прокачки")
+
 
 func _on_new_game_pressed():
 	print("Начинаем новую игру...")
