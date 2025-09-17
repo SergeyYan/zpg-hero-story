@@ -13,7 +13,7 @@ var stats_system: StatsSystem = StatsSystem.new()
 @export var fortitude: int = 0
 @export var endurance: int = 0
 @export var luck: int = 0
-@export var exp_reward: int = 5
+@export var exp_reward: int = get_exp_reward()
 
 var current_health: int
 var monster_level: int = 1
@@ -89,7 +89,7 @@ func _scale_stats_by_level():
 	stats_system.endurance = endurance
 	stats_system.luck = luck
 	
-	exp_reward = 5 * (strength + fortitude + endurance + luck) + (endurance * 5)
+	#exp_reward = 5 * (strength + fortitude + endurance + luck) + (endurance * 5)
 	current_health = get_max_health()
 
 func _generate_random_stats():
@@ -119,7 +119,7 @@ func _generate_random_stats():
 	stats_system.fortitude = fortitude
 	stats_system.endurance = endurance
 	stats_system.luck = luck
-	exp_reward = 10 * (strength + fortitude + endurance + luck) + (endurance * 5)
+	#exp_reward = 10 * (strength + fortitude + endurance + luck) + (endurance * 5)
 	current_health = get_max_health()
 
 func get_max_health() -> int: return stats_system.get_max_health()
@@ -138,3 +138,9 @@ func take_damage(amount: int):
 func heal(amount: int):
 	current_health = min(current_health + amount, get_max_health())
 	health_changed.emit(current_health)
+
+func get_exp_reward() -> int:
+	# ← ФИКСИРОВАННАЯ НАГРАДА: ВСЕГДА 20 exp за победу
+	var exp_rand = randi() % 10
+	exp_rand += 20
+	return exp_rand

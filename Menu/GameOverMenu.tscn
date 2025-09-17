@@ -39,9 +39,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -128.0
-offset_top = -96.0
+offset_top = -137.0
 offset_right = 128.0
-offset_bottom = 96.0
+offset_bottom = 92.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -58,17 +58,25 @@ horizontal_alignment = 1
 [node name="RestartButton" type="Button" parent="Panel"]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 72.0
+offset_top = 69.0
 offset_right = 240.0
-offset_bottom = 114.0
+offset_bottom = 111.0
 text = "начать заново"
+
+[node name="LoadButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 117.0
+offset_right = 240.0
+offset_bottom = 159.0
+text = "Загрузить"
 
 [node name="QuitButton" type="Button" parent="Panel"]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 128.0
+offset_top = 165.0
 offset_right = 240.0
-offset_bottom = 175.0
+offset_bottom = 212.0
 text = "выйти из игры"
 
 [node name="CharacterBody2D" type="CharacterBody2D" parent="."]
@@ -83,4 +91,5 @@ frame_progress = 0.339649
 script = ExtResource("5_cqdyc")
 
 [connection signal="pressed" from="Panel/RestartButton" to="." method="_on_restart_button_pressed"]
+[connection signal="pressed" from="Panel/LoadButton" to="." method="_on_load_button_pressed"]
 [connection signal="pressed" from="Panel/QuitButton" to="." method="_on_quit_button_pressed"]
