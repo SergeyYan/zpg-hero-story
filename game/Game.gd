@@ -29,8 +29,11 @@ func _ready():
 		var connect_result1 = pause_menu.resume_game.connect(_on_resume_game)
 		var connect_result2 = pause_menu.restart_game.connect(_on_restart_game)
 		var connect_result3 = pause_menu.quit_game.connect(_on_quit_game)
+		var connect_result4 = pause_menu.save_game.connect(_on_save_game)        # ← НОВОЕ
+		var connect_result5 = pause_menu.load_game.connect(_on_load_game)        # ← НОВОЕ
 		
-		print("Результаты подключения: ", connect_result1, ", ", connect_result2, ", ", connect_result3)
+		print("Результаты подключения: ", connect_result1, ", ", connect_result2, ", ", 
+			  connect_result3, ", ", connect_result4, ", ", connect_result5)
 	else:
 		push_error("Меню не найдено для подключения сигналов")
 	
@@ -78,15 +81,17 @@ func _on_new_game_pressed():
 		player_stats.available_points = 3
 		print("Новая игра начата")
 
-func _on_load_game_pressed():
-	print("Загрузка игры...")
-	get_tree().paused = false
-	if main_menu:
-		main_menu.hide()
 
-func _on_quit_game_pressed():
-	print("Выход из игры...")
-	get_tree().quit()
+# ← ДОБАВЛЯЕМ НОВЫЕ МЕТОДЫ ДЛЯ СОХРАНЕНИЯ/ЗАГРУЗКИ
+func _on_save_game():
+	print("Сохранение игры из меню паузы...")
+	# Можно добавить дополнительную логику при сохранении
+
+func _on_load_game():
+	print("Загрузка игры из меню паузы...")
+	# Автоперезагрузка сцены после загрузки
+	get_tree().reload_current_scene()
+
 
 # ← ДОБАВЛЯЕМ ЭТУ ФУНКЦИЮ В Game.gd!
 func _on_player_level_up(level: int, available_points: int):

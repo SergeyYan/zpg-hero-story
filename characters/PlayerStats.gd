@@ -77,12 +77,12 @@ func regenerate_health(delta: float):
 			print("Регенерация +", hp_to_add, " HP: ", display_health, "/", get_max_health())
 
 func add_exp(amount: int):
+	# ← ПРОСТО ДОБАВЛЯЕМ ФИКСИРОВАННЫЙ ОПЫТ
 	current_exp += amount
-	exp_gained.emit()  # ← Испускаем сигнал при получении опыта!
-	if current_exp >= exp_to_level:
-		# Запоминаем что нужно прокачаться, но ждем конца боя
-		print("Достигнут новый уровень, но ждем конца боя")
-		# Уровень будет вызван после боя
+	exp_gained.emit()
+	
+	print("Получено опыта: ", amount, " (фиксированно)")
+	
 
 func complete_level_up_after_battle():  # ← НОВАЯ ФУНКЦИЯ
 	if current_exp >= exp_to_level:
@@ -90,20 +90,19 @@ func complete_level_up_after_battle():  # ← НОВАЯ ФУНКЦИЯ
 
 func _level_up():
 	level += 1
-	current_exp -= exp_to_level
-	exp_to_level = int(exp_to_level * 1.5)
+	
+	# ← ОБНОВЛЯЕМ ПОРГ ОПЫТА ДЛЯ СЛЕДУЮЩЕГО УРОВНЯ
+	exp_to_level = get_exp_for_next_level(level)
+	current_exp = 0  # Сбрасываем опыт
 	
 	# Даем 3 очка за уровень
 	available_points += 3
 	
-	# Сохраняем текущее здоровье перед увеличением максимума
-	var health_percentage = float(current_health) / get_max_health()
+	# Восстанавливаем здоровье
+	current_health = get_max_health()
 	
-	# Восстанавливаем здоровье пропорционально
-	current_health = int(get_max_health() * health_percentage)
-	
-	# Сигнал с передачей доступных очков
 	level_up.emit(level, available_points)
+	print("🎉 Уровень ", level, "! Нужно опыта для след. уровня: ", exp_to_level)
 	
 	
 func increase_strength():
@@ -129,3 +128,43 @@ func increase_luck():
 		stats_system.luck += 1
 		available_points -= 1
 		stats_changed.emit()
+
+func get_exp_for_next_level(current_level: int) -> int:
+	# ← ФИКСИРОВАННОЕ КОЛИЧЕСТВО ПОБЕД ДЛЯ КАЖДОГО УРОВНЯ
+	if current_level <= 15:
+		# Уровни 1-15: прогрессия как раньше
+		match current_level:
+			1: return 100    # 5 побед
+			2: return 150    # 7-8 побед
+			3: return 200    # 10 побед
+			4: return 250    # 12-13 побед
+			5: return 300    # 15 победы
+			6: return 350    # 17-18 побед
+			7: return 400    # 20 побед
+			8: return 450   # 22-23 побед
+			9: return 500   # 25 побед
+			10: return 1000  # 50 побед
+			11: return 1200  # 60 побед
+			12: return 1400  # 70 побед
+			13: return 1600  # 80 побед
+			14: return 1800  # 90 побед
+			15: return 2000  # 100 побед
+	elif current_level <= 39:
+		# ← УРОВНИ 16-39: плавный рост до 250 побед
+		# ← УРОВНИ 16-39: точный расчет до 5000
+		if current_level == 39:
+			return 5000  # ← exactly 5000 for 39→40
+		else:
+			var victories_needed = 100 + (current_level - 15) * 6
+			return victories_needed * 20
+	else:
+	# ← УРОВНИ 40+: ФИКСИРОВАННЫЕ 300 ПОБЕД
+	# Для 40+ уровня: 300 побед × 20 exp = 6000 exp
+		return 6000
+	return 6000
+
+
+func get_exp_reward_multiplier(player_level: int) -> float:
+	# ← ФИКСИРОВАННАЯ НАГРАДА: ВСЕГДА 20 exp за победу
+	# Множитель всегда 1.0, так как монстры дают фиксированный опыт
+	return 1.0
