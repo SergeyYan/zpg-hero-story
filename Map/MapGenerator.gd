@@ -50,7 +50,6 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	
-	print("Загрузка текстур карты...")
 	_load_textures()
 	_init_noise()
 	_find_player()
@@ -78,10 +77,8 @@ func _load_textures() -> void:
 		if tex == null:
 			push_warning("Не удалось загрузить текстуру: " + TEXTURES[key])
 			_textures[key] = load("res://assets/map/grass.png")
-			print("   ", key, ": НЕ ЗАГРУЖЕНА (используем заглушку)")
 		else:
 			_textures[key] = tex
-			print("   ", key, ": OK")
 
 
 ## Инициализирует генераторы шума для высот и влажности
@@ -381,8 +378,7 @@ func _generate_biome(center_chunk: Vector2i, width: int, height: int, biome_type
 			_active_biomes[chunk_pos] = true
 
 
-## Упрощенная логика выбора текстуры (fallback)
-## Упрощенная логика выбора текстуры (fallback)
+# Упрощенная логика выбора текстуры (fallback)
 func _fallback_texture(elevation: float, moisture: float) -> Texture2D:
 	if Engine.is_editor_hint():
 		return load("res://assets/map/grass.png")

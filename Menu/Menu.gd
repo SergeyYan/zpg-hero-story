@@ -46,13 +46,14 @@ func _connect_buttons():
 
 func _check_save_file():
 	# Проверяем есть ли файл сохранения
-	var save_path = "user://savegame.save"
+	var save_path = ""
+	var SAVE_DIR: String = "ZPG Hero story"
+	var documents_path = OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
+	save_path = documents_path.path_join(SAVE_DIR).path_join("savegame.save")
 	if FileAccess.file_exists(save_path):
 		load_button.disabled = false
-		print("Сохранение найдено, кнопка загрузки активна")
 	else:
 		load_button.disabled = true
-		print("Сохранение не найдено, кнопка загрузки отключена")
 
 func _input(event):
 	if visible and event is InputEventKey:
@@ -60,18 +61,6 @@ func _input(event):
 			resume_game.emit()
 			hide_menu()
 			get_viewport().set_input_as_handled()
-
-
-func _connect_button(button: Button, callback: Callable):
-	if button:
-		if button.pressed.is_connected(callback):
-			button.pressed.disconnect(callback)
-		var result = button.pressed.connect(callback)
-		if result == OK:
-			print("Успешно подключен: ", button.name)
-		else:
-			print("Ошибка подключения: ", button.name, " код: ", result)
-
 
 
 func show_menu():
@@ -103,7 +92,6 @@ func _on_quit_button_pressed():
 
 
 func _on_save_button_pressed():
-	print("Нажата кнопка 'Сохранить'")
 	if save_system:
 		save_system.save_game()
 		# После сохранения активируем кнопку загрузки
@@ -113,13 +101,15 @@ func _on_save_button_pressed():
 
 
 func _on_load_button_pressed():
-	print("Нажата кнопка 'Загрузить'")
-	if save_system and save_system.load_game():
-		# Успешная загрузка - закрываем меню и продолжаем игру
-		resume_game.emit()
-		hide_menu()
-	else:
-		print("Не удалось загрузить сохранение")
+	if save_system:
+		# Устанавливаем флаг загрузки
+		GameState.is_loading = true
+		
+		if save_system.load_game():
+			# Успешная загрузка - перезагружаем сцену
+			get_tree().reload_current_scene()
+		else:
+			GameState.is_loading = false
 
 
 # Визуальное подтверждение сохранения
@@ -127,7 +117,6 @@ func _show_save_confirmation():
 	# Можно добавить анимацию или текст подтверждения
 	var original_text = save_button.text
 	save_button.text = "Сохранено!"
-	
 	# Через 1 секунду возвращаем оригинальный текст
 	await get_tree().create_timer(1.0).timeout
 	save_button.text = original_text

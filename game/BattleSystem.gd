@@ -59,7 +59,7 @@ func _ready():
 	add_to_group("battle_system")
 	player_stats_instance = get_tree().get_first_node_in_group("player_stats")
 	if not player_stats_instance:
-		push_error("PlayerStats not found! Make sure PlayerStats node is in 'player_stats' group")
+		push_error("PlayerStats not found!")
 	
 	hide()  # ← ДОБАВИТЬ ЭТУ СТРОКУ!
 
@@ -154,7 +154,6 @@ func _on_timer_timeout():
 	
 	# ПРОВЕРКА после атаки
 	if not is_instance_valid(current_enemy) or not current_enemy_stats:
-		print("❌ Враг удален после атаки")
 		end_battle(false)
 		return
 	
@@ -220,6 +219,9 @@ func end_battle(victory: bool):
 	if victory and current_enemy_stats:
 		var exp_gained = current_enemy_stats.exp_reward
 		player_stats_instance.add_exp(exp_gained)
+		# ← ДОБАВЛЯЕМ ПОДСЧЕТ УБИЙСТВ
+		player_stats_instance.add_monster_kill()
+		
 		battle_log.text += "[color=#00ff00]Победа! Получено %d опыта.[/color]\n" % exp_gained
 		
 		if is_instance_valid(current_enemy):
@@ -228,7 +230,6 @@ func end_battle(victory: bool):
 		battle_log.text += "[color=#ff0000]Вы проиграли...[/color]\n"
 	
 	timer.stop()
-	
 	# ← ДОБАВЛЯЕМ ТАЙМЕР ПАУЗЫ ДЛЯ ЧТЕНИЯ
 	await get_tree().create_timer(2.5).timeout
 	

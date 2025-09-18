@@ -27,53 +27,51 @@ func _ready():
 	add_to_group("monster_stats")
 	_generate_random_stats()
 	_stats_initialized = true
-	
+		
+	# ← ОТЛАДОЧНАЯ ИНФОРМАЦИЯ
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
-	if player_stats and player_stats.level > 1:
-		set_monster_level(player_stats.level)
-	else:
-		print("Монстр: ", enemy_name, " Ур.", monster_level, " С:", strength, " К:", fortitude, " В:", endurance, " У:", luck)
-
-func set_monster_level(level: int):
-	if level <= monster_level and _stats_initialized:
-		return
+	if player_stats and player_stats.level > 1 and monster_level == 1:
+		apply_level_scaling(player_stats.level)
 	
-	monster_level = level
+
+func apply_level_scaling(player_level: int):
+	# ← ИСПРАВЛЯЕМ УСЛОВИЕ: масштабируем если уровень ИГРОКА выше ИЛИ характеристики не соответствуют
+	if player_level <= monster_level and _stats_initialized:
+		# ← ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: если характеристики как у 1 уровня - все равно масштабируем
+		var total_stats = strength + fortitude + endurance + luck
+		if total_stats > 3 and _stats_initialized:  # Если характеристики уже правильные
+			return
+		
+	monster_level = player_level
 	_scale_stats_by_level()
-	print("Монстр улучшен до ур.", monster_level, ": С", strength, " К", fortitude, " В", endurance, " У", luck)
+	
 
 func _scale_stats_by_level():
-	# ВОССТАНАВЛИВАЕМ БАЗУ 1 УРОВНЯ
-	strength = _base_strength
-	fortitude = _base_fortitude
-	endurance = _base_endurance
-	luck = _base_luck
+	# ← ВОССТАНАВЛИВАЕМ ИСХОДНУЮ БАЗУ (без случайных очков!)
+	strength = 1  # ← ФИКСИРОВАННАЯ база: 1 сила
+	fortitude = 0  # ← остальные 0
+	endurance = 0
+	luck = 0
 	
 	var target_points: int
 	
 # ← НОВАЯ ФОРМУЛА: умное масштабирование относительно игрока
 	if is_inside_tree():
-		# НОВАЯ ФОРМУЛА: умное масштабирование относительно игрока
 		var player_stats = get_tree().get_first_node_in_group("player_stats")
 		if player_stats:
 			var player_level = player_stats.level
 			var player_points = 4 + (player_level - 1) * 3
 			
-			# Динамическая разница: уменьшается с уровнем
 			var points_difference = clamp(5 - (player_level * 0.25), 1.5, 5.0)
 			target_points = int(player_points - points_difference)
 			target_points = max(3, target_points)
-			
-			print("Игрок Ур.", player_level, ": ", player_points, " очков | Монстр: ", target_points, " очков")
 	else:
-		# ← ЕСЛИ МОНСТР ЕЩЕ НЕ В ДЕРЕВЕ - используем старую формулу
 		target_points = (4 + (monster_level - 1) * 3) - 1
-		print("Монстр еще не в дереве, используем базовые очки: ", target_points)
-	
-	# Добавляем очки до нужного количества
-	var current_points = strength + fortitude + endurance + luck
+	# ← ТЕПЕРЬ добавляем ВСЕ очки (база + дополнительные)
+	var current_points = 1  # ← Только базовая сила
 	var points_to_add = target_points - current_points
-	
+
+
 	if points_to_add > 0:
 		for i in range(points_to_add):
 			var random_stat = randi() % 4
@@ -89,8 +87,8 @@ func _scale_stats_by_level():
 	stats_system.endurance = endurance
 	stats_system.luck = luck
 	
-	#exp_reward = 5 * (strength + fortitude + endurance + luck) + (endurance * 5)
 	current_health = get_max_health()
+
 
 func _generate_random_stats():
 	# Монстр 1 уровня: 3 очка (1 сила + 2 случайных)

@@ -7,15 +7,17 @@ signal level_up(new_level, available_points)  # ← Добавляем available
 signal player_died
 signal exp_gained()
 signal stats_changed()  # ← НОВЫЙ СИГНАЛ при изменении характеристик!
+signal monsters_killed_changed(count: int)  # ← НОВЫЙ СИГНАЛ
 
-
+@export var stats_system: StatsSystem = StatsSystem.new()
 # Заменяем статические значения на систему характеристик
-var stats_system: StatsSystem = StatsSystem.new()
+#var stats_system: StatsSystem = StatsSystem.new()
 var current_health: int
 var current_exp: int = 0
 var exp_to_level: int = 100
 var level: int = 1
 var available_points: int = 0  # ← Очки для распределения
+var monsters_killed: int = 0  # ← НОВАЯ ПЕРЕМЕННАЯ
 
 var accumulated_regen: float = 0.0
 
@@ -74,15 +76,15 @@ func regenerate_health(delta: float):
 			
 			var display_health = int(current_health)
 			health_changed.emit(display_health)
-			print("Регенерация +", hp_to_add, " HP: ", display_health, "/", get_max_health())
 
 func add_exp(amount: int):
 	# ← ПРОСТО ДОБАВЛЯЕМ ФИКСИРОВАННЫЙ ОПЫТ
 	current_exp += amount
 	exp_gained.emit()
-	
-	print("Получено опыта: ", amount, " (фиксированно)")
-	
+
+func add_monster_kill():  # ← НОВАЯ ФУНКЦИЯ
+	monsters_killed += 1
+	monsters_killed_changed.emit(monsters_killed)
 
 func complete_level_up_after_battle():  # ← НОВАЯ ФУНКЦИЯ
 	if current_exp >= exp_to_level:
@@ -90,21 +92,16 @@ func complete_level_up_after_battle():  # ← НОВАЯ ФУНКЦИЯ
 
 func _level_up():
 	level += 1
-	
 	# ← ОБНОВЛЯЕМ ПОРГ ОПЫТА ДЛЯ СЛЕДУЮЩЕГО УРОВНЯ
 	exp_to_level = get_exp_for_next_level(level)
 	current_exp = 0  # Сбрасываем опыт
-	
 	# Даем 3 очка за уровень
 	available_points += 3
-	
 	# Восстанавливаем здоровье
 	current_health = get_max_health()
-	
 	level_up.emit(level, available_points)
-	print("🎉 Уровень ", level, "! Нужно опыта для след. уровня: ", exp_to_level)
-	
-	
+
+
 func increase_strength():
 	if available_points > 0:
 		stats_system.strength += 1
@@ -168,3 +165,20 @@ func get_exp_reward_multiplier(player_level: int) -> float:
 	# ← ФИКСИРОВАННАЯ НАГРАДА: ВСЕГДА 20 exp за победу
 	# Множитель всегда 1.0, так как монстры дают фиксированный опыт
 	return 1.0
+
+func load_from_data(data: Dictionary):
+	level = data.get("level", 1)
+	current_exp = data.get("current_exp", 0)
+	exp_to_level = data.get("exp_to_level", 100)
+	current_health = data.get("current_health", 100)
+	available_points = data.get("available_points", 0)
+	stats_system.strength = data.get("strength", 1)
+	stats_system.fortitude = data.get("fortitude", 1) 
+	stats_system.endurance = data.get("endurance", 1)
+	stats_system.luck = data.get("luck", 1)
+	monsters_killed = data.get("monsters_killed", 0)  # ← ЗАГРУЗКА СЧЕТЧИКА
+	# НЕ вызываем сигнал level_up при загрузке!
+	# level_up.emit(level, available_points)  # ← ЗАКОММЕНТИРУЙ эту строку!
+	
+	health_changed.emit(current_health)  # ← Только здоровье обновляем
+	monsters_killed_changed.emit(monsters_killed)  # ← ОБНОВЛЯЕМ ИНТЕРФЕЙС

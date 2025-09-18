@@ -14,6 +14,10 @@ config/name="ZPG start"
 run/main_scene="uid://3mjqyq4itqfw"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 
+[autoload]
+
+GameState="*res://game/GameState.gd"
+
 [display]
 
 window/size/viewport_width=800
