@@ -11,14 +11,14 @@ config_version=5
 [application]
 
 config/name="ZPG start"
-run/main_scene="uid://b8x80r74q14n0"
+run/main_scene="uid://3mjqyq4itqfw"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 
 [display]
 
 window/size/viewport_width=800
 window/size/viewport_height=600
-window/stretch/scale=1.5
+window/size/resizable=false
 
 [editor_plugins]
 
