@@ -1,4 +1,4 @@
-#MonsterSpawner.gd
+# MonsterSpawner.gd
 extends Node
 
 ## Радиус в чанках вокруг игрока, в котором могут появляться монстры
@@ -36,20 +36,18 @@ func _ready() -> void:
 	_rng.randomize()
 	_find_player()
 	_cleanup_existing_monsters()
+	
 	_update_monsters.call_deferred()
 
 
 ## Удаляет монстров, уже находящихся на сцене при запуске
-## Это нужно чтобы избежать дублирования с системой спавна
 func _cleanup_existing_monsters() -> void:
 	var existing_monsters = get_tree().get_nodes_in_group("monsters")
 	for monster in existing_monsters:
 		monster.queue_free()
-	print("Удалено статических монстров: ", existing_monsters.size())
 
 
 ## Основной процесс обновления системы спавна
-## Вызывается с интервалом UPDATE_INTERVAL
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint() or not _player:
 		return
@@ -64,16 +62,13 @@ func _process(delta: float) -> void:
 
 
 ## Поиск игрока в сцене по группе "player"
-## Если игрок не найден, отключает обработку
 func _find_player() -> void:
 	_player = get_tree().get_first_node_in_group("player")
 	if not _player:
-		push_error("MonsterSpawner: игрок не найден!")
 		set_process(false)
 
 
 ## Основная функция обновления монстров
-## Выполняет деспавн, проверку спавна и обработку очереди
 func _update_monsters() -> void:
 	_despawn_monsters()
 	_spawn_monsters()
@@ -81,7 +76,6 @@ func _update_monsters() -> void:
 
 
 ## Удаляет монстров, которые вышли за радиус деспавна
-## или были уничтожены другими способами
 func _despawn_monsters() -> void:
 	for chunk_key in _monsters.keys().duplicate():
 		var monsters_in_chunk = _monsters[chunk_key]
@@ -101,7 +95,6 @@ func _despawn_monsters() -> void:
 
 
 ## Проверяет подходящие чанки для спавна новых монстров
-## Добавляет подходящие чанки в очередь спавна
 func _spawn_monsters() -> void:
 	var current_count = _count_monsters()
 	if current_count >= randi_range(0, MAX_MONSTERS):
@@ -125,12 +118,9 @@ func _spawn_monsters() -> void:
 
 
 ## Обрабатывает очередь чанков для спавна
-## Создает монстров для каждого чанка в очереди
 func _process_spawn_queue() -> void:
 	if _spawn_queue.is_empty():
 		return
-	
-#	print("Спавним ", _spawn_queue.size(), " монстров. Всего: ", _count_monsters())
 	
 	for chunk in _spawn_queue:
 		_spawn_monster(chunk)
@@ -139,18 +129,18 @@ func _process_spawn_queue() -> void:
 
 
 ## Создает монстра в указанном чанке
-## @param chunk: Чанк карты (Vector2i), где нужно создать монстра
 func _spawn_monster(chunk: Vector2i) -> void:
-	var monster = load(MONSTER_SCENE).instantiate()
+	var monster_scene = load(MONSTER_SCENE)
+	var monster = monster_scene.instantiate()
 	
-	# Используем сохраненный player_level вместо поиска игрока каждый раз
+	# ← ТОЛЬКО ОДИН РАЗ устанавливаем уровень!
 	var monster_stats = monster.get_node("MonsterStats")
-	if monster_stats and monster_stats.has_method("set_monster_level"):
-		monster_stats.set_monster_level(player_level)
-		print("Новый монстр создан с уровнем: ", player_level)
+	if monster_stats and monster_stats.has_method("apply_level_scaling"):  # ← Используем apply_level_scaling
+		monster_stats.apply_level_scaling(player_level)
+
 	
 	# УВЕЛИЧИВАЕМ радиус спавна чтобы монстры не появлялись внутри игрока
-	var spawn_radius = (DESPAWN_RADIUS - 5) * TILE_SIZE  # ← Увеличиваем отступ
+	var spawn_radius = (DESPAWN_RADIUS - 5) * TILE_SIZE
 	var angle = _rng.randf_range(0, TAU)
 	var pos = _player.global_position + Vector2.from_angle(angle) * spawn_radius
 	
@@ -166,22 +156,16 @@ func _spawn_monster(chunk: Vector2i) -> void:
 
 
 ## Добавляет созданного монстра на сцену и регистрирует его
-## @param monster: Созданный инстанс монстра
-## @param chunk: Чанк, к которому привязан монстр
 func _add_monster_to_scene(monster: Node, chunk: Vector2i) -> void:
 	get_parent().add_child(monster)
-	
+	# ← ОТЛАДОЧНАЯ ИНФОРМАЦИЯ
+		
 	if not _monsters.has(chunk):
 		_monsters[chunk] = []
 	_monsters[chunk].append(monster)
 
-	var player_stats = get_tree().get_first_node_in_group("player_stats")
-	if player_stats and player_stats.level > 1:
-		var monster_stats = monster.get_node("MonsterStats")
-		monster_stats.set_monster_level(player_stats.level)
 
 ## Возвращает общее количество активных монстров
-## @return: Количество монстров (int)
 func _count_monsters() -> int:
 	var total = 0
 	for monsters_in_chunk in _monsters.values():
@@ -190,7 +174,23 @@ func _count_monsters() -> int:
 
 
 ## Конвертирует мировые координаты в координаты чанка
-## @param pos: Мировые координаты (Vector2)
-## @return: Координаты чанка (Vector2i)
 func _world_to_chunk(pos: Vector2) -> Vector2i:
 	return Vector2i(pos / TILE_SIZE)
+
+
+## ← НОВЫЙ МЕТОД: обновление уровня спавнера
+func update_player_level(new_level: int):
+	if new_level > player_level:
+		player_level = new_level
+
+
+func set_player_level_after_load(level: int):
+	player_level = level
+	
+	# ← ПЕРЕМАСШТАБИРУЕМ уже созданных монстров
+	for chunk in _monsters:
+		for monster in _monsters[chunk]:
+			if is_instance_valid(monster) and monster.has_node("MonsterStats"):
+				var stats = monster.get_node("MonsterStats")
+				if stats.has_method("apply_level_scaling"):
+					stats.apply_level_scaling(player_level)

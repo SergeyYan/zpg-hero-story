@@ -3,7 +3,23 @@
 extends Node
 class_name SaveSystem
 
-const SAVE_PATH := "user://savegame.save"
+var SAVE_PATH: String = ""
+var SAVE_DIR: String = "ZPG Hero story"
+
+func _init():
+	# Определяем путь к папке документов пользователя
+	var documents_path = OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
+	SAVE_PATH = documents_path.path_join(SAVE_DIR).path_join("savegame.save")
+	
+	# Создаем папку если она не существует
+	_create_save_directory()
+
+func _create_save_directory():
+	var dir = DirAccess.open(OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS))
+	if dir:
+		if !dir.dir_exists(SAVE_DIR):
+			var error = dir.make_dir(SAVE_DIR)
+			
 
 func save_game():
 	var save_data = {
@@ -13,18 +29,18 @@ func save_game():
 		"version": "1.0"
 	}
 	
+	# Создаем папку на всякий случай (если вдруг удалили)
+	_create_save_directory()
+	
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		var json = JSON.stringify(save_data)
 		file.store_string(json)
 		file.close()
-		print("Игра сохранена!")
-	else:
-		push_error("Ошибка сохранения игры!")
+
 
 func load_game():
 	if not FileAccess.file_exists(SAVE_PATH):
-		print("Сохранение не найдено")
 		return false
 	
 	var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
@@ -37,7 +53,6 @@ func load_game():
 		if error == OK:
 			var save_data = json_object.data
 			_apply_save_data(save_data)
-			print("Игра загружена!")
 			return true
 		else:
 			push_error("Ошибка парсинга сохранения")
@@ -55,7 +70,8 @@ func _get_player_stats_data() -> Dictionary:
 			"strength": player_stats.stats_system.strength,
 			"fortitude": player_stats.stats_system.fortitude,
 			"endurance": player_stats.stats_system.endurance,
-			"luck": player_stats.stats_system.luck
+			"luck": player_stats.stats_system.luck,
+			"monsters_killed": player_stats.monsters_killed  # ← НОВОЕ ПОЛЕ
 		}
 	return {}
 
@@ -82,7 +98,10 @@ func _apply_save_data(save_data: Dictionary):
 		player_stats.stats_system.fortitude = stats.get("fortitude", 1)
 		player_stats.stats_system.endurance = stats.get("endurance", 1)
 		player_stats.stats_system.luck = stats.get("luck", 1)
-	
+		player_stats.monsters_killed = stats.get("monsters_killed", 0)
+		# Только обновляем здоровье, НЕ вызываем level_up
+		player_stats.health_changed.emit(player_stats.current_health)
+		
 	# Загружаем позицию игрока
 	var player = get_tree().get_first_node_in_group("player")
 	if player and save_data.has("player_position"):
@@ -91,8 +110,7 @@ func _apply_save_data(save_data: Dictionary):
 
 func clear_save():
 	if FileAccess.file_exists(SAVE_PATH):
-		var dir = DirAccess.open("user://")
-		dir.remove(SAVE_PATH)
-		print("Сохранение очищено")
-	else:
-		print("Файл сохранения не существует")
+		var dir = DirAccess.open(OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS).path_join(SAVE_DIR))
+		if dir:
+			var error = dir.remove("savegame.save")
+			

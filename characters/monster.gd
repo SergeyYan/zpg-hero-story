@@ -30,18 +30,26 @@ func _ready() -> void:
 	
 	# ПРОВЕРКА MonsterStats
 	if not monster_stats:
-		# Пытаемся найти в дочерних нодах
 		monster_stats = get_node_or_null("MonsterStats")
 		if not monster_stats:
 			push_error("MonsterStats not found as child node!")
 			set_physics_process(false)
 			return
 	
-#	print("MonsterStats загружен: ", monster_stats.enemy_name)
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.level > 1:
+		# Если уровень монстра не соответствует уровню игрока
+		if monster_stats.monster_level != player_stats.level:
+			apply_level_scaling(player_stats.level)
+		# Или если уровень правильный но характеристики нет
+		else:
+			var total_stats = monster_stats.strength + monster_stats.fortitude + monster_stats.endurance + monster_stats.luck
+			if total_stats <= 3:  # Характеристики как у 1 уровня
+				apply_level_scaling(player_stats.level)
 	
 	player = get_tree().get_first_node_in_group(PLAYER_GROUP)
 	if not is_instance_valid(player):
-		push_warning("Игрок не найден! Добавьте его в группу '%s'." % PLAYER_GROUP)
+		push_warning("Игрок не найден!")
 
 func _physics_process(delta: float) -> void:
 	# ПРОВЕРКА: если нет статистики - не обрабатываем
@@ -178,10 +186,8 @@ func apply_level_scaling(player_level: int):
 	if not monster_stats:
 		return
 	
-	# ПРОСТО УСТАНАВЛИВАЕМ УРОВЕНЬ - MonsterStats сам все пересчитает
-	monster_stats.set_monster_level(player_level)
-	
-	print("Монстр Ур.", player_level, ": С", monster_stats.strength, 
-		  " К", monster_stats.fortitude, " В", monster_stats.endurance, " У", monster_stats.luck,
-		  " HP: ", monster_stats.current_health, "/", monster_stats.get_max_health(),
-		  " EXP: ", monster_stats.exp_reward)
+	# ← ДОЛЖЕН БЫТЬ apply_level_scaling!
+	if monster_stats.has_method("apply_level_scaling"):
+		monster_stats.apply_level_scaling(player_level)
+	else:
+		push_error("MonsterStats не имеет метода apply_level_scaling!")

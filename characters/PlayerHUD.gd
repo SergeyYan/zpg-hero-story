@@ -12,6 +12,7 @@ extends CanvasLayer
 @onready var endurance_label: Label = $StatsContainer/EnduranceLabel
 @onready var luck_label: Label = $StatsContainer/LuckLabel
 @onready var regen_label: Label = $StatsContainer/RegenLabel
+@onready var kills_label: Label = $KillBox/KillsLabel  # ← НОВЫЙ ЛЕЙБЛ
 
 var player_stats_instance: PlayerStats
 
@@ -27,12 +28,15 @@ func _ready():
 	player_stats_instance.level_up.connect(update_level)
 	player_stats_instance.exp_gained.connect(_on_exp_gained)
 	player_stats_instance.stats_changed.connect(update_stats_display)  # ← НОВОЕ ПОДКЛЮЧЕНИЕ!
+	player_stats_instance.monsters_killed_changed.connect(update_kills_display)  # ← НОВЫЙ СИГНАЛ
 	
 	# Инициализируем бары
 	health_bar.max_value = player_stats_instance.get_max_health()
 	exp_bar.max_value = player_stats_instance.exp_to_level
 	
 	update_display()
+	update_kills_display(player_stats_instance.monsters_killed)  # ← ИНИЦИАЛИЗИРУЕМ СЧЕТЧИК
+
 
 func update_health(health: int):
 	# ОБНОВЛЯЕМ максимальное значение здоровья при изменении
@@ -71,6 +75,10 @@ func update_stats_display():
 		luck_label.text = "Удача: %d" % player_stats_instance.stats_system.luck
 	if regen_label:
 		regen_label.text = "Восстановление: %.1f/s" % player_stats_instance.get_health_regen()
+
+func update_kills_display(kills: int):
+	if kills_label:
+		kills_label.text = "Убито монстров: %d" % kills
 
 func update_display():
 	update_health(player_stats_instance.current_health)

@@ -24,9 +24,9 @@ collision_mask = 14
 collision_layer = 2
 collision_mask = 15
 
-[node name="MonsterSpawner" parent="." instance=ExtResource("2_4fuuu")]
+[node name="MonsterSpawner" parent="." groups=["monster_spawner"] instance=ExtResource("2_4fuuu")]
 
-[node name="MapGenerator" parent="." instance=ExtResource("1_h7iqs")]
+[node name="MapGenerator" parent="." groups=["map_generator"] instance=ExtResource("1_h7iqs")]
 debug_draw_heightmap = true
 
 [node name="Menu" parent="." instance=ExtResource("6_u5opy")]
