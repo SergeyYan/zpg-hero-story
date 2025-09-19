@@ -17,6 +17,7 @@ config/features=PackedStringArray("4.4", "GL Compatibility")
 [autoload]
 
 GameState="*res://game/GameState.gd"
+AchievementManager="*res://game/AchievementManager.gd.gd"
 
 [display]
 

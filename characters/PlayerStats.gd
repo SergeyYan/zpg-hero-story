@@ -85,10 +85,15 @@ func add_exp(amount: int):
 func add_monster_kill():  # ← НОВАЯ ФУНКЦИЯ
 	monsters_killed += 1
 	monsters_killed_changed.emit(monsters_killed)
+	# ← ПРОВЕРКА ДОСТИЖЕНИЙ
+	var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
+	if achievement_manager:
+		achievement_manager.check_kill_achievements(monsters_killed)
 
 func complete_level_up_after_battle():  # ← НОВАЯ ФУНКЦИЯ
 	if current_exp >= exp_to_level:
 		_level_up()
+
 
 func _level_up():
 	level += 1
@@ -100,6 +105,10 @@ func _level_up():
 	# Восстанавливаем здоровье
 	current_health = get_max_health()
 	level_up.emit(level, available_points)
+	# ← ПРОВЕРКА ДОСТИЖЕНИЙ УРОВНЯ
+	var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
+	if achievement_manager:
+		achievement_manager.check_level_achievements(level)
 
 
 func increase_strength():
@@ -107,24 +116,41 @@ func increase_strength():
 		stats_system.strength += 1
 		available_points -= 1
 		stats_changed.emit()
+		# ← ПРОВЕРКА ДОСТИЖЕНИЙ ХАРАКТЕРИСТИК
+		var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
+		if achievement_manager:
+			achievement_manager.check_stats_achievements(stats_system)
 
 func increase_fortitude():
 	if available_points > 0:
 		stats_system.fortitude += 1  
 		available_points -= 1
 		stats_changed.emit()
+		# ← ПРОВЕРКА ДОСТИЖЕНИЙ ХАРАКТЕРИСТИК
+		var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
+		if achievement_manager:
+			achievement_manager.check_stats_achievements(stats_system)
 
 func increase_endurance():
 	if available_points > 0:
 		stats_system.endurance += 1
 		available_points -= 1
 		stats_changed.emit()
+		# ← ПРОВЕРКА ДОСТИЖЕНИЙ ХАРАКТЕРИСТИК
+		var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
+		if achievement_manager:
+			achievement_manager.check_stats_achievements(stats_system)
 
 func increase_luck():
 	if available_points > 0:
 		stats_system.luck += 1
 		available_points -= 1
 		stats_changed.emit()
+		# ← ПРОВЕРКА ДОСТИЖЕНИЙ ХАРАКТЕРИСТИК
+		var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
+		if achievement_manager:
+			achievement_manager.check_stats_achievements(stats_system)
+
 
 func get_exp_for_next_level(current_level: int) -> int:
 	# ← ФИКСИРОВАННОЕ КОЛИЧЕСТВО ПОБЕД ДЛЯ КАЖДОГО УРОВНЯ

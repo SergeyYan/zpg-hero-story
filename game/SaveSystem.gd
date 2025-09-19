@@ -25,10 +25,10 @@ func save_game():
 	var save_data = {
 		"player_stats": _get_player_stats_data(),
 		"player_position": _get_player_position(),
+		"achievements": _get_achievements_data(),
 		"game_time": Time.get_ticks_msec(),
 		"version": "1.0"
 	}
-	
 	# Создаем папку на всякий случай (если вдруг удалили)
 	_create_save_directory()
 	
@@ -75,6 +75,15 @@ func _get_player_stats_data() -> Dictionary:
 		}
 	return {}
 
+func _get_achievements_data() -> Dictionary:
+	var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
+	if achievement_manager:
+		var achievements_data = {}
+		for achievement_id in achievement_manager.achievements:
+			achievements_data[achievement_id] = achievement_manager.achievements[achievement_id].unlocked
+		return achievements_data
+	return {}
+
 func _get_player_position() -> Dictionary:
 	var player = get_tree().get_first_node_in_group("player")
 	if player:
@@ -102,11 +111,24 @@ func _apply_save_data(save_data: Dictionary):
 		# Только обновляем здоровье, НЕ вызываем level_up
 		player_stats.health_changed.emit(player_stats.current_health)
 		
+	# Загружаем достижения
+	if save_data.has("achievements"):
+		_apply_achievements_data(save_data["achievements"])
+		
 	# Загружаем позицию игрока
 	var player = get_tree().get_first_node_in_group("player")
 	if player and save_data.has("player_position"):
 		var pos = save_data["player_position"]
 		player.global_position = Vector2(pos.get("x", 0), pos.get("y", 0))
+
+func _apply_achievements_data(achievements_data: Dictionary):
+	var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
+	if achievement_manager:
+		for achievement_id in achievements_data:
+			if achievement_id in achievement_manager.achievements:
+				achievement_manager.achievements[achievement_id].unlocked = achievements_data[achievement_id]
+		print("Достижения загружены")
+
 
 func clear_save():
 	if FileAccess.file_exists(SAVE_PATH):
