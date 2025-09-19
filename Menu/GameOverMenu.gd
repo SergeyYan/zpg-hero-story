@@ -64,19 +64,19 @@ func _connect_to_player_stats():
 
 
 func show_game_over():
+	# ← РАЗБЛОКИРОВКА ДОСТИЖЕНИЯ ПРИ СМЕРТИ
+	var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
+	if achievement_manager:
+		achievement_manager.unlock_achievement("first_death")
 	# УБИРАЕМ ВСЮ ПАУЗУ - она мешает работе кнопок!
 	get_tree().paused = false  
-	
 	show()
-	
 	# ВКЛЮЧАЕМ обработку ввода UI
 	set_process_input(true)
 	set_process_unhandled_input(true)
-	
 	# Фокусируемся на кнопке рестарта
 	if restart_button:
 		restart_button.grab_focus()
-
 	# Останавливаем только игровые процессы, но не UI
 	_stop_game_processes()
 
