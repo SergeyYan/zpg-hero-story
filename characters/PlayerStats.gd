@@ -8,6 +8,7 @@ signal player_died
 signal exp_gained()
 signal stats_changed()  # ← НОВЫЙ СИГНАЛ при изменении характеристик!
 signal monsters_killed_changed(count: int)  # ← НОВЫЙ СИГНАЛ
+signal statuses_changed()  # ← Новый сигнал
 
 @export var stats_system: StatsSystem = StatsSystem.new()
 # Заменяем статические значения на систему характеристик
@@ -18,8 +19,11 @@ var exp_to_level: int = 100
 var level: int = 1
 var available_points: int = 0  # ← Очки для распределения
 var monsters_killed: int = 0  # ← НОВАЯ ПЕРЕМЕННАЯ
-
+var active_statuses: Array[StatusEffect] = []
+var max_concurrent_statuses: int = 3
 var accumulated_regen: float = 0.0
+
+var status_library: Dictionary = {}
 
 # Геттеры для удобства
 func get_max_health() -> int: return stats_system.get_max_health()
@@ -32,6 +36,9 @@ func get_level() -> int: return level
 func _ready():
 	add_to_group("player_stats")
 	
+	# Сначала инициализируем статусы
+	_init_status_library()
+	
 	# Начальные характеристики
 	stats_system.strength = 1
 	stats_system.fortitude = 0
@@ -41,13 +48,206 @@ func _ready():
 	
 	current_health = get_max_health()
 	
+	# Таймер для обновления статусов
+	_create_status_timer()
+	
+	
 	# Начинаем с 1 уровня и даем очки для распределения
 	level = 1
 	available_points = 3  # ← Очки для распределения при старте
-	
+		
 	# Немедленно показываем меню распределения
 	await get_tree().process_frame
 	level_up.emit(level, available_points)  # ← Сигнал при старте
+
+
+func _init_status_library():
+	# ПОЛОЖИТЕЛЬНЫЕ СТАТУСЫ (голубой/золотой)
+	status_library["well_fed"] = StatusEffect.new(
+		"well_fed", "Хорошо покушал", "+2 ко всем характеристикам",  
+		StatusEffect.StatusType.POSITIVE, randf_range(300, 720)  # 5-10 минут
+	)
+	status_library["well_fed"].strength_modifier = 2
+	status_library["well_fed"].fortitude_modifier = 2
+	status_library["well_fed"].endurance_modifier = 2
+	status_library["well_fed"].luck_modifier = 2
+	
+	status_library["good_shoes"] = StatusEffect.new(
+		"good_shoes", "Удобная обувь", "+15% скорости передвижения", 
+		StatusEffect.StatusType.POSITIVE, randf_range(300, 600)
+	)
+	status_library["good_shoes"].speed_modifier = 1.15
+	
+	status_library["inspired"] = StatusEffect.new(
+		"inspired", "Вдохновение", "+3 к удаче, +50% регенерации", 
+		StatusEffect.StatusType.POSITIVE, randf_range(240, 720)  # 4-8 минут
+	)
+	status_library["inspired"].luck_modifier = 3
+	status_library["inspired"].health_regen_modifier = 0.5
+	
+	status_library["adrenaline"] = StatusEffect.new(
+		"adrenaline", "Выброс адреналина", "+25% скорости, +3 к силе", 
+		StatusEffect.StatusType.POSITIVE, randf_range(180, 540)  # 3-5 минут
+	)
+	status_library["adrenaline"].speed_modifier = 1.25
+	status_library["adrenaline"].strength_modifier = 3
+	
+	status_library["lucky_day"] = StatusEffect.new(
+		"lucky_day", "Счастливый день", "Удвоенный шанс крита", 
+		StatusEffect.StatusType.POSITIVE, randf_range(300, 900)  # 10-15 минут
+	)
+	# Особый статус - обрабатывается отдельно
+	
+	# НЕГАТИВНЫЕ СТАТУСЫ (красный)
+	status_library["sore_knees"] = StatusEffect.new(
+		"sore_knees", "Боль в коленях", "-15% скорости передвижения", 
+		StatusEffect.StatusType.NEGATIVE, randf_range(180, 600)
+	)
+	status_library["sore_knees"].speed_modifier = 0.85
+	
+	status_library["crying"] = StatusEffect.new(
+		"crying", "Плакал", "-1 ко всем характеристикам", 
+		StatusEffect.StatusType.NEGATIVE, randf_range(180, 360)  # 3-6 минут
+	)
+	status_library["crying"].strength_modifier = -1
+	status_library["crying"].fortitude_modifier = -1
+	status_library["crying"].endurance_modifier = -1
+	status_library["crying"].luck_modifier = -1
+	
+	status_library["exhausted"] = StatusEffect.new(
+		"exhausted", "Истощение", "-10% регенерации, -25% скорости", 
+		StatusEffect.StatusType.NEGATIVE, randf_range(180, 540)  # 7-12 минут
+	)
+	status_library["exhausted"].speed_modifier = 0.75
+	status_library["exhausted"].health_regen_modifier = -0.1
+	
+	status_library["bad_luck"] = StatusEffect.new(
+		"bad_luck", "Неудачный день", "-5 к удаче", 
+		StatusEffect.StatusType.NEGATIVE, randf_range(120, 660)  # 2-7 минут
+	)
+	status_library["bad_luck"].luck_modifier = -5
+	
+	status_library["minor_injury"] = StatusEffect.new(
+		"minor_injury", "Легкое ранение", "-1 к выносливости и крепости", 
+		StatusEffect.StatusType.NEGATIVE, randf_range(240, 480)  # 4-8 минут
+	)
+	status_library["minor_injury"].endurance_modifier = -1
+	status_library["minor_injury"].fortitude_modifier = -1
+
+func _create_status_timer():
+	var timer = Timer.new()
+	timer.wait_time = 1.0
+	timer.timeout.connect(_update_statuses)
+	add_child(timer)
+	timer.start()
+
+func _update_statuses():
+	var statuses_to_remove = []
+	
+	for status in active_statuses:
+		status.duration -= 1.0
+		if status.duration <= 0:
+			statuses_to_remove.append(status)
+	
+	for status in statuses_to_remove:
+		active_statuses.erase(status)
+		print("Статус ", status.name, " закончился")
+	
+	if statuses_to_remove.size() > 0:
+		statuses_changed.emit()
+		stats_changed.emit()  # Обновляем характеристики
+
+func add_status(status_id: String):
+	# ПРОВЕРКА НА ДУБЛИКАТЫ
+	for existing_status in active_statuses:
+		if existing_status.id == status_id:
+			return
+			
+	# ← ИСПРАВЛЕНИЕ: ПРОВЕРЯЕМ ЕСТЬ ЛИ СВОБОДНЫЕ СЛОТЫ
+	if active_statuses.size() >= max_concurrent_statuses:
+		print("Все слоты статусов заняты. Нельзя добавить: ", status_id)
+		return  # ← ВЫХОДИМ, НЕ ДОБАВЛЯЕМ НОВЫЙ СТАТУС
+	
+	if status_library.has(status_id):
+		var template = status_library[status_id]
+		var new_status = StatusEffect.new(
+			template.id, template.name, template.description,
+			template.type, randf_range(60, 600)
+		)
+		
+		# КОПИРУЕМ МОДИФИКАТОРЫ из шаблона
+		new_status.speed_modifier = template.speed_modifier
+		new_status.strength_modifier = template.strength_modifier
+		new_status.fortitude_modifier = template.fortitude_modifier
+		new_status.endurance_modifier = template.endurance_modifier
+		new_status.luck_modifier = template.luck_modifier
+		new_status.health_regen_modifier = template.health_regen_modifier
+		
+		active_statuses.append(new_status)
+		statuses_changed.emit()
+		stats_changed.emit()
+
+
+func remove_status(status_id: String):
+	for i in range(active_statuses.size() - 1, -1, -1):
+		if active_statuses[i].id == status_id:
+			active_statuses.remove_at(i)
+			statuses_changed.emit()
+			stats_changed.emit()
+			break
+
+func get_effective_stats() -> Dictionary:
+	var effective = {
+		"speed": 1.0,
+		"strength": stats_system.strength,
+		"fortitude": stats_system.fortitude, 
+		"endurance": stats_system.endurance,
+		"luck": stats_system.luck,
+		"health_regen": stats_system.get_health_regen()
+	}
+	
+	for status in active_statuses:
+		effective.speed *= status.speed_modifier
+		effective.strength += status.strength_modifier
+		effective.fortitude += status.fortitude_modifier
+		effective.endurance += status.endurance_modifier
+		effective.luck += status.luck_modifier
+		effective.health_regen += status.health_regen_modifier
+	
+	return effective
+
+func get_crit_chance_with_modifiers() -> float:
+	var base_chance = stats_system.get_crit_chance()
+	for status in active_statuses:
+		if status.id == "lucky_day":
+			base_chance *= 2.0
+	return base_chance
+
+
+# Методы для получения статусов в разных ситуациях
+func apply_post_battle_effects():
+	if randf() < 0.3:  # 30% шанс получить негативный статус после боя
+		var negative_statuses = ["sore_knees", "minor_injury", "exhausted"]
+		add_status(negative_statuses[randi() % negative_statuses.size()])
+	
+	if randf() < 0.4:  # 40% шанс получить позитивный статус
+		var positive_statuses = ["well_fed", "adrenaline", "inspired"] 
+		add_status(positive_statuses[randi() % positive_statuses.size()])
+
+
+func apply_movement_effects():
+	if randf() < 0.2:  # 10% шанс при движении
+		if randf() < 0.6:  # 60% из них - положительные
+			var positive_statuses = ["good_shoes", "adrenaline"]
+			add_status(positive_statuses[randi() % positive_statuses.size()])
+		else:
+			add_status("sore_knees")
+
+func apply_level_up_effects():
+	# При получении уровня всегда даем позитивный статус
+	var positive_statuses = ["well_fed", "inspired", "lucky_day"]
+	add_status(positive_statuses[randi() % positive_statuses.size()])
+
 
 func take_damage(amount: int):
 	var actual_damage = max(1, amount)
@@ -106,6 +306,7 @@ func _level_up():
 	current_health = get_max_health()
 	level_up.emit(level, available_points)
 	# ← ПРОВЕРКА ДОСТИЖЕНИЙ УРОВНЯ
+	apply_level_up_effects()
 	var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
 	if achievement_manager:
 		achievement_manager.check_level_achievements(level)
@@ -208,3 +409,4 @@ func load_from_data(data: Dictionary):
 	
 	health_changed.emit(current_health)  # ← Только здоровье обновляем
 	monsters_killed_changed.emit(monsters_killed)  # ← ОБНОВЛЯЕМ ИНТЕРФЕЙС
+	stats_changed.emit()  # ← Добавьте это для обновления характеристик
