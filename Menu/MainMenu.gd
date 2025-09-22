@@ -36,6 +36,7 @@ func _check_save_file():
 
 func _on_new_game_pressed():
 	GameState.is_loading = false
+	get_tree().call_group("new_game_listener", "reset_all_achievements")
 	get_tree().change_scene_to_file("res://game/game.tscn")
 	hide()
 

@@ -90,13 +90,15 @@ func update_stats():
 	if not is_instance_valid(current_enemy) or not current_enemy_stats:
 		end_battle(false)
 		return
+		
+	var effective_stats = player_stats_instance.get_effective_stats()
 	
 	_update_stat_display(player_stats_container, "Игрок", 
 		player_stats_instance.current_health, player_stats_instance.get_max_health(),
-		player_stats_instance.stats_system.strength,      # ← Реальная сила
-		player_stats_instance.stats_system.fortitude,     # ← Реальная крепость
-		player_stats_instance.stats_system.endurance,      # ← Реальная выносливость
-		player_stats_instance.stats_system.luck           # ← ДОБАВЛЯЕМ УДАЧУ
+		effective_stats["strength"],      # ← Эффективная сила
+		effective_stats["fortitude"],     # ← Эффективная крепость
+		effective_stats["endurance"],     # ← Эффективная выносливость
+		effective_stats["luck"]           # ← Эффективная удача
 	)
 	
 	# ПЕРЕДАЕМ РЕАЛЬНЫЕ ХАРАКТЕРИСТИКИ монстра
@@ -175,10 +177,13 @@ func player_attack():
 		return
 	
 	# РАСЧЕТ УРОНА
-	var base_damage = player_stats_instance.get_damage()
+	var effective_stats = player_stats_instance.get_effective_stats()
+	var base_damage = player_stats_instance.get_damage()  # Эта функция ДОЛЖНА учитывать effective_stats
 	var enemy_defense = current_enemy_stats.get_defense()
 	var actual_damage = max(1, base_damage - enemy_defense)
-	var crit_chance = player_stats_instance.stats_system.get_crit_chance()
+	var crit_chance = player_stats_instance.get_crit_chance_with_modifiers()
+	
+	
 	
 	if randf() < crit_chance:
 		var critical_damage = int((base_damage * PLAYER_CRITICAL_MULTIPLIER) - enemy_defense)
@@ -219,6 +224,8 @@ func end_battle(victory: bool):
 	if victory and current_enemy_stats:
 		var exp_gained = current_enemy_stats.exp_reward
 		player_stats_instance.add_exp(exp_gained)
+		# ПЕРЕМЕЩАЕМ вызов статусов ВНУТРЬ условия victory
+		player_stats_instance.apply_post_battle_effects()
 		# ← ДОБАВЛЯЕМ ПОДСЧЕТ УБИЙСТВ
 		player_stats_instance.add_monster_kill()
 		

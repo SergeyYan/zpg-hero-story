@@ -28,7 +28,7 @@ func _ready():
 	
 	# Проверяем наличие сохранений
 	_check_save_file()
-
+	
 func _connect_buttons():
 	# Сначала отключаем все сигналы
 	continue_button.pressed.disconnect(_on_continue_button_pressed)
@@ -84,6 +84,7 @@ func _on_continue_button_pressed():
 	hide_menu()
 
 func _on_restart_button_pressed():
+	get_tree().call_group("new_game_listener", "reset_all_achievements")
 	restart_game.emit()
 	hide_menu()
 

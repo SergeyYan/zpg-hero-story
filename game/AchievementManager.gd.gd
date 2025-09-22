@@ -58,6 +58,62 @@ var achievements: Dictionary = {
 
 func _ready():
 	add_to_group("achievement_manager")
+	# Подписываемся на сигнал новой игры
+	connect_to_new_game_signal()
+
+
+# Функция для подключения к сигналу новой игры
+func connect_to_new_game_signal():
+	# Ждем пока дерево сцены будет готово
+	await get_tree().process_frame
+	
+	# Ищем кнопку "Новая игра" или меню, которое отвечает за новую игру
+	var new_game_button = find_new_game_button()
+	if new_game_button:
+		new_game_button.connect("pressed", reset_all_achievements)
+		print("Подключились к кнопке Новая игра")
+	else:
+		print("Кнопка Новая игра не найдена, используем группу")
+		# Альтернативный способ: используем группу
+		add_to_group("new_game_listener")
+
+# Функция для поиска кнопки Новая игра
+func find_new_game_button() -> Button:
+	# Попробуем найти кнопку по разным путям
+	var possible_paths = [
+		"MainMenu/NewGameButton",
+		"GameOverMenu/RestartButton", 
+		"Menu/RestartButton"
+	]
+	
+	for path in possible_paths:
+		var node = get_tree().current_scene.get_node_or_null(path)
+		if node and node is Button:
+			return node
+	
+	# Ищем по группе
+	var buttons = get_tree().get_nodes_in_group("new_game_button")
+	if buttons.size() > 0:
+		return buttons[0]
+	
+	return null
+
+# Основная функция сброса всех достижений
+func reset_all_achievements():
+	print("Сбрасываем все достижения...")
+	
+	for achievement_id in achievements:
+		achievements[achievement_id]["unlocked"] = false
+	
+	print("Все достижения сброшены!")
+	
+	# Можно также добавить визуальное подтверждение
+	show_reset_notification()
+
+# Функция для показа уведомления о сбросе (опционально)
+func show_reset_notification():
+	print("Достижения сброшены для новой игры!")
+
 
 
 func unlock_achievement(achievement_id: String):

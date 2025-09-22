@@ -9,7 +9,7 @@ var _is_in_water: bool = false  # ← НОВАЯ ПЕРЕМЕННАЯ: нахо�
 var _drying_timer: float = 0.0  # ← Таймер высыхания
 var _drying_delay: float = 0.5  # ← Время до высыхания после выхода (0.5 секунды)
 var _water_tile_count: int = 0  # ← СЧЕТЧИК водных тайлов
-
+var _cached_speed_multiplier: float = 1.0
 var target_distance: float = 0.0
 var moved_distance: float = 0.0
 var move_direction: Vector2 = Vector2.ZERO
@@ -99,16 +99,14 @@ func _play_animation(anim_name: String) -> void:
 			anim_sprite.stop()
 
 func _physics_process(delta: float) -> void:
-	# ЛОГИКА ВЫСЫХАНИЯ (5 секунд)
 	# ЛОГИКА ВЫСЫХАНИЯ
 	if _water_tile_count <= 0 and _drying_timer >= 0:
-		_drying_timer += delta
-		#print("Таймер высыхания: ", _drying_timer, "/", _drying_delay, " (замедление: ", _water_slowdown, ")")
-		
+		_drying_timer += delta		
 		if _drying_timer >= _drying_delay:
 			_water_slowdown = 1.0
-			_drying_timer = -0.5
-			#print("Игрок полностью высох")
+			_drying_timer = -0.2
+	
+	_update_speed_from_statuses()
 	
 	# ОТДЕЛЬНО управляем цветом
 	if _water_slowdown < 1.0:
@@ -121,7 +119,8 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector2.ZERO
 		return
 	
-	var current_speed = speed * _water_slowdown  # Учитываем замедление воды
+	
+	var current_speed = speed * _water_slowdown * _cached_speed_multiplier
 		
 	
 	if is_paused:
@@ -143,8 +142,15 @@ func _physics_process(delta: float) -> void:
 	if moved_distance >= target_distance:
 		_start_pause()
 	
+	# Добавить получение player_stats перед использованием:
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if velocity.length() > 0 and randf() < 0.001:
+		if player_stats:
+			player_stats.apply_movement_effects()
+	
 	
 func _process(delta: float) -> void:
+	_update_speed_from_statuses()
 	# Регенерация здоровья вне боя - работает ВСЕГДА!
 	# Убираем проверку на is_paused - она только для движения!
 	if not is_in_battle():  # ← Только проверка на бой!
@@ -153,6 +159,11 @@ func _process(delta: float) -> void:
 #			print("Регенерация активна (стояние)")
 			player_stats.regenerate_health(delta)
 
+func _update_speed_from_statuses():
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats:
+		var effective_stats = player_stats.get_effective_stats()
+		_cached_speed_multiplier = effective_stats["speed"]
 
 func is_in_battle() -> bool:
 	# Проверяем, находится ли игрок в бою

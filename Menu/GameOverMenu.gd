@@ -116,6 +116,7 @@ func _input(event):
 func _on_restart_button_pressed():
 	# Перезагружаем сцену (новая игра)
 	GameState.is_loading = false
+	get_tree().call_group("new_game_listener", "reset_all_achievements")
 	get_tree().reload_current_scene()
 
 # ← НОВАЯ ФУНКЦИЯ ДЛЯ КНОПКИ ЗАГРУЗКИ
