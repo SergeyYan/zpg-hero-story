@@ -36,6 +36,8 @@ func get_level() -> int: return level
 func _ready():
 	add_to_group("player_stats")
 	
+	print("PlayerStats _ready() вызван")
+	process_mode = Node.PROCESS_MODE_ALWAYS  
 	# Сначала инициализируем статусы
 	_init_status_library()
 	
@@ -138,24 +140,28 @@ func _create_status_timer():
 	var timer = Timer.new()
 	timer.wait_time = 1.0
 	timer.timeout.connect(_update_statuses)
+	timer.process_mode = Node.PROCESS_MODE_ALWAYS  # ← ТАЙМЕР ТОЖЕ ВСЕГДА
 	add_child(timer)
 	timer.start()
 
 func _update_statuses():
+		
 	var statuses_to_remove = []
 	
 	for status in active_statuses:
 		status.duration -= 1.0
 		if status.duration <= 0:
 			statuses_to_remove.append(status)
+
 	
 	for status in statuses_to_remove:
 		active_statuses.erase(status)
-		print("Статус ", status.name, " закончился")
+
 	
 	if statuses_to_remove.size() > 0:
 		statuses_changed.emit()
-		stats_changed.emit()  # Обновляем характеристики
+		stats_changed.emit()
+
 
 func add_status(status_id: String):
 	# ПРОВЕРКА НА ДУБЛИКАТЫ
