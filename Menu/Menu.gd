@@ -16,6 +16,7 @@ signal quit_game
 var save_system: SaveSystem
 
 func _ready():
+	add_to_group("pause_menu")
 	hide()
 	set_process_unhandled_input(false)
 	

@@ -12,6 +12,7 @@ signal quit_game_pressed
 var save_system
 
 func _ready():
+	add_to_group("main_menu")
 	# Создаем систему сохранений
 	save_system = SaveSystem.new()
 	add_child(save_system)

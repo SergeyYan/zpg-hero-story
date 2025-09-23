@@ -19,6 +19,9 @@ var player_stats_instance: PlayerStats
 
 func _ready():
 	add_to_group("hud")
+	
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	
 	# Находим экземпляр PlayerStats
 	player_stats_instance = get_tree().get_first_node_in_group("player_stats")
 	if not player_stats_instance:
@@ -98,6 +101,8 @@ func update_status_display():
 				tween.kill()
 		child.queue_free()
 	
+	
+	status_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	# Добавляем иконки статусов
 	for status in player_stats_instance.active_statuses:
 		# ОСНОВНОЙ КОНТЕЙНЕР ДЛЯ СТАТУСА
@@ -105,12 +110,37 @@ func update_status_display():
 		status_container_item.custom_minimum_size = Vector2(40, 40)
 		status_container_item.mouse_filter = Control.MOUSE_FILTER_PASS
 		
-		# ФОН
+		# Зеленый для положительных, Красный для отрицательных
+		var background_color = Color(0.1, 0.8, 0.1, 0.7) if status.type == 0 else Color(0.9, 0.1, 0.1, 0.7)
+		var border_color = Color(0.3, 1.0, 0.3, 0.9) if status.type == 0 else Color(1.0, 0.3, 0.3, 0.9)
+		
+		# ← РАМКА С ПОМОЩЬЮ PANEL
+		var border_panel = Panel.new()
+		border_panel.size = Vector2(40, 40)
+		border_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		
+		# Создаем стиль для рамки
+		var border_style = StyleBoxFlat.new()
+		border_style.bg_color = Color.TRANSPARENT  # Прозрачный фон
+		border_style.border_color = border_color   # Цвет рамки
+		border_style.border_width_left = 2
+		border_style.border_width_top = 2
+		border_style.border_width_right = 2
+		border_style.border_width_bottom = 2
+		border_style.corner_radius_top_left = 4    # Закругленные углы
+		border_style.corner_radius_top_right = 4
+		border_style.corner_radius_bottom_left = 4
+		border_style.corner_radius_bottom_right = 4
+		
+		border_panel.add_theme_stylebox_override("panel", border_style)
+		
+		# ФОН (внутренний)
 		var background = ColorRect.new()
-		background.size = Vector2(36, 36)
-		background.position = Vector2(2, 2)
-		background.color = Color(0, 0, 0, 0.6)
+		background.size = Vector2(36, 36)  # Чуть меньше для рамки
+		background.position = Vector2(2, 2)  # Сдвигаем для рамки
+		background.color = background_color
 		background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		
 		
 		# ЭМОДЗИ СТАТУСА
 		var status_label = Label.new()
@@ -122,9 +152,8 @@ func update_status_display():
 		status_label.text = _get_status_emoji(status.id)
 		status_label.add_theme_font_size_override("font_size", 18)
 		
-		# ЦВЕТ В ЗАВИСИМОСТИ ОТ ТИПА СТАТУСА
-		var text_color = Color.SKY_BLUE if status.type == 0 else Color.INDIAN_RED
-		status_label.add_theme_color_override("font_color", text_color)
+		# ЦВЕТ ТЕКСТА (белый для лучшей читаемости на цветном фоне)
+		status_label.add_theme_color_override("font_color", Color.WHITE)
 		
 		# ТАЙМЕР В ПРАВОМ НИЖНЕМ УГЛУ (ОБНОВЛЯЕМЫЙ)
 		var timer_label = Label.new()
@@ -133,7 +162,7 @@ func update_status_display():
 		timer_label.position = Vector2(18, 26)
 		timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		timer_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		timer_label.add_theme_font_size_override("font_size", 10)
+		timer_label.add_theme_font_size_override("font_size", 12)
 		timer_label.add_theme_color_override("font_color", Color.WHITE)
 		
 		# ФОН ДЛЯ ТАЙМЕРА
@@ -152,6 +181,7 @@ func update_status_display():
 		status_container_item.tooltip_text = tooltip_text
 		
 		# СОБИРАЕМ ВСЕ ВМЕСТЕ
+		status_container_item.add_child(border_panel)  # Рамка сначала
 		status_container_item.add_child(background)
 		status_container_item.add_child(timer_bg)
 		status_container_item.add_child(status_label)
@@ -191,6 +221,7 @@ func _start_timer_updates():
 	timer.name = "StatusTimer"
 	timer.wait_time = 1.0
 	timer.timeout.connect(_update_status_timers)
+	timer.process_mode = Node.PROCESS_MODE_ALWAYS  # ← ВАЖНО: РАБОТАЕТ ВСЕГДА
 	add_child(timer)
 	timer.start()
 
