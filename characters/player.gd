@@ -2,6 +2,7 @@
 extends CharacterBody2D
 
 @export var SPEED := 100.0
+@onready var original_modulate = modulate
 
 var _water_slowdown := 1.0
 var speed: float = SPEED  # Базовая скорость
@@ -152,12 +153,23 @@ func _physics_process(delta: float) -> void:
 func _process(delta: float) -> void:
 	_update_speed_from_statuses()
 	# Регенерация здоровья вне боя - работает ВСЕГДА!
+	
+	# ДОБАВЛЯЕМ ВИЗУАЛЬНЫЙ ЭФФЕКТ НЕВИДИМОСТИ
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.is_player_invisible():
+		modulate.a = 0.3  # Полупрозрачность
+		# Можно добавить дополнительные эффекты
+	else:
+		modulate.a = 1.0  # Полная непрозрачность
+		
 	# Убираем проверку на is_paused - она только для движения!
 	if not is_in_battle():  # ← Только проверка на бой!
-		var player_stats = get_tree().get_first_node_in_group("player_stats")
+		#var player_stats = get_tree().get_first_node_in_group("player_stats")
 		if player_stats and player_stats.current_health < player_stats.get_max_health():
 #			print("Регенерация активна (стояние)")
 			player_stats.regenerate_health(delta)
+	
+	
 
 func _update_speed_from_statuses():
 	var player_stats = get_tree().get_first_node_in_group("player_stats")

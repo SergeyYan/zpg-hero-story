@@ -74,6 +74,7 @@ func _create_exp_gain_effect():
 
 func update_stats_display():
 	var effective_stats = player_stats_instance.get_effective_stats()
+		
 	# Обновляем ТОЛЬКО характеристики
 	if strength_label:
 		strength_label.text = "Сила: %d" % effective_stats["strength"]
@@ -277,9 +278,26 @@ func _format_time_full(seconds: float) -> String:
 
 func _get_status_emoji(status_id: String) -> String:
 	var emoji_dict = {
-		"well_fed": "🍖", "good_shoes": "👟", "inspired": "💡",
-		"adrenaline": "⚡", "lucky_day": "🍀", "sore_knees": "🦵",
-		"crying": "😢", "exhausted": "😴", "bad_luck": "☂️", "minor_injury": "🩹"
+		# ПОЛОЖИТЕЛЬНЫЕ СТАТУСЫ 
+		"well_fed": "🍖", 
+		"good_shoes": "👟", 
+		"inspired": "💡",
+		"adrenaline": "⚡", 
+		"lucky_day": "🍀", 
+		"potion_splash": "🧴",        # Облился зельем
+		"strange_mushroom": "🍄",     # Съел непонятный гриб  
+		"cloak_tent": "👻",           # Надел плащ-палатку
+		"mage_potion": "⚗️",          # Выпил напиток берсерка
+		"phoenix_feather": "🪶",      # Нашел перо феникса
+		# ОТРИЦАТЕЛЬНЫЕ СТАТУСЫ
+		"sore_knees": "🦵",
+		"crying": "😢", 
+		"exhausted": "😴", 
+		"bad_luck": "☂️", 
+		"minor_injury": "🩹",
+		"swamp_bog": "🟤",            # Увяз в болоте
+		"snake_bite": "🐍",           # Укус опытной змеи
+		"stunned": "💫"               # Ошеломлен ударом
 	}
 	return emoji_dict.get(status_id, "❓")
 

@@ -67,7 +67,11 @@ func _physics_process(delta: float) -> void:
 		var distance = global_position.distance_to(player.global_position)
 		var was_chasing = chasing
 		
-		if distance <= aggro_range:
+		# ДОБАВЛЯЕМ ПРОВЕРКУ НА НЕВИДИМОСТЬ
+		var player_stats = get_tree().get_first_node_in_group("player_stats")
+		var is_invisible = player_stats and player_stats.is_player_invisible()
+		
+		if distance <= aggro_range and not is_invisible:
 			chasing = true
 			if not _is_aggro:  # Только если агро только началось
 				_start_aggro_effect()
