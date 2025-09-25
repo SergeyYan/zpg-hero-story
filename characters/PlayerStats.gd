@@ -36,8 +36,6 @@ func get_level() -> int: return level
 
 func _ready():
 	add_to_group("player_stats")
-	
-	print("PlayerStats _ready() вызван")
 	process_mode = Node.PROCESS_MODE_ALWAYS  
 	# Сначала инициализируем статусы
 	_init_status_library()
@@ -48,6 +46,7 @@ func _ready():
 	stats_system.endurance = 0
 	stats_system.luck = 0
 	stats_system.base_health = 5  # ↓ Базовое здоровье
+	
 	
 	current_health = get_max_health()
 	
@@ -62,30 +61,37 @@ func _ready():
 	# Немедленно показываем меню распределения
 	await get_tree().process_frame
 	level_up.emit(level, available_points)  # ← Сигнал при старте
-
+	calculate_current_level()
+	
+func calculate_current_level() -> int:
+	# Комбинируем реальный уровень и характеристики
+	var calculated_level = level
+	return calculated_level
 
 func _init_status_library():
+	var now_level = calculate_current_level()  # ← Используем функцию
+	print("🎯 Расчет уровня для статусов: ", calculate_current_level())
 	# ПОЛОЖИТЕЛЬНЫЕ СТАТУСЫ (голубой/золотой)
 	status_library["well_fed"] = StatusEffect.new(
-		"well_fed", "Хорошо покушал", "+2 ко всем характеристикам",  
+		"well_fed", "Хорошо покушал", "Бонус к характеристикам",  
 		StatusEffect.StatusType.POSITIVE, randf_range(300, 720)  # 5-10 минут
 	)
-	status_library["well_fed"].strength_modifier = 2
-	status_library["well_fed"].fortitude_modifier = 2
-	status_library["well_fed"].endurance_modifier = 2
-	status_library["well_fed"].luck_modifier = 2
+	status_library["well_fed"].strength_modifier = max(1, level - 5)
+	status_library["well_fed"].fortitude_modifier = max(1, now_level - 5)
+	status_library["well_fed"].endurance_modifier = max(1, now_level - 5)
+	status_library["well_fed"].luck_modifier = max(1, now_level - 5)
 	
 	status_library["good_shoes"] = StatusEffect.new(
-		"good_shoes", "Удобная обувь", "+25% скорости передвижения", 
+		"good_shoes", "Удобная обувь", "Увеличение скорости передвижения", 
 		StatusEffect.StatusType.POSITIVE, randf_range(300, 600)
 	)
 	status_library["good_shoes"].speed_modifier = 1.25
 	
 	status_library["inspired"] = StatusEffect.new(
-		"inspired", "Вдохновение", "+5 к удаче, и чуть к регенерации", 
+		"inspired", "Вдохновение", "Вы в ударе, бонус удачи и регенерации", 
 		StatusEffect.StatusType.POSITIVE, randf_range(240, 720)  # 4-8 минут
 	)
-	status_library["inspired"].luck_modifier = 5
+	status_library["inspired"].luck_modifier = max(2, now_level - 8)
 	status_library["inspired"].health_regen_modifier = 0.5
 	
 	status_library["adrenaline"] = StatusEffect.new(
@@ -93,23 +99,24 @@ func _init_status_library():
 		StatusEffect.StatusType.POSITIVE, randf_range(180, 540)  # 3-5 минут
 	)
 	status_library["adrenaline"].speed_modifier = 1.25
-	status_library["adrenaline"].strength_modifier = 3
-	status_library["adrenaline"].fortitude_modifier = -3
+	status_library["adrenaline"].strength_modifier = max(3, now_level - 5)
+	status_library["adrenaline"].fortitude_modifier = min(-3, 10 - now_level)
 	
 	status_library["lucky_day"] = StatusEffect.new(
 		"lucky_day", "Счастливый день", "Удвоенный шанс крита", 
 		StatusEffect.StatusType.POSITIVE, randf_range(300, 900)  # 10-15 минут
 	)
+	status_library["lucky_day"].luck_modifier = max(10, now_level - 5)
 	
 	status_library["potion_splash"] = StatusEffect.new(
-		"potion_splash", "Облился зельем", "Восстановление здоровья +5",  
+		"potion_splash", "Облился зельем", "У вас ростут новые конечности",  
 		StatusEffect.StatusType.POSITIVE, randf_range(90, 240)  # 10-15 секунд
 	)
 	status_library["potion_splash"].health_regen_modifier = 5.0
 	
 	# 2. "Съел непонятный гриб" - увеличение скорости
 	status_library["strange_mushroom"] = StatusEffect.new(
-		"strange_mushroom", "Съел непонятный гриб", "Суперскорость 50%", 
+		"strange_mushroom", "Съел непонятный гриб", "Суперскорость", 
 		StatusEffect.StatusType.POSITIVE, randf_range(60, 300)  # 20-30 секунд
 	)
 	status_library["strange_mushroom"].speed_modifier = 2.0  # ×2 скорости
@@ -124,55 +131,63 @@ func _init_status_library():
 	# 4. "Выпил напиток мага" - увеличение урона
 	status_library["mage_potion"] = StatusEffect.new(
 		"mage_potion", "Выпил напиток берсерка", "Больше силы, меньше крепости", 
-		StatusEffect.StatusType.POSITIVE, randf_range(200, 600)  # 20-25 секунд
+		StatusEffect.StatusType.POSITIVE, randf_range(90, 600)  # 20-25 секунд
 	)
-	status_library["mage_potion"].strength_modifier = 5  # +5 к силе
-	status_library["mage_potion"].fortitude_modifier = -5 
+	status_library["mage_potion"].strength_modifier = max(5, now_level)  # +5 к силе
+	status_library["mage_potion"].fortitude_modifier = min(-5, -now_level) 
 	
 	# 5. "Нашел перо феникса" - защита
 	status_library["phoenix_feather"] = StatusEffect.new(
 		"phoenix_feather", "Нашел перо феникса", "Повышение защиты", 
 		StatusEffect.StatusType.POSITIVE, randf_range(90, 720)  # 35-40 секунд
 	)
-	status_library["phoenix_feather"].fortitude_modifier = 10  # +10 к защите
+	status_library["phoenix_feather"].fortitude_modifier = max(10, now_level + 2)  # +10 к защите
 	
 	# Особый статус - обрабатывается отдельно
 	
+	# 6. "Мыслитель" - опыт
+	status_library["thinker"] = StatusEffect.new(
+		"thinker", "Звездой по голове", "Опыт вливается ручьем и головная боль", 
+		StatusEffect.StatusType.POSITIVE, randf_range(10, 30)  # 10-30 секунд
+	)
+	status_library["thinker"].fortitude_modifier = min(-1, 9 - now_level)
+		# Особый статус - обрабатывается отдельно
+	
 	# НЕГАТИВНЫЕ СТАТУСЫ (красный)
 	status_library["sore_knees"] = StatusEffect.new(
-		"sore_knees", "Боль в коленях", "-15% скорости передвижения", 
+		"sore_knees", "Боль в коленях", "Вы хромаете", 
 		StatusEffect.StatusType.NEGATIVE, randf_range(180, 600)
 	)
 	status_library["sore_knees"].speed_modifier = 0.85
 	
 	status_library["crying"] = StatusEffect.new(
-		"crying", "Плакал", "-1 ко всем характеристикам", 
+		"crying", "Плакал", "Характеристики утекают со слезами", 
 		StatusEffect.StatusType.NEGATIVE, randf_range(180, 360)  # 3-6 минут
 	)
-	status_library["crying"].strength_modifier = -1
-	status_library["crying"].fortitude_modifier = -1
-	status_library["crying"].endurance_modifier = -1
-	status_library["crying"].luck_modifier = -1
+	status_library["crying"].strength_modifier = min(-1, 10 - now_level)
+	status_library["crying"].fortitude_modifier = min(-1, 10 - now_level)
+	status_library["crying"].endurance_modifier = min(-1, 10 - now_level)
+	status_library["crying"].luck_modifier = min(-1, 10 - now_level)
 	
 	status_library["exhausted"] = StatusEffect.new(
-		"exhausted", "Истощение", "Меньше регенерации, -25% скорости", 
+		"exhausted", "Истощение", "Меньше регенерации и скорости", 
 		StatusEffect.StatusType.NEGATIVE, randf_range(180, 540)  # 7-12 минут
 	)
 	status_library["exhausted"].speed_modifier = 0.75
 	status_library["exhausted"].health_regen_modifier = -0.5
 	
 	status_library["bad_luck"] = StatusEffect.new(
-		"bad_luck", "Неудачный день", "-5 к удаче", 
+		"bad_luck", "Неудачный день", "Прощай удача", 
 		StatusEffect.StatusType.NEGATIVE, randf_range(120, 660)  # 2-7 минут
 	)
-	status_library["bad_luck"].luck_modifier = -5
+	status_library["bad_luck"].luck_modifier = min(-5, 5 - now_level)
 	
 	status_library["minor_injury"] = StatusEffect.new(
-		"minor_injury", "Легкое ранение", "-1 к выносливости и крепости", 
+		"minor_injury", "Легкое ранение", "А где выносливость и крепость?", 
 		StatusEffect.StatusType.NEGATIVE, randf_range(240, 480)  # 4-8 минут
 	)
-	status_library["minor_injury"].endurance_modifier = -1
-	status_library["minor_injury"].fortitude_modifier = -1
+	status_library["minor_injury"].endurance_modifier = min(-1, 9 - now_level)
+	status_library["minor_injury"].fortitude_modifier = min(-1, 9 - now_level)
 
 	# 6. "Увяз в болоте" - замедление
 	status_library["swamp_bog"] = StatusEffect.new(
@@ -183,7 +198,7 @@ func _init_status_library():
 	
 	# 7. "Укус ядовитой змеи" - периодический урон
 	status_library["snake_bite"] = StatusEffect.new(
-		"snake_bite", "Укус опытной змеи", "Постепенный урон и потеря опыта", 
+		"snake_bite", "Укус опытной змеи", "Потеря опыта, а где реген?", 
 		StatusEffect.StatusType.NEGATIVE, randf_range(10, 30)  # 10-12 секунд
 	)
 	status_library["snake_bite"].health_regen_modifier = -2
@@ -197,7 +212,6 @@ func _init_status_library():
 	status_library["stunned"].speed_modifier = -10.0
 	# Оглушение будет обрабатываться отдельно
 
-
 func _create_status_timer():
 	var timer = Timer.new()
 	timer.wait_time = 1.0
@@ -207,6 +221,14 @@ func _create_status_timer():
 	timer.start()
 
 func _update_statuses():
+	
+	# ПРОВЕРЯЕМ ГЛОБАЛЬНУЮ ПАУЗУ (меню, распределение характеристик)
+	if get_tree().paused:
+		# Проверяем, это пауза в бою или глобальная пауза?
+		var battle_system = get_tree().get_first_node_in_group("battle_system")
+		if not battle_system or not battle_system.visible:
+			return  # ГЛОБАЛЬНАЯ ПАУЗА - не обновляем статусы
+	
 	var statuses_to_remove = []
 	var was_invisible = is_invisible
 	is_invisible = false
@@ -223,7 +245,11 @@ func _update_statuses():
 					exp_gained.emit()  # Обновляем UI опыта
 			"cloak_tent":
 				is_invisible = true
-		
+			"thinker":
+				if current_exp >= 0:
+					current_exp = current_exp + 2  # +2 exp в секунду
+					exp_gained.emit()  # Обновляем UI опыта
+			
 		if status.duration <= 0:
 			statuses_to_remove.append(status)
 			
@@ -232,7 +258,6 @@ func _update_statuses():
 	
 	for status in statuses_to_remove:
 		active_statuses.erase(status)
-
 	
 	if statuses_to_remove.size() > 0:
 		statuses_changed.emit()
@@ -263,7 +288,7 @@ func add_status(status_id: String):
 			template.name, 
 			template.description,
 			template.type, 
-			randf_range(60, 600)  # случайная длительность
+			template.duration  # случайная длительность
 		)
 		
 		# КОПИРУЕМ МОДИФИКАТОРЫ из шаблона
@@ -296,7 +321,7 @@ func get_effective_stats() -> Dictionary:
 		"fortitude": stats_system.fortitude, 
 		"endurance": stats_system.endurance,
 		"luck": stats_system.luck,
-		"health_regen": stats_system.get_health_regen()
+		#"health_regen": stats_system.get_health_regen()
 	}
 	
 	# НАКАПЛИВАЕМ бонусы ОТДЕЛЬНО
@@ -319,15 +344,24 @@ func get_effective_stats() -> Dictionary:
 		
 	# ПРИМЕНЯЕМ бонусы ОДИН РАЗ
 	var result = {
-		"speed": max(0.1, base_stats.speed + total_speed_bonus),
+		"speed": max(0.0, base_stats.speed + total_speed_bonus),
 		"strength": max(0, base_stats.strength + total_strength_bonus),
 		"fortitude": max(0, base_stats.fortitude + total_fortitude_bonus),
 		"endurance": max(0, base_stats.endurance + total_endurance_bonus),
 		"luck": max(0, base_stats.luck + total_luck_bonus),
-		"health_regen": max(0.0, base_stats.health_regen + total_health_regen_bonus)
+		"health_regen": max(0.0, (base_stats.endurance + total_endurance_bonus) * 0.5 + total_health_regen_bonus)
 	}
 		
 	return result
+
+func _get_active_statuses_data() -> Array:
+	var statuses_data = []
+	for status in active_statuses:
+		statuses_data.append({
+			"id": status.id,
+			"duration": status.duration
+		})
+	return statuses_data
 
 func get_crit_chance_with_modifiers() -> float:
 	var base_chance = stats_system.get_crit_chance()
@@ -344,14 +378,14 @@ func apply_post_battle_effects():
 		add_status(negative_statuses[randi() % negative_statuses.size()])
 	
 	if randf() < 0.4:  # 40% шанс получить позитивный статус
-		var positive_statuses = ["well_fed", "adrenaline", "inspired", "potion_splash", "strange_mushroom", "mage_potion", "phoenix_feather"] 
+		var positive_statuses = ["thinker", "well_fed", "adrenaline", "inspired", "potion_splash", "strange_mushroom", "mage_potion", "phoenix_feather"] 
 		add_status(positive_statuses[randi() % positive_statuses.size()])
 
 
 func apply_movement_effects():
 	if randf() < 0.2:  # 10% шанс при движении
 		if randf() < 0.6:  # 60% из них - положительные
-			var positive_statuses = ["good_shoes", "adrenaline", "cloak_tent"]
+			var positive_statuses = ["thinker", "good_shoes", "adrenaline", "cloak_tent"]
 			add_status(positive_statuses[randi() % positive_statuses.size()])
 		else:
 			var negative_statuses = ["sore_knees", "swamp_bog"]
@@ -379,13 +413,15 @@ func heal(amount: int):
 # Регенерация здоровья вне боя
 func regenerate_health(delta: float):
 	if current_health < get_max_health():
-		var regen_per_second = get_health_regen()
+		# ИСПОЛЬЗУЕМ ЭФФЕКТИВНУЮ регенерацию с учетом статусов
+		var effective_stats = get_effective_stats()
+		var regen_per_second = effective_stats["health_regen"]
 		accumulated_regen += regen_per_second * delta
 		
 		# Добавляем только когда накопился целый HP
 		if accumulated_regen >= 1.0:
 			var hp_to_add = floor(accumulated_regen)
-			current_health = min(current_health + hp_to_add, get_max_health())
+			current_health = clamp(current_health + hp_to_add, 0, get_max_health())
 			accumulated_regen -= hp_to_add
 			
 			var display_health = int(current_health)
@@ -519,8 +555,41 @@ func load_from_data(data: Dictionary):
 	stats_system.luck = data.get("luck", 1)
 	monsters_killed = data.get("monsters_killed", 0)  # ← ЗАГРУЗКА СЧЕТЧИКА
 	# НЕ вызываем сигнал level_up при загрузке!
-	# level_up.emit(level, available_points)  # ← ЗАКОММЕНТИРУЙ эту строку!
+	_load_active_statuses(data.get("active_statuses", []))
 	
 	health_changed.emit(current_health)  # ← Только здоровье обновляем
 	monsters_killed_changed.emit(monsters_killed)  # ← ОБНОВЛЯЕМ ИНТЕРФЕЙС
 	stats_changed.emit()  # ← Добавьте это для обновления характеристик
+
+
+func _load_active_statuses(statuses_data: Array):
+	# Очищаем текущие статусы
+	active_statuses.clear()
+	
+	for status_data in statuses_data:
+		var status_id = status_data["id"]
+		var duration = status_data["duration"]
+		
+		if status_library.has(status_id):
+			var template = status_library[status_id]
+			var new_status = StatusEffect.new(
+				template.id, 
+				template.name, 
+				template.description,
+				template.type, 
+				duration  # Восстанавливаем сохраненную длительность
+			)
+			
+			# Копируем модификаторы
+			new_status.speed_modifier = template.speed_modifier
+			new_status.strength_modifier = template.strength_modifier
+			new_status.fortitude_modifier = template.fortitude_modifier
+			new_status.endurance_modifier = template.endurance_modifier
+			new_status.luck_modifier = template.luck_modifier
+			new_status.health_regen_modifier = template.health_regen_modifier
+			
+			active_statuses.append(new_status)
+	
+	# Обновляем UI
+	statuses_changed.emit()
+	stats_changed.emit()

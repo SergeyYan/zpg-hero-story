@@ -71,7 +71,8 @@ func _get_player_stats_data() -> Dictionary:
 			"fortitude": player_stats.stats_system.fortitude,
 			"endurance": player_stats.stats_system.endurance,
 			"luck": player_stats.stats_system.luck,
-			"monsters_killed": player_stats.monsters_killed  # ← НОВОЕ ПОЛЕ
+			"monsters_killed": player_stats.monsters_killed,
+			"active_statuses": player_stats._get_active_statuses_data()
 		}
 	return {}
 
@@ -108,6 +109,11 @@ func _apply_save_data(save_data: Dictionary):
 		player_stats.stats_system.endurance = stats.get("endurance", 1)
 		player_stats.stats_system.luck = stats.get("luck", 1)
 		player_stats.monsters_killed = stats.get("monsters_killed", 0)
+		
+		# ЗАГРУЗКА АКТИВНЫХ СТАТУСОВ
+		if stats.has("active_statuses"):
+			player_stats._load_active_statuses(stats["active_statuses"])
+			
 		# Только обновляем здоровье, НЕ вызываем level_up
 		player_stats.health_changed.emit(player_stats.current_health)
 		
