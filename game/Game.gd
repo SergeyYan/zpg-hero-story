@@ -5,6 +5,8 @@ var main_menu: CanvasLayer
 var pause_menu: CanvasLayer
 @onready var level_up_menu: LevelUpMenu = $LevelUpMenu
 
+signal player_data_loaded()  # ← НОВЫЙ СИГНАЛ
+
 func _ready():
 	# Проверяем, идет ли загрузка сохранения
 	var is_loading = GameState.is_loading
@@ -19,6 +21,8 @@ func _ready():
 			
 			# ← Ждем инициализации
 			await get_tree().process_frame
+			
+			_emit_data_loaded_signal()
 			
 			# Обновляем спавнер
 			var player_stats = get_tree().get_first_node_in_group("player_stats")
@@ -74,6 +78,9 @@ func _ready():
 
 	# Сбрасываем флаг после использования
 	GameState.is_loading = false
+
+func _emit_data_loaded_signal():
+	player_data_loaded.emit()
 
 func _on_battle_ended(victory: bool):
 	

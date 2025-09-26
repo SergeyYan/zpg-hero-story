@@ -4,9 +4,9 @@ extends Node2D
 ## Размер одного тайла в пикселях (должен совпадать с MonsterSpawner)
 @export var TILE_SIZE := 32
 ## Радиус в чанках вокруг игрока для генерации тайлов
-@export var SPAWN_RADIUS := 18
+@export var SPAWN_RADIUS := 20
 ## Радиус в чанках для удаления тайлов (должен быть > SPAWN_RADIUS)
-@export var DESPAWN_RADIUS := 20
+@export var DESPAWN_RADIUS := 22
 ## Интервал обновления генерации в секундах
 @export var UPDATE_INTERVAL := 0.2
 ## Включить визуализацию карты высот для отладки

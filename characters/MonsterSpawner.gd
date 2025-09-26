@@ -2,9 +2,9 @@
 extends Node
 
 ## Радиус в чанках вокруг игрока, в котором могут появляться монстры
-@export var SPAWN_RADIUS := 18
+@export var SPAWN_RADIUS := 20
 ## Радиус в чанках, за пределами которого монстры удаляются
-@export var DESPAWN_RADIUS := 20
+@export var DESPAWN_RADIUS := 22
 ## Максимальное количество монстров на карте одновременно
 @export var MAX_MONSTERS := 4
 ## Шанс спавна монстра в подходящем чанке (0.0 - 1.0)

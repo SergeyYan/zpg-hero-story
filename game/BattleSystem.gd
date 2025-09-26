@@ -177,8 +177,7 @@ func player_attack():
 		return
 	
 	# РАСЧЕТ УРОНА
-	var effective_stats = player_stats_instance.get_effective_stats()
-	var base_damage = player_stats_instance.get_damage()  # Эта функция ДОЛЖНА учитывать effective_stats
+	var base_damage = player_stats_instance.get_effective_damage()  # Эта функция ДОЛЖНА учитывать effective_stats
 	var enemy_defense = current_enemy_stats.get_defense()
 	var actual_damage = max(1, base_damage - enemy_defense)
 	var crit_chance = player_stats_instance.get_crit_chance_with_modifiers()
@@ -204,7 +203,7 @@ func enemy_attack():
 	
 	# РАСЧЕТ УРОНА
 	var base_damage = current_enemy_stats.get_damage()
-	var player_defense = player_stats_instance.get_defense()
+	var player_defense = player_stats_instance.get_effective_defense()
 	var actual_damage = max(1, base_damage - player_defense)
 	var crit_chance = current_enemy_stats.stats_system.get_crit_chance()
 	
@@ -215,7 +214,6 @@ func enemy_attack():
 		battle_log.text += message + "\n"
 		player_stats_instance.take_damage(critical_damage)
 	else:
-		# ПОКАЗЫВАЕМ ФАКТИЧЕСКИЙ урон (после защиты)
 		var message = get_random_attack_message(enemy_attack_messages) % [current_enemy_stats.enemy_name, actual_damage]
 		battle_log.text += message + "\n"
 		player_stats_instance.take_damage(actual_damage)
