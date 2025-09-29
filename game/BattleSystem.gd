@@ -227,13 +227,23 @@ func end_battle(victory: bool):
 		# ← ДОБАВЛЯЕМ ПОДСЧЕТ УБИЙСТВ
 		player_stats_instance.add_monster_kill()
 		
-		battle_log.text += "[color=#00ff00]Победа! Получено %d опыта.[/color]\n" % exp_gained
+		# ← ПРОВЕРЯЕМ BAD_LUCK ДЛЯ СООБЩЕНИЯ
+		var has_bad_luck = false
+		for status in player_stats_instance.active_statuses:
+			if status.id == "bad_luck":
+				has_bad_luck = true
+				break
+		
+		if has_bad_luck:
+			battle_log.text += "[color=#ffcc00]Победа! Получено %d опыта (штраф за неудачу).[/color]\n" % exp_gained
+		else:
+			battle_log.text += "[color=#00ff00]Победа! Получено %d опыта.[/color]\n" % exp_gained
 		
 		if is_instance_valid(current_enemy):
 			current_enemy.queue_free()
 	else:
 		battle_log.text += "[color=#ff0000]Вы проиграли...[/color]\n"
-	
+		
 	timer.stop()
 	# ← ДОБАВЛЯЕМ ТАЙМЕР ПАУЗЫ ДЛЯ ЧТЕНИЯ
 	await get_tree().create_timer(2.5).timeout
@@ -246,4 +256,3 @@ func end_battle(victory: bool):
 	battle_ended.emit(victory)
 	current_enemy = null
 	current_enemy_stats = null
-	
