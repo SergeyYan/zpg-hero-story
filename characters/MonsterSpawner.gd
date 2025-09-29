@@ -96,12 +96,26 @@ func _despawn_monsters() -> void:
 
 ## Проверяет подходящие чанки для спавна новых монстров
 func _spawn_monsters() -> void:
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	var has_bad_luck = false
+	
+	# ← ПРОВЕРЯЕМ СТАТУС BAD_LUCK
+	if player_stats:
+		for status in player_stats.active_statuses:
+			if status.id == "bad_luck":
+				has_bad_luck = true
+				break
+	
+	# ← УВЕЛИЧИВАЕМ ЛИМИТ ПРИ BAD_LUCK
+	var max_monsters_count = MAX_MONSTERS * 2 if has_bad_luck else MAX_MONSTERS
+	
 	var current_count = _count_monsters()
-	if current_count >= randi_range(0, MAX_MONSTERS):
+	if current_count >= randi_range(0, max_monsters_count):
 		return
 	
+	
 	var player_chunk = _world_to_chunk(_player.global_position)
-	var monsters_to_spawn = randi_range(0, MAX_MONSTERS) - current_count
+	var monsters_to_spawn = randi_range(0, max_monsters_count) - current_count
 	
 	# Проверяем все чанки в радиусе спавна
 	for x in range(player_chunk.x - SPAWN_RADIUS, player_chunk.x + SPAWN_RADIUS + 1):
@@ -158,7 +172,15 @@ func _spawn_monster(chunk: Vector2i) -> void:
 ## Добавляет созданного монстра на сцену и регистрирует его
 func _add_monster_to_scene(monster: Node, chunk: Vector2i) -> void:
 	get_parent().add_child(monster)
-	# ← ОТЛАДОЧНАЯ ИНФОРМАЦИЯ
+	 # ← ПРОВЕРЯЕМ BAD_LUCK ДЛЯ НОВОГО МОНСТРА
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats:
+		for status in player_stats.active_statuses:
+			if status.id == "bad_luck":
+				# Немедленно применяем эффект к новому монстру
+				if monster.has_method("_on_bad_luck_changed"):
+					monster._on_bad_luck_changed(true)
+				break
 		
 	if not _monsters.has(chunk):
 		_monsters[chunk] = []

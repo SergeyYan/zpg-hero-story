@@ -23,10 +23,20 @@ var _is_aggro := false
 var is_in_battle: bool = false
 var battle_cooldown: float = 0.0
 
+# Эффект bad_luck
+var _original_scale: Vector2
+var _is_enlarged: bool = false
+var _current_aggro_range: float = aggro_range  # ← ТЕКУЩИЙ РАДИУС ДЛЯ ЛОГИКИ
+var _visual_aggro_multiplier: float = 1.0  # ← МНОЖИТЕЛЬ ДЛЯ ВИЗУАЛЬНОГО РАДИУСА
+
 func _ready() -> void:
 	add_to_group("monsters")
 	_rng.randomize()
 	_pick_new_direction()
+	
+	_original_scale = scale
+	_current_aggro_range = aggro_range  # ← ИНИЦИАЛИЗИРУЕМ
+	_visual_aggro_multiplier = 1.0
 	
 	# ПРОВЕРКА MonsterStats
 	if not monster_stats:
@@ -38,6 +48,7 @@ func _ready() -> void:
 	
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	if player_stats and player_stats.level > 1:
+		player_stats.bad_luck_changed.connect(_on_bad_luck_changed)
 		# Если уровень монстра не соответствует уровню игрока
 		if monster_stats.monster_level != player_stats.level:
 			apply_level_scaling(player_stats.level)
@@ -71,17 +82,17 @@ func _physics_process(delta: float) -> void:
 		var player_stats = get_tree().get_first_node_in_group("player_stats")
 		var is_invisible = player_stats and player_stats.is_player_invisible()
 		
-		if distance <= aggro_range and not is_invisible:
+		# ← ИСПОЛЬЗУЕМ _current_aggro_range для логики преследования
+		if distance <= _current_aggro_range and not is_invisible:
 			chasing = true
-			if not _is_aggro:  # Только если агро только началось
+			if not _is_aggro:
 				_start_aggro_effect()
 				_is_aggro = true
 		else:
 			chasing = false
-			if _is_aggro:  # Только если агро закончилось
+			if _is_aggro:
 				_stop_aggro_effect()
 				_is_aggro = false
-	
 	
 	if chasing:
 		# Режим преследования
@@ -172,10 +183,12 @@ func _pick_new_direction() -> void:
 func _draw() -> void:
 	if show_aggro_radius and is_inside_tree():
 		var aggro_color := Color(0.5, 0.5, 0.5, 0.2)
-		draw_circle(Vector2.ZERO, aggro_range, aggro_color)
+		# ← ИСПОЛЬЗУЕМ aggro_range С УМНОЖИТЕЛЕМ для отрисовки
+		var visual_radius = _current_aggro_range / scale.x
+		draw_circle(Vector2.ZERO, visual_radius, aggro_color)
 		
 		var border_color := Color(0.7, 0.7, 0.7, 0.4)
-		draw_arc(Vector2.ZERO, aggro_range, 0, 2 * PI, 32, border_color, 2.0)
+		draw_arc(Vector2.ZERO, visual_radius, 0, 2 * PI, 32, border_color, 2.0)
 
 func toggle_aggro_visibility() -> void:
 	show_aggro_radius = not show_aggro_radius
@@ -184,7 +197,6 @@ func toggle_aggro_visibility() -> void:
 func set_aggro_visibility(visible: bool) -> void:
 	show_aggro_radius = visible
 	queue_redraw()
-
 
 func apply_level_scaling(player_level: int):
 	if not monster_stats:
@@ -195,3 +207,26 @@ func apply_level_scaling(player_level: int):
 		monster_stats.apply_level_scaling(player_level)
 	else:
 		push_error("MonsterStats не имеет метода apply_level_scaling!")
+
+func _on_bad_luck_changed(active: bool):
+	if active and not _is_enlarged:
+		# ПЛАВНОЕ УВЕЛИЧЕНИЕ размера монстра И радиуса агро
+		var tween = create_tween()
+		tween.parallel().tween_property(self, "scale", _original_scale * 2.0, 0.3)
+		tween.parallel().tween_method(_update_aggro_range, _current_aggro_range, aggro_range * 2.0, 0.3)
+		tween.parallel().tween_method(_update_visual_aggro, _visual_aggro_multiplier, 0.5, 0.3)  # ← УМЕНЬШАЕМ ВИЗУАЛЬНЫЙ РАДИУС
+		_is_enlarged = true
+	elif not active and _is_enlarged:
+		# ПЛАВНОЕ ВОЗВРАЩЕНИЕ к оригинальным размерам
+		var tween = create_tween()
+		tween.parallel().tween_property(self, "scale", _original_scale, 0.3)
+		tween.parallel().tween_method(_update_aggro_range, _current_aggro_range, aggro_range, 0.3)
+		tween.parallel().tween_method(_update_visual_aggro, _visual_aggro_multiplier, 1.0, 0.3)  # ← ВОЗВРАЩАЕМ ВИЗУАЛЬНЫЙ РАДИУС
+		_is_enlarged = false
+
+func _update_aggro_range(value: float):
+	_current_aggro_range = value  # ← МЕНЯЕМ ЛОГИЧЕСКИЙ РАДИУС
+
+func _update_visual_aggro(value: float):
+	_visual_aggro_multiplier = value  # ← МЕНЯЕМ ВИЗУАЛЬНЫЙ РАДИУС
+	queue_redraw()  # Перерисовываем круг агро
