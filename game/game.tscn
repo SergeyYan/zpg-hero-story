@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://b8x80r74q14n0"]
+[gd_scene load_steps=13 format=3 uid="uid://b8x80r74q14n0"]
 
 [ext_resource type="Script" uid="uid://mn7r6mnashnw" path="res://game/Game.gd" id="1_dakft"]
 [ext_resource type="PackedScene" uid="uid://rumxl4al7h24" path="res://Map/MapGenerator.tscn" id="1_h7iqs"]
@@ -11,9 +11,12 @@
 [ext_resource type="PackedScene" uid="uid://0p735beyx2tm" path="res://Menu/GameOverMenu.tscn" id="9_l8g03"]
 [ext_resource type="PackedScene" uid="uid://b66asw6va3c5m" path="res://characters/PlayerHUD.tscn" id="10_j8tme"]
 [ext_resource type="PackedScene" uid="uid://cx0spg7oxsiid" path="res://Menu/LevelUpMenu.tscn" id="11_3vho3"]
+[ext_resource type="PackedScene" uid="uid://buyn0b5ravut6" path="res://game/DevPanel.tscn" id="12_qf6n1"]
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_dakft")
+
+[node name="DevPanel" parent="." instance=ExtResource("12_qf6n1")]
 
 [node name="Player" parent="." groups=["player"] instance=ExtResource("3_dxrkv")]
 collision_mask = 14

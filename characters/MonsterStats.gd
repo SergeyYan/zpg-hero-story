@@ -145,16 +145,22 @@ func get_exp_reward() -> int:
 	
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	var has_bad_luck = false
+	var has_lucky_day = false
 	
 	if player_stats:
 		for status in player_stats.active_statuses:
 			if status.id == "bad_luck":
 				has_bad_luck = true
-				break
+			if status.id == "lucky_day":
+				has_lucky_day = true
 	
-	# ← УМЕНЬШАЕМ ОПЫТ ПРИ BAD_LUCK
 	var base_exp = 20
-	var final_exp = base_exp / 2 if has_bad_luck else base_exp
+	var final_exp = base_exp
+	
+	if has_bad_luck:
+		final_exp = int(base_exp / 2)  # ← 50% при bad_luck
+	elif has_lucky_day:
+		final_exp = int(base_exp * 1.5)  # ← 150% при lucky_day
 
 	# Добавляем небольшую случайность
 	final_exp += exp_rand

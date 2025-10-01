@@ -229,13 +229,19 @@ func end_battle(victory: bool):
 		
 		# ← ПРОВЕРЯЕМ BAD_LUCK ДЛЯ СООБЩЕНИЯ
 		var has_bad_luck = false
+		var has_lucky_day = false
 		for status in player_stats_instance.active_statuses:
 			if status.id == "bad_luck":
 				has_bad_luck = true
-				break
+			if status.id == "lucky_day":
+				has_lucky_day = true
 		
-		if has_bad_luck:
-			battle_log.text += "[color=#ffcc00]Победа! Получено %d опыта (штраф за неудачу).[/color]\n" % exp_gained
+		if has_bad_luck and has_lucky_day:
+			battle_log.text += "[color=#ffaa00]Победа! Получено %d опыта (День противоречий!).[/color]\n" % exp_gained
+		elif  has_bad_luck:
+			battle_log.text += "[color=#ffcc00]Победа! Получено %d опыта (Ужасный день).[/color]\n" % exp_gained
+		elif has_lucky_day:
+			battle_log.text += "[color=#00ff00]Победа! Получено %d опыта (Удачный день).[/color]\n" % exp_gained
 		else:
 			battle_log.text += "[color=#00ff00]Победа! Получено %d опыта.[/color]\n" % exp_gained
 		

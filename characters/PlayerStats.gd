@@ -88,10 +88,10 @@ func _init_status_library():
 		"well_fed", "Объелся как удав", "Живот трещит, но зато как вырос!",  
 		StatusEffect.StatusType.POSITIVE, randf_range(240, 720)  # 5-10 минут
 	)
-	status_library["well_fed"].strength_modifier = max(1, now_level - 5)
-	status_library["well_fed"].fortitude_modifier = max(1, now_level - 5)
-	status_library["well_fed"].endurance_modifier = max(1, now_level - 5)
-	status_library["well_fed"].luck_modifier = max(1, now_level - 5)
+	status_library["well_fed"].strength_modifier = max(1, now_level/1.5)
+	status_library["well_fed"].fortitude_modifier = max(1, now_level/1.5)
+	status_library["well_fed"].endurance_modifier = max(1, now_level/1.5)
+	status_library["well_fed"].luck_modifier = max(1, now_level/1.5)
 	
 	status_library["good_shoes"] = StatusEffect.new(
 		"good_shoes", "Нашел кроссовки Nuke", "Чувствуешь себя Форрестом Гампом!", 
@@ -103,7 +103,7 @@ func _init_status_library():
 		"inspired", "Вдохновился игрой", "Тебе кажется, что ты можешь всё!", 
 		StatusEffect.StatusType.POSITIVE, randf_range(240, 720)  # 4-8 минут
 	)
-	status_library["inspired"].luck_modifier = max(2, now_level - 8)
+	status_library["inspired"].luck_modifier = max(2, now_level/1.3)
 	status_library["inspired"].health_regen_modifier = 0.5
 	
 	status_library["adrenaline"] = StatusEffect.new(
@@ -120,6 +120,7 @@ func _init_status_library():
 		StatusEffect.StatusType.POSITIVE, randf_range(300, 900)  # 10-15 минут
 	)
 	status_library["lucky_day"].luck_modifier = max(10, now_level - 5)
+	status_library["lucky_day"].health_regen_modifier = 10
 	
 	status_library["potion_splash"] = StatusEffect.new(
 		"potion_splash", "Облился зельем", "У вас ростут новые конечности",  
@@ -194,7 +195,7 @@ func _init_status_library():
 		StatusEffect.StatusType.NEGATIVE, randf_range(120, 660)  # 2-7 минут
 	)
 	status_library["bad_luck"].luck_modifier = min(-5, - now_level)
-	status_library["bad_luck"].health_regen_modifier = 100
+	status_library["bad_luck"].health_regen_modifier = 10
 	
 	status_library["minor_injury"] = StatusEffect.new(
 		"minor_injury", "Наступил на детальку LEGO", "Больно, но не смертельно...", 
@@ -275,7 +276,7 @@ func _update_statuses():
 				is_invisible = true
 			"thinker":
 				if current_exp >= 0:
-					current_exp = current_exp + max(2, level + 1)   # от 2 exp в секунду
+					current_exp = current_exp + max(2, level + level/4)   # от 2 exp в секунду
 					exp_gained.emit()  # Обновляем UI опыта
 			
 		if status.duration <= 0:
@@ -405,7 +406,7 @@ func get_crit_chance_with_modifiers() -> float:
 	var base_chance = stats_system.get_crit_chance()
 	for status in active_statuses:
 		if status.id == "lucky_day":
-			base_chance *= 5.0
+			base_chance *= 10.0
 		if status.id == "bad_luck":
 			base_chance *= 0.01
 	return base_chance
@@ -413,12 +414,12 @@ func get_crit_chance_with_modifiers() -> float:
 
 # Методы для получения статусов в разных ситуациях
 func apply_post_battle_effects():
-	if randf() < 0.3:  # 30% шанс получить негативный статус после боя
-		var negative_statuses = ["sore_knees", "minor_injury", "exhausted", "swamp_bog", "snake_bite", "stunned", "sleepy", "lucky_day"]
+	if randf() < 0.2:  # 20% шанс получить негативный статус после боя
+		var negative_statuses = ["sore_knees", "minor_injury", "exhausted", "swamp_bog", "snake_bite", "stunned", "sleepy", "bad_luck"]
 		add_status(negative_statuses[randi() % negative_statuses.size()])
 	
-	if randf() < 0.4:  # 40% шанс получить позитивный статус
-		var positive_statuses = ["thinker", "well_fed", "adrenaline", "inspired", "potion_splash", "strange_mushroom", "mage_potion", "phoenix_feather", "bad_luck"] 
+	if randf() < 0.3:  # 30% шанс получить позитивный статус
+		var positive_statuses = ["thinker", "well_fed", "adrenaline", "inspired", "potion_splash", "strange_mushroom", "mage_potion", "phoenix_feather", "lucky_day"] 
 		add_status(positive_statuses[randi() % positive_statuses.size()])
 
 

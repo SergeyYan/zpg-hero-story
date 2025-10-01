@@ -6,24 +6,25 @@
 script = ExtResource("1_20w7j")
 
 [node name="BattleUI" type="Panel" parent="."]
+self_modulate = Color(0, 0, 0, 1)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -304.0
-offset_top = -140.0
+offset_top = 52.0
 offset_right = 304.0
-offset_bottom = 108.0
+offset_bottom = 276.0
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="BattleLog" type="RichTextLabel" parent="BattleUI"]
 layout_mode = 0
-offset_left = 96.0
+offset_left = 64.0
 offset_top = 8.0
-offset_right = 512.0
-offset_bottom = 240.0
+offset_right = 544.0
+offset_bottom = 216.0
 theme_override_constants/table_v_separation = 10
 theme_override_constants/table_h_separation = 10
 theme_override_constants/shadow_outline_size = 5
@@ -37,10 +38,11 @@ vertical_alignment = 1
 [node name="Timer" type="Timer" parent="."]
 
 [node name="StatsPlayer" type="Panel" parent="."]
-offset_left = 16.0
-offset_top = 408.0
-offset_right = 224.0
-offset_bottom = 592.0
+self_modulate = Color(0, 0, 0, 1)
+offset_left = 96.0
+offset_top = 168.0
+offset_right = 304.0
+offset_bottom = 352.0
 
 [node name="PlayerStats" type="VBoxContainer" parent="StatsPlayer"]
 self_modulate = Color(0, 0, 0, 1)
@@ -56,10 +58,11 @@ grow_vertical = 0
 alignment = 1
 
 [node name="StatsMonster" type="Panel" parent="."]
-offset_left = 576.0
-offset_top = 408.0
-offset_right = 784.0
-offset_bottom = 592.0
+self_modulate = Color(0, 0, 0, 1)
+offset_left = 496.0
+offset_top = 168.0
+offset_right = 704.0
+offset_bottom = 352.0
 
 [node name="EnemyStats" type="VBoxContainer" parent="StatsMonster"]
 self_modulate = Color(0, 0, 0, 1)
