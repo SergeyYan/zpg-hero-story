@@ -98,16 +98,21 @@ func _despawn_monsters() -> void:
 func _spawn_monsters() -> void:
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	var has_bad_luck = false
+	var has_lucky_day = false
 	
-	# ← ПРОВЕРЯЕМ СТАТУС BAD_LUCK
+	# ← ПРОВЕРЯЕМ СТАТУС
 	if player_stats:
 		for status in player_stats.active_statuses:
 			if status.id == "bad_luck":
 				has_bad_luck = true
-				break
+			if status.id == "lucky_day":
+				has_lucky_day = true
 	
-	# ← УВЕЛИЧИВАЕМ ЛИМИТ ПРИ BAD_LUCK
-	var max_monsters_count = MAX_MONSTERS * 2 if has_bad_luck else MAX_MONSTERS
+	var max_monsters_count = MAX_MONSTERS
+	if has_lucky_day:
+		max_monsters_count = MAX_MONSTERS * 2  # ← БОЛЬШЕ МОНСТРОВ ДЛЯ ФАРМА!
+	elif has_bad_luck:
+		max_monsters_count = MAX_MONSTERS * 2  # ← ТОЖЕ БОЛЬШЕ, НО С ШТРАФАМИ
 	
 	var current_count = _count_monsters()
 	if current_count >= randi_range(0, max_monsters_count):
