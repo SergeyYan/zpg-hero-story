@@ -80,6 +80,7 @@ func start_battle(enemy: Node, enemy_stats_ref: MonsterStats):
 	current_enemy_stats = enemy_stats_ref
 	show()
 	get_tree().paused = true
+	_disable_menu_button(true)
 	update_stats()
 	battle_log.text = "Бой начался против %s!\n" % current_enemy_stats.enemy_name
 	timer.start(1.0)
@@ -259,6 +260,18 @@ func end_battle(victory: bool):
 		player_stats_instance.complete_level_up_after_battle()
 	
 	hide()
+	_disable_menu_button(false)
 	battle_ended.emit(victory)
 	current_enemy = null
 	current_enemy_stats = null
+
+
+func _disable_menu_button(disabled: bool):
+	var menu_button = get_tree().get_first_node_in_group("menu_button")
+	if menu_button:
+		menu_button.disabled = disabled
+		# Можно также изменить прозрачность для визуального обозначения
+		if disabled:
+			menu_button.modulate = Color(1, 1, 1, 0.5)
+		else:
+			menu_button.modulate = Color(1, 1, 1, 1)

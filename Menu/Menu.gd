@@ -6,6 +6,7 @@ signal restart_game
 signal save_game
 signal load_game
 signal quit_game
+signal menu_closed
 
 @onready var continue_button: Button = %ContinueButton
 @onready var restart_button: Button = %RestartButton
@@ -77,7 +78,7 @@ func show_menu():
 func hide_menu():
 	hide()
 	set_process_input(false)  # Выключаем обработку ввода
-
+	menu_closed.emit()
 
 # Обработчики кнопок
 func _on_continue_button_pressed():
