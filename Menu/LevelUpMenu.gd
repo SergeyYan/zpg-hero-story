@@ -35,6 +35,11 @@ func show_menu(player_stats_ref: PlayerStats, points: int):
 	if GameState.is_loading or points <= 0:
 		return  # ← Выходим, не показываем меню
 	
+	# ← УВЕДОМЛЯЕМ DEVPANEL ЧТО LEVELUPMENU ОТКРЫТ
+	var dev_panels = get_tree().get_nodes_in_group("dev_panel")
+	for dev_panel in dev_panels:
+		if dev_panel.has_method("on_level_up_menu_opened"):
+			dev_panel.on_level_up_menu_opened()
 	
 	player_stats = player_stats_ref
 	available_points = points
@@ -151,6 +156,11 @@ func _on_confirm_button_pressed():
 	# ← ОСТАНАВЛИВАЕМ ТАЙМЕР
 	if auto_timer:
 		auto_timer.stop()
+	
+	var dev_panels = get_tree().get_nodes_in_group("dev_panel")
+	for dev_panel in dev_panels:
+		if dev_panel.has_method("on_level_up_menu_closed"):
+			dev_panel.on_level_up_menu_closed()
 	
 	player_stats.available_points = available_points
 	hide()
