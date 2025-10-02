@@ -410,7 +410,7 @@ func _get_status_emoji(status_id: String) -> String:
 		"well_fed": "🍖", "good_shoes": "👟", "inspired": "💡",
 		"adrenaline": "⚡", "lucky_day": "🍀", "potion_splash": "🧴",
 		"strange_mushroom": "🍄", "cloak_tent": "👻", "mage_potion": "⚗️",
-		"phoenix_feather": "🪶", "thinker": "🤔", "sore_knees": "🦵",
+		"phoenix_feather": "🔥", "thinker": "🤔", "sore_knees": "🦵",
 		"crying": "😢", "exhausted": "😴", "bad_luck": "☂️", 
 		"minor_injury": "🩹", "swamp_bog": "🟤", "snake_bite": "🐍",
 		"stunned": "💫", "sleepy": "😪", "deja_vu": "🌀", "confused": "😵",
