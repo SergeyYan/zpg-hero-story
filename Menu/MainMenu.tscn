@@ -71,53 +71,18 @@ animations = [{
 [node name="MainMenu" type="CanvasLayer"]
 script = ExtResource("1_e1xpn")
 
-[node name="CenterContainer" type="Panel" parent="."]
-anchors_preset = 15
+[node name="VersionLabel2" type="Label" parent="."]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
-layout_mode = 0
-offset_left = 256.0
-offset_top = 184.0
-offset_right = 544.0
-offset_bottom = 415.0
-
-[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 33
-text = "ZPG   Hero story"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="NewGameButton" type="Button" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-text = "Новая игра"
-
-[node name="LoadGameButton" type="Button" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-text = "Загрузить"
-
-[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-text = "Выйти из игры"
-
-[node name="VersionLabel" type="Label" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 9
-size_flags_vertical = 6
-theme_override_font_sizes/font_size = 10
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="VersionLabel2" type="Label" parent="CenterContainer"]
-layout_mode = 0
-offset_left = 488.0
-offset_top = 568.0
-offset_right = 776.0
-offset_bottom = 582.0
+offset_left = -168.0
+offset_top = -32.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 0
+grow_vertical = 0
 size_flags_horizontal = 9
 size_flags_vertical = 6
 theme_override_font_sizes/font_size = 10
@@ -125,16 +90,52 @@ text = "By Blago                         v0_061"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="MenuPlayer" type="CharacterBody2D" parent="CenterContainer"]
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="DanceMenu" type="AnimatedSprite2D" parent="CenterContainer/MenuPlayer"]
+[node name="Panel" type="Panel" parent="CenterContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/Panel"]
+layout_mode = 2
+offset_left = -129.0
+offset_top = -76.0
+offset_right = 129.0
+offset_bottom = 75.0
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 33
+text = "ZPG   Hero story"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NewGameButton" type="Button" parent="CenterContainer/Panel/VBoxContainer"]
+layout_mode = 2
+text = "Новая игра"
+
+[node name="LoadGameButton" type="Button" parent="CenterContainer/Panel/VBoxContainer"]
+layout_mode = 2
+text = "Загрузить"
+
+[node name="QuitButton" type="Button" parent="CenterContainer/Panel/VBoxContainer"]
+layout_mode = 2
+text = "Выйти из игры"
+
+[node name="MenuPlayer" type="CharacterBody2D" parent="."]
+
+[node name="DanceMenu" type="AnimatedSprite2D" parent="MenuPlayer"]
 position = Vector2(400, 440)
 scale = Vector2(5, 5)
 sprite_frames = SubResource("SpriteFrames_gcihc")
 animation = &"Dance"
 script = ExtResource("8_sfxdn")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CenterContainer/MenuPlayer"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="MenuPlayer"]
 z_index = -1
 position = Vector2(816, 480)
 scale = Vector2(3, 3)
@@ -142,7 +143,7 @@ sprite_frames = SubResource("SpriteFrames_fgdcb")
 animation = &"MonsterDance"
 frame_progress = 0.98611
 
-[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="CenterContainer/MenuPlayer"]
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="MenuPlayer"]
 z_index = -1
 position = Vector2(-16, 480)
 scale = Vector2(3, 3)
@@ -151,6 +152,6 @@ animation = &"MonsterDance"
 frame_progress = 0.98611
 flip_h = true
 
-[connection signal="pressed" from="CenterContainer/VBoxContainer/NewGameButton" to="." method="_on_new_game_button_pressed"]
-[connection signal="pressed" from="CenterContainer/VBoxContainer/LoadGameButton" to="." method="_on_load_game_button_pressed"]
-[connection signal="pressed" from="CenterContainer/VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/VBoxContainer/NewGameButton" to="." method="_on_new_game_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/VBoxContainer/LoadGameButton" to="." method="_on_load_game_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]
