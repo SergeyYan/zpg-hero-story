@@ -1,5 +1,4 @@
 #SaveSystem.gd
-
 extends Node
 class_name SaveSystem
 
@@ -7,19 +6,41 @@ var SAVE_PATH: String = ""
 var SAVE_DIR: String = "ZPG Hero story"
 
 func _init():
-	# Определяем путь к папке документов пользователя
-	var documents_path = OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
-	SAVE_PATH = documents_path.path_join(SAVE_DIR).path_join("savegame.save")
+	# Определяем путь для сохранения в зависимости от платформы
+	_setup_save_paths()
 	
 	# Создаем папку если она не существует
 	_create_save_directory()
 
+func _setup_save_paths():
+	match OS.get_name():
+		"Android":
+			# На Android используем user:// директорию (внутреннее хранилище приложения)
+			SAVE_PATH = "user://savegame.save"
+		"iOS":
+			# На iOS также используем user://
+			SAVE_PATH = "user://savegame.save"
+		"HTML5":
+			# В браузере используем локальное хранилище
+			SAVE_PATH = "user://savegame.save"
+		_:
+			# На десктопных платформах (Windows, Linux, macOS) используем Documents
+			var documents_path = OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
+			SAVE_PATH = documents_path.path_join(SAVE_DIR).path_join("savegame.save")
+
 func _create_save_directory():
-	var dir = DirAccess.open(OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS))
-	if dir:
-		if !dir.dir_exists(SAVE_DIR):
-			var error = dir.make_dir(SAVE_DIR)
-			
+	match OS.get_name():
+		"Android", "iOS", "HTML5":
+			# На мобильных платформах и в браузере папка создается автоматически
+			pass
+		_:
+			# На десктопах создаем папку вручную
+			var dir = DirAccess.open(OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS))
+			if dir:
+				if !dir.dir_exists(SAVE_DIR):
+					var error = dir.make_dir(SAVE_DIR)
+					if error != OK:
+						push_error("Не удалось создать папку для сохранений: " + str(error))
 
 func save_game():
 	var save_data = {
@@ -27,23 +48,62 @@ func save_game():
 		"player_position": _get_player_position(),
 		"achievements": _get_achievements_data(),
 		"game_time": Time.get_ticks_msec(),
-		"version": "1.0"
+		"version": "1.0",
+		"platform": OS.get_name()  # Добавляем информацию о платформе для отладки
 	}
-	# Создаем папку на всякий случай (если вдруг удалили)
-	_create_save_directory()
+	
+	# Создаем папку на десктопах на всякий случай
+	if OS.get_name() not in ["Android", "iOS", "HTML5"]:
+		_create_save_directory()
 	
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		var json = JSON.stringify(save_data)
 		file.store_string(json)
 		file.close()
+		print("Игра сохранена: " + SAVE_PATH)
+	else:
+		push_error("Ошибка сохранения игры: " + SAVE_PATH)
+		# На Android попробуем альтернативный путь если основной не работает
+		if OS.get_name() == "Android":
+			_try_alternative_android_save()
 
+func _try_alternative_android_save():
+	# Альтернативный путь для Android если основной не работает
+	var alt_path = "user://zpg_savegame.save"
+	var file = FileAccess.open(alt_path, FileAccess.WRITE)
+	if file:
+		var save_data = {
+			"player_stats": _get_player_stats_data(),
+			"player_position": _get_player_position(),
+			"achievements": _get_achievements_data(),
+			"game_time": Time.get_ticks_msec(),
+			"version": "1.0",
+			"platform": OS.get_name()
+		}
+		var json = JSON.stringify(save_data)
+		file.store_string(json)
+		file.close()
+		print("Игра сохранена в альтернативный путь: " + alt_path)
+		SAVE_PATH = alt_path  # Обновляем путь для будущих операций
 
 func load_game():
-	if not FileAccess.file_exists(SAVE_PATH):
-		return false
+	# Сначала пробуем основной путь
+	if FileAccess.file_exists(SAVE_PATH):
+		return _load_from_path(SAVE_PATH)
 	
-	var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
+	# Если на Android и основной путь не найден, пробуем альтернативный
+	if OS.get_name() == "Android":
+		var alt_path = "user://zpg_savegame.save"
+		if FileAccess.file_exists(alt_path):
+			SAVE_PATH = alt_path
+			return _load_from_path(alt_path)
+	
+	print("Файл сохранения не найден: " + SAVE_PATH)
+	return false
+
+func _load_from_path(path: String) -> bool:
+	var file = FileAccess.open(path, FileAccess.READ)
 	if file:
 		var json = file.get_as_text()
 		file.close()
@@ -53,9 +113,10 @@ func load_game():
 		if error == OK:
 			var save_data = json_object.data
 			_apply_save_data(save_data)
+			print("Игра загружена: " + path)
 			return true
 		else:
-			push_error("Ошибка парсинга сохранения")
+			push_error("Ошибка парсинга сохранения: " + path)
 	return false
 
 func _get_player_stats_data() -> Dictionary:
@@ -135,10 +196,30 @@ func _apply_achievements_data(achievements_data: Dictionary):
 				achievement_manager.achievements[achievement_id].unlocked = achievements_data[achievement_id]
 		print("Достижения загружены")
 
-
 func clear_save():
 	if FileAccess.file_exists(SAVE_PATH):
-		var dir = DirAccess.open(OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS).path_join(SAVE_DIR))
+		var dir = DirAccess.open(SAVE_PATH.get_base_dir())
 		if dir:
-			var error = dir.remove("savegame.save")
-			
+			var error = dir.remove(SAVE_PATH.get_file())
+			if error == OK:
+				print("Сохранение удалено: " + SAVE_PATH)
+			else:
+				push_error("Ошибка удаления сохранения: " + str(error))
+	
+	# Также удаляем альтернативный путь на Android
+	if OS.get_name() == "Android":
+		var alt_path = "user://zpg_savegame.save"
+		if FileAccess.file_exists(alt_path):
+			var dir = DirAccess.open(alt_path.get_base_dir())
+			if dir:
+				dir.remove(alt_path.get_file())
+
+# Функция для отладки - показывает информацию о путях сохранения
+func debug_save_info():
+	print("=== Save System Debug Info ===")
+	print("Platform: " + OS.get_name())
+	print("Save Path: " + SAVE_PATH)
+	print("User Data Dir: " + OS.get_user_data_dir())
+	print("Documents Dir: " + OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS))
+	print("Save File Exists: " + str(FileAccess.file_exists(SAVE_PATH)))
+	print("==============================")

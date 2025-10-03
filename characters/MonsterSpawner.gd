@@ -1,16 +1,33 @@
 # MonsterSpawner.gd
 extends Node
 
-## Радиус в чанках вокруг игрока, в котором могут появляться монстры
-@export var SPAWN_RADIUS := 20
-## Радиус в чанках, за пределами которого монстры удаляются
-@export var DESPAWN_RADIUS := 22
-## Максимальное количество монстров на карте одновременно
-@export var MAX_MONSTERS := 4
+## ← НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ АДАПТИВНОСТИ
+var screen_size: Vector2
+var is_mobile: bool = false
+
+## Радиус в чанках вокруг игрока, в котором могут появляться монстры (будет вычисляться автоматически)
+@export var SPAWN_RADIUS := 25
+## Радиус в чанках, за пределами которого монстры удаляются (будет вычисляться автоматически)
+@export var DESPAWN_RADIUS := 27
+## Базовое максимальное количество монстров на карте одновременно
+@export var BASE_MAX_MONSTERS := 4
 ## Шанс спавна монстра в подходящем чанке (0.0 - 1.0)
 @export var SPAWN_CHANCE := 0.1
 ## Интервал обновления системы спавна в секундах
 @export var UPDATE_INTERVAL := 0.2
+
+## ← НОВЫЕ ЭКСПОРТНЫЕ ПЕРЕМЕННЫЕ ДЛЯ НАСТРОЙКИ
+@export_group("Adaptive Settings")
+## Запас вокруг экрана в тайлах (должен совпадать с MapGenerator)
+@export var SCREEN_MARGIN_TILES := 7
+## Минимальный радиус для мобильных устройств
+@export var MIN_RADIUS_MOBILE := 20
+## Минимальный радиус для десктопа
+@export var MIN_RADIUS_DESKTOP := 25
+## Базовое количество монстров при минимальном радиусе
+@export var BASE_MONSTERS_AT_MIN_RADIUS := 4
+## Дополнительные монстры при максимальном радиусе
+@export var EXTRA_MONSTERS_AT_MAX_RADIUS := 6
 
 ## Размер тайла карты в пикселях (должен совпадать с MapGenerator)
 const TILE_SIZE := 32
@@ -26,6 +43,8 @@ var _update_cooldown := 0.0
 var _spawn_queue: Array = []
 # Добавляем свойство для хранения уровня игрока
 var player_level: int = 1
+# ← НОВАЯ ПЕРЕМЕННАЯ: текущее максимальное количество монстров
+var current_max_monsters: int = 4
 
 
 ## Инициализация спавнера
@@ -37,7 +56,59 @@ func _ready() -> void:
 	_find_player()
 	_cleanup_existing_monsters()
 	
+	# ← ИНИЦИАЛИЗИРУЕМ АДАПТИВНЫЕ РАДИУСЫ И КОЛИЧЕСТВО МОНСТРОВ
+	_init_adaptive_settings()
+	
 	_update_monsters.call_deferred()
+
+
+## ← НОВАЯ ФУНКЦИЯ: ИНИЦИАЛИЗАЦИЯ АДАПТИВНЫХ НАСТРОЕК
+func _init_adaptive_settings():
+	# Получаем размер экрана
+	screen_size = get_viewport().get_visible_rect().size
+	is_mobile = screen_size.x < 790
+	
+	print("MonsterSpawner: Размер экрана - ", screen_size)
+	print("MonsterSpawner: Тип устройства - ", "мобильное" if is_mobile else "десктоп")
+	
+	# Вычисляем необходимый радиус в тайлах (как в MapGenerator)
+	var screen_width_tiles = ceil(screen_size.x / TILE_SIZE)
+	var screen_height_tiles = ceil(screen_size.y / TILE_SIZE)
+	var max_screen_dimension = max(screen_width_tiles, screen_height_tiles)
+	var calculated_radius = ceil((max_screen_dimension / 2) + SCREEN_MARGIN_TILES)
+	
+	# Устанавливаем радиусы с учетом минимальных значений
+	var min_radius = MIN_RADIUS_MOBILE if is_mobile else MIN_RADIUS_DESKTOP
+	SPAWN_RADIUS = max(calculated_radius, min_radius)
+	DESPAWN_RADIUS = SPAWN_RADIUS + 2  # Всегда на 2 больше чем SPAWN_RADIUS
+	
+	# ← ВЫЧИСЛЯЕМ КОЛИЧЕСТВО МОНСТРОВ В ЗАВИСИМОСТИ ОТ РАДИУСА
+	_calculate_monster_count()
+	
+	print("MonsterSpawner: SPAWN_RADIUS = ", SPAWN_RADIUS)
+	print("MonsterSpawner: DESPAWN_RADIUS = ", DESPAWN_RADIUS)
+	print("MonsterSpawner: MAX_MONSTERS = ", current_max_monsters)
+	print("MonsterSpawner: Размер экрана в тайлах - ", Vector2(screen_width_tiles, screen_height_tiles))
+
+
+## ← НОВАЯ ФУНКЦИЯ: ВЫЧИСЛЕНИЕ КОЛИЧЕСТВА МОНСТРОВ
+func _calculate_monster_count():
+	# Определяем минимальный и максимальный возможные радиусы
+	var min_possible_radius = MIN_RADIUS_MOBILE
+	var max_possible_radius = max(SPAWN_RADIUS, MIN_RADIUS_DESKTOP + 10)  # Макс радиус + запас
+	
+	# Линейная интерполяция количества монстров в зависимости от радиуса
+	var radius_ratio = float(SPAWN_RADIUS - min_possible_radius) / float(max_possible_radius - min_possible_radius)
+	radius_ratio = clamp(radius_ratio, 0.0, 1.0)  # Ограничиваем от 0 до 1
+	
+	# Вычисляем количество монстров
+	current_max_monsters = BASE_MONSTERS_AT_MIN_RADIUS + int(radius_ratio * (EXTRA_MONSTERS_AT_MAX_RADIUS - BASE_MONSTERS_AT_MIN_RADIUS))
+	
+	# Ограничиваем минимальное и максимальное количество
+	current_max_monsters = max(current_max_monsters, BASE_MONSTERS_AT_MIN_RADIUS)
+	current_max_monsters = min(current_max_monsters, BASE_MONSTERS_AT_MIN_RADIUS + EXTRA_MONSTERS_AT_MAX_RADIUS)
+	
+	print("MonsterSpawner: Радиус ", SPAWN_RADIUS, " -> монстров: ", current_max_monsters)
 
 
 ## Удаляет монстров, уже находящихся на сцене при запуске
@@ -108,11 +179,12 @@ func _spawn_monsters() -> void:
 			if status.id == "lucky_day":
 				has_lucky_day = true
 	
-	var max_monsters_count = MAX_MONSTERS
+	# ← ИСПОЛЬЗУЕМ АДАПТИВНОЕ КОЛИЧЕСТВО МОНСТРОВ
+	var max_monsters_count = current_max_monsters
 	if has_lucky_day:
-		max_monsters_count = MAX_MONSTERS * 2  # ← БОЛЬШЕ МОНСТРОВ ДЛЯ ФАРМА!
+		max_monsters_count = current_max_monsters * 2  # ← БОЛЬШЕ МОНСТРОВ ДЛЯ ФАРМА!
 	elif has_bad_luck:
-		max_monsters_count = MAX_MONSTERS * 2  # ← ТОЖЕ БОЛЬШЕ, НО С ШТРАФАМИ
+		max_monsters_count = current_max_monsters * 2  # ← ТОЖЕ БОЛЬШЕ, НО С ШТРАФАМИ
 	
 	var current_count = _count_monsters()
 	if current_count >= randi_range(0, max_monsters_count):

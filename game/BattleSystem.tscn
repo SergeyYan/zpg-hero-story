@@ -25,9 +25,9 @@ offset_left = 64.0
 offset_top = 8.0
 offset_right = 544.0
 offset_bottom = 216.0
-theme_override_constants/table_v_separation = 10
-theme_override_constants/table_h_separation = 10
 theme_override_constants/shadow_outline_size = 5
+theme_override_constants/table_h_separation = 10
+theme_override_constants/table_v_separation = 10
 bbcode_enabled = true
 scroll_active = false
 scroll_following = true
@@ -46,15 +46,11 @@ offset_bottom = 352.0
 
 [node name="PlayerStats" type="VBoxContainer" parent="StatsPlayer"]
 self_modulate = Color(0, 0, 0, 1)
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = -176.0
-offset_right = 200.0
-offset_bottom = -8.0
-grow_vertical = 0
+layout_mode = 0
+offset_left = 25.0
+offset_top = -8.0
+offset_right = 217.0
+offset_bottom = 160.0
 alignment = 1
 
 [node name="StatsMonster" type="Panel" parent="."]
@@ -67,10 +63,10 @@ offset_bottom = 352.0
 [node name="EnemyStats" type="VBoxContainer" parent="StatsMonster"]
 self_modulate = Color(0, 0, 0, 1)
 layout_mode = 0
-offset_left = 8.0
-offset_top = 8.0
-offset_right = 200.0
-offset_bottom = 176.0
+offset_left = 25.0
+offset_top = -8.0
+offset_right = 217.0
+offset_bottom = 160.0
 alignment = 1
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
