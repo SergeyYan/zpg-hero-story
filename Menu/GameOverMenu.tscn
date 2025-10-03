@@ -82,7 +82,7 @@ text = "выйти из игры"
 [node name="CharacterBody2D" type="CharacterBody2D" parent="."]
 
 [node name="death" type="AnimatedSprite2D" parent="CharacterBody2D"]
-position = Vector2(407, 488)
+position = Vector2(167.99998, 503.99997)
 rotation = 1.5708
 scale = Vector2(5, 5)
 sprite_frames = SubResource("SpriteFrames_huh68")

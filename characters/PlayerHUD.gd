@@ -86,7 +86,7 @@ func _detect_device_type():
 	
 	# Определяем мобильное устройство по соотношению сторон и размеру
 	var aspect_ratio = screen_size.x / screen_size.y
-	is_mobile = screen_size.x < 600 or aspect_ratio < 1.2
+	is_mobile = screen_size.x < 790
 	
 	# ← НОВОЕ: определяем очень маленькие экраны
 	is_small_mobile = screen_size.x < 400
@@ -115,7 +115,7 @@ func _setup_responsive_ui():
 	
 	# Показываем кнопку меню только на мобильных устройствах
 	if menu_button:
-		menu_button.visible = is_mobile or is_small_mobile
+		menu_button.visible = is_mobile or is_small_mobile or !is_small_mobile or !is_mobile
 		print("Menu button visibility: ", menu_button.visible)
 	
 	# Обновляем шрифты для всех элементов

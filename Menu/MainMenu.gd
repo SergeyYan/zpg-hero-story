@@ -56,7 +56,7 @@ func _detect_device_type():
 	print("Размер экрана главного меню: ", screen_size)
 	
 	# Для 800x600 считаем десктопом
-	is_mobile = screen_size.x < 600
+	is_mobile = screen_size.x < 790
 	
 	if is_mobile:
 		print("Главное меню: обнаружено мобильное устройство")
