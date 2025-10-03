@@ -15,6 +15,7 @@ var icon: Texture2D
 var speed_modifier: float = 1.0
 var strength_modifier: int = 0
 var fortitude_modifier: int = 0
+var agility_modifier: int = 0
 var endurance_modifier: int = 0
 var luck_modifier: int = 0
 var health_regen_modifier: float = 0.0

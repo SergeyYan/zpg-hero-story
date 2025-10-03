@@ -8,6 +8,7 @@ extends CanvasLayer
 
 @onready var strength_label: Label = $StatsContainer/StrengthLabel
 @onready var fortitude_label: Label = $StatsContainer/FortitudeLabel  
+@onready var agility_label: Label = $StatsContainer/AgilityLabel  # ← ДОБАВЛЕНО
 @onready var endurance_label: Label = $StatsContainer/EnduranceLabel
 @onready var luck_label: Label = $StatsContainer/LuckLabel
 @onready var regen_label: Label = $StatsContainer/RegenLabel
@@ -279,7 +280,7 @@ func _update_font_sizes():
 	# Обновляем шрифты для всех текстовых элементов
 	var labels = [
 		health_label, level_label, strength_label, fortitude_label,
-		endurance_label, luck_label, regen_label, kills_label
+		agility_label, endurance_label, luck_label, regen_label, kills_label  # ← ДОБАВЛЕНО agility_label
 	]
 	
 	for label in labels:
@@ -318,6 +319,8 @@ func update_stats_display():
 		strength_label.text = "Сила: %d" % effective_stats["strength"]
 	if fortitude_label:
 		fortitude_label.text = "Крепость: %d" % effective_stats["fortitude"]
+	if agility_label:  # ← ДОБАВЛЕНО
+		agility_label.text = "Ловкость: %d" % effective_stats["agility"]
 	if endurance_label:
 		endurance_label.text = "Выносливость: %d" % effective_stats["endurance"]
 	if luck_label:

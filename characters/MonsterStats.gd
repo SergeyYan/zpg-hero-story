@@ -11,6 +11,7 @@ var stats_system: StatsSystem = StatsSystem.new()
 @export var enemy_name: String = "Монстр"
 @export var strength: int = 0
 @export var fortitude: int = 0
+@export var agility: int = 0
 @export var endurance: int = 0
 @export var luck: int = 0
 @export var exp_reward: int = get_exp_reward()
@@ -20,6 +21,7 @@ var monster_level: int = 1
 var _stats_initialized: bool = false  # ← Флаг инициализации
 var _base_strength: int = 0  # ← Сохраняем базу отдельно
 var _base_fortitude: int = 0
+var _base_agility: int = 0
 var _base_endurance: int = 0
 var _base_luck: int = 0
 
@@ -38,8 +40,8 @@ func apply_level_scaling(player_level: int):
 	# ← ИСПРАВЛЯЕМ УСЛОВИЕ: масштабируем если уровень ИГРОКА выше ИЛИ характеристики не соответствуют
 	if player_level <= monster_level and _stats_initialized:
 		# ← ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: если характеристики как у 1 уровня - все равно масштабируем
-		var total_stats = strength + fortitude + endurance + luck
-		if total_stats > 3 and _stats_initialized:  # Если характеристики уже правильные
+		var total_stats = strength + fortitude + agility + endurance + luck
+		if total_stats > 4 and _stats_initialized:  # Если характеристики уже правильные
 			return
 		
 	monster_level = player_level
@@ -50,6 +52,7 @@ func _scale_stats_by_level():
 	# ← ВОССТАНАВЛИВАЕМ ИСХОДНУЮ БАЗУ (без случайных очков!)
 	strength = 1  # ← ФИКСИРОВАННАЯ база: 1 сила
 	fortitude = 0  # ← остальные 0
+	agility = 0
 	endurance = 0
 	luck = 0
 	
@@ -74,16 +77,18 @@ func _scale_stats_by_level():
 
 	if points_to_add > 0:
 		for i in range(points_to_add):
-			var random_stat = randi() % 4
+			var random_stat = randi() % 5
 			match random_stat:
 				0: strength += 1
 				1: fortitude += 1  
-				2: endurance += 1
-				3: luck += 1
+				2: agility += 1
+				3: endurance += 1
+				4: luck += 1
 	
 	# Обновляем систему
 	stats_system.strength = strength
 	stats_system.fortitude = fortitude
+	stats_system.agility = agility
 	stats_system.endurance = endurance
 	stats_system.luck = luck
 	
@@ -94,27 +99,31 @@ func _generate_random_stats():
 	# Монстр 1 уровня: 3 очка (1 сила + 2 случайных)
 	strength = 1
 	fortitude = 0
+	agility = 0
 	endurance = 0
 	luck = 0
 	
 	# Сохраняем базу
 	_base_strength = strength
 	_base_fortitude = fortitude
+	_base_agility = agility
 	_base_endurance = endurance
 	_base_luck = luck
 	
 	# Добавляем 2 случайных очка
 	for i in range(2):
-		var random_stat = randi() % 4
+		var random_stat = randi() % 5
 		match random_stat:
 			0: strength += 1
 			1: fortitude += 1
-			2: endurance += 1
-			3: luck += 1
+			2: agility += 1
+			3: endurance += 1
+			4: luck += 1
 	
 	# Обновляем систему
 	stats_system.strength = strength
 	stats_system.fortitude = fortitude
+	stats_system.agility = agility
 	stats_system.endurance = endurance
 	stats_system.luck = luck
 	#exp_reward = 10 * (strength + fortitude + endurance + luck) + (endurance * 5)
@@ -123,6 +132,11 @@ func _generate_random_stats():
 func get_max_health() -> int: return stats_system.get_max_health()
 func get_damage() -> int: return stats_system.get_damage()
 func get_defense() -> int: return stats_system.get_defense()
+func get_dodge_chance_against(attacker_luck: int) -> float:
+	return stats_system.get_dodge_chance(agility, attacker_luck)
+
+func get_hit_chance_against(defender_agility: int) -> float:
+	return stats_system.get_hit_chance(luck, defender_agility)
 
 func take_damage(amount: int):
 	var actual_damage = max(1, amount)

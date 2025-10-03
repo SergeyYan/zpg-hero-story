@@ -70,14 +70,29 @@ func save_game():
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		var json = JSON.stringify(save_data)
-		file.store_string(json)
+		var bytes_written = file.store_string(json)
+		
+		# ← БЕЗОПАСНОЕ ПОЛУЧЕНИЕ РАЗМЕРА
+		var file_size = 0
+		if file.is_open():  # ← Дополнительная проверка
+			file_size = file.get_length()
+		
 		file.close()
+		
 		print("Игра сохранена: " + SAVE_PATH)
-		print("Размер файла: " + str(file.get_length()) + " байт")
+		print("Записано байт: " + str(bytes_written))
+		print("Размер файла: " + str(file_size) + " байт")
 		
 		# Проверяем что файл действительно записался
 		if FileAccess.file_exists(SAVE_PATH):
 			print("Файл сохранения подтвержден")
+			
+			# ← АЛЬТЕРНАТИВНЫЙ СПОСОБ ПРОВЕРКИ РАЗМЕРА
+			var check_file = FileAccess.open(SAVE_PATH, FileAccess.READ)
+			if check_file:
+				var actual_size = check_file.get_length()
+				check_file.close()
+				print("Фактический размер файла: " + str(actual_size) + " байт")
 		else:
 			print("ОШИБКА: Файл не найден после сохранения!")
 	else:
@@ -156,6 +171,7 @@ func _get_player_stats_data() -> Dictionary:
 			"available_points": player_stats.available_points,
 			"strength": player_stats.stats_system.strength,
 			"fortitude": player_stats.stats_system.fortitude,
+			"agility": player_stats.stats_system.agility,
 			"endurance": player_stats.stats_system.endurance,
 			"luck": player_stats.stats_system.luck,
 			"monsters_killed": player_stats.monsters_killed,
@@ -193,6 +209,7 @@ func _apply_save_data(save_data: Dictionary):
 		player_stats.available_points = stats.get("available_points", 0)
 		player_stats.stats_system.strength = stats.get("strength", 1)
 		player_stats.stats_system.fortitude = stats.get("fortitude", 1)
+		player_stats.stats_system.agility = stats.get("agility", 1)
 		player_stats.stats_system.endurance = stats.get("endurance", 1)
 		player_stats.stats_system.luck = stats.get("luck", 1)
 		player_stats.monsters_killed = stats.get("monsters_killed", 0)

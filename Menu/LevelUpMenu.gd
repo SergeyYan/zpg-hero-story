@@ -6,10 +6,12 @@ signal points_distributed
 
 @onready var strength_label: Label = $Panel/VBoxContainer/HBOXstr/StrengthLabel
 @onready var fortitude_label: Label = $Panel/VBoxContainer/HBOXfort/FortitudeLabel
+@onready var agility_label: Label = $Panel/VBoxContainer/HBOXagil/AgilityLabel
 @onready var endurance_label: Label = $Panel/VBoxContainer/HBOXend/EnduranceLabel
 @onready var points_label: Label = $Panel/VBoxContainer/PointsLabel
 @onready var strength_button: Button = $Panel/VBoxContainer/HBOXstr/StrengthButton
 @onready var fortitude_button: Button = $Panel/VBoxContainer/HBOXfort/FortitudeButton
+@onready var agility_button: Button = $Panel/VBoxContainer/HBOXagil/AgilityButton
 @onready var endurance_button: Button = $Panel/VBoxContainer/HBOXend/EnduranceButton
 @onready var confirm_button: Button = $Panel/VBoxContainer/ConfirmButton
 @onready var luck_label: Label = $Panel/VBoxContainer/HBOXluck/LuckLable
@@ -133,6 +135,7 @@ func update_display():
 		# Полные названия характеристик
 		strength_label.text = "Сила: %d" % player_stats.stats_system.strength
 		fortitude_label.text = "Крепость: %d" % player_stats.stats_system.fortitude
+		agility_label.text = "Ловкость: %d" % player_stats.stats_system.agility
 		endurance_label.text = "Выносливость: %d" % player_stats.stats_system.endurance
 		luck_label.text = "Удача: %d" % player_stats.stats_system.luck
 	
@@ -141,7 +144,8 @@ func update_display():
 	update_timer_display()
 	
 	strength_button.disabled = available_points <= 0
-	fortitude_button.disabled = available_points <= 0  
+	fortitude_button.disabled = available_points <= 0
+	agility_button.disabled = available_points <= 0  
 	endurance_button.disabled = available_points <= 0
 	luck_button.disabled = available_points <= 0
 	confirm_button.disabled = available_points > 0
@@ -166,18 +170,20 @@ func auto_distribute_points():
 	if available_points <= 0:
 		return
 
-	var stats_to_upgrade = ["endurance", "strength", "fortitude", "luck"]
+	var stats_to_upgrade = ["endurance", "strength", "fortitude","agility" ,"luck"]
 	var current_stat_index = 0
 	
 	while available_points > 0:
-		var random_stat = randi() % 3
+		var random_stat = randi() % 4
 		
 		match random_stat:
 			0:
 				player_stats.increase_strength()
 			1:
 				player_stats.increase_fortitude()
-			2:
+			2: 
+				player_stats.increase_agility()
+			3:
 				player_stats.increase_endurance()
 		
 		available_points = player_stats.available_points
@@ -200,6 +206,12 @@ func _on_fortitude_button_pressed():
 func _on_endurance_button_pressed():
 	if available_points > 0:
 		player_stats.increase_endurance()
+		available_points = player_stats.available_points
+		update_display()
+
+func _on_agility_button_pressed() -> void:
+	if available_points > 0:
+		player_stats.increase_agility()
 		available_points = player_stats.available_points
 		update_display()
 

@@ -72,7 +72,15 @@ text = "Крепость:"
 layout_mode = 2
 max_value = 1000.0
 
-[node name="Label3" type="Label" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+[node name="Label6" type="Label" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+text = "Ловкость:"
+
+[node name="AgilitySpin" type="SpinBox" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+max_value = 1000.0
+
+[node name="Label5" type="Label" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
 layout_mode = 2
 text = "Выносливость:"
 
