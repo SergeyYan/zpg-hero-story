@@ -31,9 +31,10 @@ uppercase = true
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_colors/icon_pressed_color = Color(0, 0.427451, 0, 1)
-theme_override_colors/icon_hover_color = Color(0, 0.313726, 0, 0.486275)
 theme_override_colors/icon_disabled_color = Color(0, 0, 0, 0)
+theme_override_colors/icon_hover_color = Color(0, 0.313726, 0, 0.486275)
+theme_override_colors/icon_pressed_color = Color(0, 0.427451, 0, 1)
+theme_override_font_sizes/font_size = 20
 text = "Продолжить"
 icon = ExtResource("2_01sa8")
 
@@ -41,9 +42,10 @@ icon = ExtResource("2_01sa8")
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_colors/icon_pressed_color = Color(0.49785, 0.000820786, 1.44392e-07, 1)
-theme_override_colors/icon_hover_color = Color(0.537255, 0, 0, 0.466667)
 theme_override_colors/icon_disabled_color = Color(0, 0, 0, 0)
+theme_override_colors/icon_hover_color = Color(0.537255, 0, 0, 0.466667)
+theme_override_colors/icon_pressed_color = Color(0.49785, 0.000820786, 1.44392e-07, 1)
+theme_override_font_sizes/font_size = 20
 text = "Начать заново"
 icon = ExtResource("3_g01as")
 
@@ -51,21 +53,31 @@ icon = ExtResource("3_g01as")
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/font_size = 20
 text = "Сохранить"
 
 [node name="LoadButton" type="Button" parent="VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/font_size = 20
 text = "Загрузить"
+
+[node name="FullscreenButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 18
+text = "Полноэкранный режим"
 
 [node name="QuitButton" type="Button" parent="VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_colors/icon_pressed_color = Color(0, 0, 0.529412, 1)
-theme_override_colors/icon_hover_color = Color(0, 0, 0.580392, 0.52549)
 theme_override_colors/icon_disabled_color = Color(0, 0, 0, 0)
+theme_override_colors/icon_hover_color = Color(0, 0, 0.580392, 0.52549)
+theme_override_colors/icon_pressed_color = Color(0, 0, 0.529412, 1)
+theme_override_font_sizes/font_size = 20
 text = "Выйти из игры"
 icon = ExtResource("4_2ouol")
 
@@ -73,4 +85,5 @@ icon = ExtResource("4_2ouol")
 [connection signal="pressed" from="VBoxContainer/RestartButton" to="." method="_on_restart_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/SaveButton" to="." method="_on_save_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/LoadButton" to="." method="_on_load_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/FullscreenButton" to="." method="_on_check_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]

@@ -147,16 +147,16 @@ func _setup_desktop_layout():
 		stats_player.visible = true
 		stats_player.size = Vector2(stats_container_width, 150)
 		stats_player.position = Vector2(
-			(screen_size.x - stats_monster.size.x) * 0.29,  # Левая часть экрана
-			(screen_size.y - stats_player.size.y) / 2.15
+			(screen_size.x - stats_monster.size.x) * 0.265,  # Левая часть экрана
+			(screen_size.y - stats_player.size.y) / 2.25
 		)
 	
 	if stats_monster:
 		stats_monster.visible = true
 		stats_monster.size = Vector2(stats_container_width, 150)
 		stats_monster.position = Vector2(
-			(screen_size.x - stats_monster.size.x) * 0.71,  # Правая часть экрана
-			(screen_size.y - stats_monster.size.y) / 2.15
+			(screen_size.x - stats_monster.size.x) * 0.735,  # Правая часть экрана
+			(screen_size.y - stats_monster.size.y) / 2.25
 		)
 		
 	# Стандартные размеры для десктопа
@@ -374,7 +374,7 @@ func enemy_attack():
 
 func end_battle(victory: bool):
 	if victory and current_enemy_stats:
-		var exp_gained = current_enemy_stats.exp_reward
+		var exp_gained = current_enemy_stats.get_exp_reward()
 		player_stats_instance.add_exp(exp_gained)
 		player_stats_instance.apply_post_battle_effects()
 		player_stats_instance.add_monster_kill()

@@ -21,8 +21,8 @@ AchievementManager="*res://game/AchievementManager.gd.gd"
 
 [display]
 
-window/size/viewport_width=400
-window/size/viewport_height=760
+window/size/viewport_width=1024
+window/size/viewport_height=576
 window/size/resizable=false
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"

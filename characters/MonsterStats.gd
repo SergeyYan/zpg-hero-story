@@ -138,10 +138,12 @@ func heal(amount: int):
 	health_changed.emit(current_health)
 
 func get_exp_reward() -> int:
-	var exp_rand = randi() % 10
+	var base_exp = 20
+	var final_exp = base_exp
+	
 	# ← ПРОВЕРЯЕМ, ЧТО МЫ В ДЕРЕВЕ СЦЕНЫ
 	if not is_inside_tree():
-		return 20 + exp_rand  # Возвращаем базовый опыт если не в дереве
+		return 20 + (randi() % 10)
 	
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	var has_bad_luck = false
@@ -154,14 +156,14 @@ func get_exp_reward() -> int:
 			if status.id == "lucky_day":
 				has_lucky_day = true
 	
-	var base_exp = 20
-	var final_exp = base_exp
-	
-	if has_bad_luck:
+	# ← ПРИМЕНЯЕМ МОДИФИКАТОРЫ
+	if has_bad_luck and has_lucky_day:
+		final_exp = base_exp  # Баланс
+	elif has_bad_luck:
 		final_exp = int(base_exp / 2)  # ← 50% при bad_luck
 	elif has_lucky_day:
 		final_exp = int(base_exp * 1.5)  # ← 150% при lucky_day
 
 	# Добавляем небольшую случайность
-	final_exp += exp_rand
+	final_exp += randi() % 10
 	return final_exp

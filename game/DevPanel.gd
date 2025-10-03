@@ -205,8 +205,8 @@ func _create_status_grid():
 			"lucky_day", "thinker"
 		],
 		"## НЕГАТИВНЫЕ": [
-			"crying", "bad_luck", "swamp_bog", "stunned", 
-			"sore_knees", "exhausted", "minor_injury", "snake_bite", "sleepy"
+			"crying", "swamp_bog", "stunned", 
+			"sore_knees", "exhausted", "minor_injury", "sleepy"
 		],
 		"## СУПЕР ОТРИЦАТЕЛЬНЫЕ": [
 			"bad_luck", "snake_bite"

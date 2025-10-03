@@ -103,9 +103,9 @@ layout_mode = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/Panel"]
 layout_mode = 0
 offset_left = -129.0
-offset_top = -76.0
+offset_top = -136.0
 offset_right = 129.0
-offset_bottom = 75.0
+offset_bottom = 115.0
 
 [node name="TitleLabel" type="Label" parent="CenterContainer/Panel/VBoxContainer"]
 layout_mode = 2
@@ -116,14 +116,24 @@ vertical_alignment = 1
 
 [node name="NewGameButton" type="Button" parent="CenterContainer/Panel/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "Новая игра"
 
 [node name="LoadGameButton" type="Button" parent="CenterContainer/Panel/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "Загрузить"
+
+[node name="FullscreenButton" type="CheckButton" parent="CenterContainer/Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Полноэкранный режим"
+alignment = 1
+icon_alignment = 1
 
 [node name="QuitButton" type="Button" parent="CenterContainer/Panel/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "Выйти из игры"
 
 [node name="MenuPlayer" type="CharacterBody2D" parent="."]
@@ -154,4 +164,5 @@ flip_h = true
 
 [connection signal="pressed" from="CenterContainer/Panel/VBoxContainer/NewGameButton" to="." method="_on_new_game_button_pressed"]
 [connection signal="pressed" from="CenterContainer/Panel/VBoxContainer/LoadGameButton" to="." method="_on_load_game_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/VBoxContainer/FullscreenButton" to="." method="_on_fullscreen_button_pressed"]
 [connection signal="pressed" from="CenterContainer/Panel/VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]

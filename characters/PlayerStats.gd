@@ -438,7 +438,7 @@ func apply_level_up_effects():
 			var positive_statuses = ["thinker", "lucky_day"]
 			add_status(positive_statuses[randi() % positive_statuses.size()])
 		else:
-			var negative_statuses = ["snake_bite", "bad_luck"]
+			var negative_statuses = ["bad_luck"]
 			add_status(negative_statuses[randi() % negative_statuses.size()])
 
 func take_damage(amount: int):

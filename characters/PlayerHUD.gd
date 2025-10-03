@@ -162,7 +162,7 @@ func _setup_small_mobile_layout():
 	# СЧЕТЧИК УБИЙСТВ - внизу по центру
 	if kill_box:
 		kill_box.position = Vector2(
-			(screen_size.x - kill_box.size.x) / 2.1,
+			(screen_size.x - kill_box.size.x) / 2,
 			screen_size.y - 40
 		)
 		kill_box.size = Vector2(150, 30)
@@ -215,7 +215,7 @@ func _setup_mobile_layout():
 	# СЧЕТЧИК УБИЙСТВ - внизу по центру
 	if kill_box:
 		kill_box.position = Vector2(
-			(screen_size.x - kill_box.size.x) / 2.2,
+			(screen_size.x - kill_box.size.x) / 2,
 			screen_size.y - 50
 		)
 		kill_box.size = Vector2(200, 40)
@@ -264,7 +264,7 @@ func _setup_desktop_layout():
 	# СЧЕТЧИК УБИЙСТВ - по центру внизу
 	if kill_box:
 		kill_box.position = Vector2(
-			(screen_size.x - kill_box.size.x) / 2.3,
+			(screen_size.x - kill_box.size.x) / 2,
 			screen_size.y - 50
 		)
 		kill_box.size = Vector2(250, 40)
