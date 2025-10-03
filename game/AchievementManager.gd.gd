@@ -24,6 +24,18 @@ var achievements: Dictionary = {
 		"unlocked": false,
 		"icon": "res://assets/achievements/level_20.png"
 	},
+	"level_50": {
+		"name": "Мастер", 
+		"desc": "Достигните 50 уровня",
+		"unlocked": false,
+		"icon": "res://assets/achievements/level_50.png"
+	},
+	"level_100": {
+		"name": "Мастер", 
+		"desc": "Достигните 100 уровня",
+		"unlocked": false,
+		"icon": "res://assets/achievements/level_100.png"
+	},
 	"100_kills": {
 		"name": "Охотник", 
 		"desc": "Убейте 100 монстров",
@@ -36,17 +48,65 @@ var achievements: Dictionary = {
 		"unlocked": false,
 		"icon": "res://assets/achievements/500_kills.png"
 	},
+	"1000_kills": {
+		"name": "Легендарный охотник", 
+		"desc": "Убейте 1000 монстров",
+		"unlocked": false,
+		"icon": "res://assets/achievements/1000_kills.png"
+	},
 	"max_luck": {
 		"name": "Везунчик", 
 		"desc": "Максимально прокачайте удачу",
 		"unlocked": false,
 		"icon": "res://assets/achievements/max_luck.png"
 	},
+	"max_agility": {
+		"name": "Тень в ночи", 
+		"desc": "Максимально прокачайте ловкость",
+		"unlocked": false,
+		"icon": "res://assets/achievements/max_agility.png"
+	},
+	"max_fortitude": {
+		"name": "Несокрушимый", 
+		"desc": "Максимально прокачайте крепость",
+		"unlocked": false,
+		"icon": "res://assets/achievements/max_fortitude.png"
+	},
+	"max_strength": {
+		"name": "Силач", 
+		"desc": "Максимально прокачайте силу",
+		"unlocked": false,
+		"icon": "res://assets/achievements/max_strength.png"
+	},
+	"max_endurance": {
+		"name": "Живучий", 
+		"desc": "Максимально прокачайте выносливость",
+		"unlocked": false,
+		"icon": "res://assets/achievements/max_endurance.png"
+	},
 	"equals_all_stats": {
 		"name": "Совершенство", 
-		"desc": "прокачайте все характеристики поровну",
+		"desc": "Прокачайте все 5 характеристик поровну",
 		"unlocked": false,
 		"icon": "res://assets/achievements/equals_all_stats.png"
+	},
+	"perfect_balance": {
+		"name": "Идеальный баланс", 
+		"desc": "Прокачайте все 5 характеристик поровну до 20",
+		"unlocked": false,
+		"icon": "res://assets/achievements/perfect_balance.png"
+	},
+	"ultimate_balance": {
+		"name": "Абсолютный баланс", 
+		"desc": "Прокачайте все 5 характеристик поровну до 50",
+		"unlocked": false,
+		"icon": "res://assets/achievements/ultimate_balance.png"
+	},
+	"jack_of_all_trades": {
+		"name": "Мастер на все руки", 
+		"desc": "Прокачайте все характеристики хотя бы до 5",
+		"unlocked": false,
+		"icon": "res://assets/achievements/jack_of_all_trades.png"
 	},
 	"first_death": {
 		"name": "Первая смерть", 
@@ -134,16 +194,30 @@ func check_kill_achievements(kills_count: int):
 		await unlock_achievement("100_kills")
 	if kills_count >= 500:
 		await unlock_achievement("500_kills")
+	if kills_count >= 1000:
+		await unlock_achievement("1000_kills")
 
 func check_level_achievements(level: int):
 	if level >= 10:
 		await unlock_achievement("level_10")
 	if level >= 20:
 		await unlock_achievement("level_20")
+	if level >= 50:
+		await unlock_achievement("level_50")
+	if level >= 100:
+		await unlock_achievement("level_100")
 
 func check_stats_achievements(stats_system: StatsSystem):
 	if stats_system.luck >= 100:
 		await unlock_achievement("max_luck")
+	if stats_system.agility >= 100:
+		await unlock_achievement("max_agility")
+	if stats_system.fortitude >= 100:
+		await unlock_achievement("max_fortitude")
+	if stats_system.strength >= 100:
+		await unlock_achievement("max_strength")
+	if stats_system.endurance >= 100:
+		await unlock_achievement("max_endurance")
 	
 	# Проверяем все характеристики на максимум (например, 20)
 	if (stats_system.strength == stats_system.fortitude and 
@@ -152,7 +226,29 @@ func check_stats_achievements(stats_system: StatsSystem):
 		stats_system.luck == stats_system.strength and
 		stats_system.strength > 1):
 		await unlock_achievement("equals_all_stats")
-
+	
+	if (stats_system.strength >= 5 and 
+		stats_system.fortitude >= 5 and 
+		stats_system.agility >= 5 and 
+		stats_system.endurance >= 5 and 
+		stats_system.luck >= 5):
+		await unlock_achievement("jack_of_all_trades")
+	
+	# Идеальный баланс - все характеристики равны 20
+	if (stats_system.strength == 20 and 
+		stats_system.fortitude == 20 and 
+		stats_system.agility == 20 and 
+		stats_system.endurance == 20 and 
+		stats_system.luck == 20):
+		await unlock_achievement("perfect_balance")
+	
+	# Абсолютный баланс - все характеристики равны 50
+	if (stats_system.strength == 50 and 
+		stats_system.fortitude == 50 and 
+		stats_system.agility == 50 and 
+		stats_system.endurance == 50 and 
+		stats_system.luck == 50):
+		await unlock_achievement("ultimate_balance")
 
 func get_unlocked_achievements() -> Array:
 	var unlocked = []

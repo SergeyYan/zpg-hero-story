@@ -5,6 +5,7 @@ extends CanvasLayer
 @onready var status_grid: GridContainer = $DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatusSection/StatusGrid
 @onready var strength_spin: SpinBox = $DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer/StrengthSpin
 @onready var fortitude_spin: SpinBox = $DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer/FortitudeSpin
+@onready var agility_spin: SpinBox = $DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer/AgilitySpin
 @onready var endurance_spin: SpinBox = $DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer/EnduranceSpin
 @onready var luck_spin: SpinBox = $DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer/LuckSpin
 @onready var apply_stats_button: Button = $DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer/ApplyStatsButton
@@ -154,6 +155,7 @@ func _setup_panel_style():
 	
 	strength_spin.get_line_edit().add_theme_stylebox_override("normal", spinbox_style)
 	fortitude_spin.get_line_edit().add_theme_stylebox_override("normal", spinbox_style)
+	agility_spin.get_line_edit().add_theme_stylebox_override("normal", spinbox_style)
 	endurance_spin.get_line_edit().add_theme_stylebox_override("normal", spinbox_style)
 	luck_spin.get_line_edit().add_theme_stylebox_override("normal", spinbox_style)
 	
@@ -161,6 +163,7 @@ func _setup_panel_style():
 	var spinbox_font_color = Color(1.0, 1.0, 1.0, 1.0)
 	strength_spin.get_line_edit().add_theme_color_override("font_color", spinbox_font_color)
 	fortitude_spin.get_line_edit().add_theme_color_override("font_color", spinbox_font_color)
+	agility_spin.get_line_edit().add_theme_color_override("font_color", spinbox_font_color)
 	endurance_spin.get_line_edit().add_theme_color_override("font_color", spinbox_font_color)
 	luck_spin.get_line_edit().add_theme_color_override("font_color", spinbox_font_color)
 	
@@ -424,6 +427,7 @@ func _setup_responsive_ui():
 	var spin_size = Vector2(80, 30) if is_mobile else Vector2(70, 25)
 	strength_spin.custom_minimum_size = spin_size
 	fortitude_spin.custom_minimum_size = spin_size
+	agility_spin.custom_minimum_size = spin_size
 	endurance_spin.custom_minimum_size = spin_size
 	luck_spin.custom_minimum_size = spin_size
 	
@@ -532,6 +536,7 @@ func update_display():
 	
 	strength_spin.value = player_stats.stats_system.strength
 	fortitude_spin.value = player_stats.stats_system.fortitude
+	agility_spin.value = player_stats.stats_system.agility
 	endurance_spin.value = player_stats.stats_system.endurance
 	luck_spin.value = player_stats.stats_system.luck
 	
@@ -552,6 +557,7 @@ func _on_apply_stats_button_pressed():
 	if player_stats:
 		player_stats.stats_system.strength = int(strength_spin.value)
 		player_stats.stats_system.fortitude = int(fortitude_spin.value)
+		player_stats.stats_system.agility = int(agility_spin.value)
 		player_stats.stats_system.endurance = int(endurance_spin.value)
 		player_stats.stats_system.luck = int(luck_spin.value)
 		player_stats.stats_changed.emit()

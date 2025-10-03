@@ -88,7 +88,7 @@ func _detect_device_type():
 	if is_mobile:
 		print("BattleSystem: обнаружено мобильное устройство")
 		base_font_size = 12
-		stats_container_width = 180
+		stats_container_width = 200
 		label_min_width = 140
 	else:
 		print("BattleSystem: обнаружено десктоп устройство")
@@ -145,18 +145,18 @@ func _setup_desktop_layout():
 	# Показываем все элементы на десктопе
 	if stats_player:
 		stats_player.visible = true
-		stats_player.size = Vector2(stats_container_width, 150)
+		stats_player.size = Vector2(stats_container_width, 180)
 		stats_player.position = Vector2(
 			(screen_size.x - stats_monster.size.x) * 0.265,  # Левая часть экрана
-			(screen_size.y - stats_player.size.y) / 2.25
+			(screen_size.y - stats_player.size.y) / 2.47
 		)
 	
 	if stats_monster:
 		stats_monster.visible = true
-		stats_monster.size = Vector2(stats_container_width, 150)
+		stats_monster.size = Vector2(stats_container_width, 180)
 		stats_monster.position = Vector2(
 			(screen_size.x - stats_monster.size.x) * 0.735,  # Правая часть экрана
-			(screen_size.y - stats_monster.size.y) / 2.25
+			(screen_size.y - stats_monster.size.y) / 2.47
 		)
 		
 	# Стандартные размеры для десктопа
@@ -232,6 +232,7 @@ func update_stats():
 			player_stats_instance.current_health, player_stats_instance.get_max_health(),
 			effective_stats["strength"],
 			effective_stats["fortitude"],
+			effective_stats["agility"],
 			effective_stats["endurance"],
 			effective_stats["luck"]
 		)
@@ -241,13 +242,14 @@ func update_stats():
 		current_enemy_stats.current_health, current_enemy_stats.get_max_health(),
 		current_enemy_stats.stats_system.strength,
 		current_enemy_stats.stats_system.fortitude,
+		current_enemy_stats.stats_system.agility,
 		current_enemy_stats.stats_system.endurance,
 		current_enemy_stats.stats_system.luck
 	)
 
 func _update_stat_display(container: VBoxContainer, name: String, 
 						 health: int, max_health: int, 
-						 strength: int, fortitude: int, endurance: int, luck: int):
+						 strength: int, fortitude: int, agility: int, endurance: int, luck: int):
 	for child in container.get_children():
 		child.queue_free()
 	
@@ -283,6 +285,13 @@ func _update_stat_display(container: VBoxContainer, name: String,
 	fortitude_label.custom_minimum_size.x = label_min_width
 	fortitude_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	container.add_child(fortitude_label)
+	
+	var agility_label = Label.new()
+	agility_label.text = "Ловкость: %d 🐆" % agility 
+	agility_label.add_theme_font_size_override("font_size", base_font_size)
+	agility_label.custom_minimum_size.x = label_min_width
+	agility_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	container.add_child(agility_label)
 	
 	var endurance_label = Label.new()
 	endurance_label.text = "Выносливость: %d 💪" % endurance
@@ -333,6 +342,15 @@ func player_attack():
 		end_battle(false)
 		return
 	
+	# Получаем характеристики
+	var player_luck = player_stats_instance.get_effective_stats()["luck"]
+	var monster_dodge_chance = current_enemy_stats.get_dodge_chance_against(player_luck)  # ← ТОЛЬКО ОДИН АРГУМЕНТ
+	
+	if randf() < monster_dodge_chance:
+		# Монстр увернулся!
+		battle_log.text += "[color=#00ffff]⚡ %s увернулся от вашей атаки![/color]\n" % current_enemy_stats.enemy_name
+		return
+	
 	# РАСЧЕТ УРОНА
 	var base_damage = player_stats_instance.get_effective_damage()
 	var enemy_defense = current_enemy_stats.get_defense()
@@ -353,6 +371,15 @@ func player_attack():
 func enemy_attack():
 	if not is_instance_valid(current_enemy) or not current_enemy_stats:
 		end_battle(false)
+		return
+	
+	# Получаем характеристики  
+	var monster_luck = current_enemy_stats.stats_system.luck
+	var player_dodge_chance = player_stats_instance.get_dodge_chance_against(monster_luck)  # ← ТОЛЬКО ОДИН АРГУМЕНТ
+	
+	if randf() < player_dodge_chance:
+		# Игрок увернулся!
+		battle_log.text += "[color=#00ffff]⚡ Вы увернулись от атаки %s![/color]\n" % current_enemy_stats.enemy_name
 		return
 	
 	# РАСЧЕТ УРОНА

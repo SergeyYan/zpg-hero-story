@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://cx0spg7oxsiid"]
+[gd_scene load_steps=17 format=3 uid="uid://cx0spg7oxsiid"]
 
 [ext_resource type="Script" uid="uid://baqdapvh5tjas" path="res://Menu/LevelUpMenu.gd" id="1_huaid"]
 
@@ -58,6 +58,39 @@ corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sh74m"]
+bg_color = Color(0.368627, 0, 0.054902, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vy18r"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gsfb0"]
+bg_color = Color(0, 0.509804, 0.137255, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7670b"]
 bg_color = Color(0.368627, 0, 0.054902, 1)
 border_width_left = 1
 border_width_top = 1
@@ -200,6 +233,21 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_qcnve")
 theme_override_styles/normal = SubResource("StyleBoxFlat_sh74m")
 text = "  +1  "
 
+[node name="HBOXagil" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="AgilityLabel" type="Label" parent="Panel/VBoxContainer/HBOXagil"]
+layout_mode = 2
+
+[node name="AgilityButton" type="Button" parent="Panel/VBoxContainer/HBOXagil"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/hover = SubResource("StyleBoxFlat_vy18r")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_gsfb0")
+theme_override_styles/normal = SubResource("StyleBoxFlat_7670b")
+text = "  +1  "
+
 [node name="HBOXend" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -261,6 +309,7 @@ layout_mode = 2
 
 [connection signal="pressed" from="Panel/VBoxContainer/HBOXstr/StrengthButton" to="." method="_on_strength_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HBOXfort/FortitudeButton" to="." method="_on_fortitude_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/HBOXagil/AgilityButton" to="." method="_on_agility_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HBOXend/EnduranceButton" to="." method="_on_endurance_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HBOXluck/LuckButton" to="." method="_on_luck_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/ConfirmButton" to="." method="_on_confirm_button_pressed"]

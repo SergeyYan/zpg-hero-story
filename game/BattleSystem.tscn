@@ -42,15 +42,15 @@ self_modulate = Color(0, 0, 0, 1)
 offset_left = 96.0
 offset_top = 168.0
 offset_right = 304.0
-offset_bottom = 352.0
+offset_bottom = 388.0
 
 [node name="PlayerStats" type="VBoxContainer" parent="StatsPlayer"]
 self_modulate = Color(0, 0, 0, 1)
 layout_mode = 0
-offset_left = 25.0
-offset_top = -8.0
-offset_right = 217.0
-offset_bottom = 160.0
+offset_left = 16.0
+offset_top = 8.0
+offset_right = 208.0
+offset_bottom = 176.0
 alignment = 1
 
 [node name="StatsMonster" type="Panel" parent="."]
@@ -58,15 +58,15 @@ self_modulate = Color(0, 0, 0, 1)
 offset_left = 496.0
 offset_top = 168.0
 offset_right = 704.0
-offset_bottom = 352.0
+offset_bottom = 388.0
 
 [node name="EnemyStats" type="VBoxContainer" parent="StatsMonster"]
 self_modulate = Color(0, 0, 0, 1)
 layout_mode = 0
-offset_left = 25.0
-offset_top = -8.0
-offset_right = 217.0
-offset_bottom = 160.0
+offset_left = 16.0
+offset_top = 8.0
+offset_right = 208.0
+offset_bottom = 176.0
 alignment = 1
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
