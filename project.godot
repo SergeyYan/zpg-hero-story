@@ -12,18 +12,20 @@ config_version=5
 
 config/name="ZPG start"
 run/main_scene="uid://3mjqyq4itqfw"
-config/features=PackedStringArray("4.4", "GL Compatibility")
+config/features=PackedStringArray("4.5", "GL Compatibility")
 
 [autoload]
 
 GameState="*res://game/GameState.gd"
-AchievementManager="*res://game/AchievementManager.gd.gd"
+AchievementManager="*res://game/AchievementManager.gd"
 
 [display]
 
-window/size/viewport_width=800
-window/size/viewport_height=600
+window/size/viewport_width=1024
+window/size/viewport_height=576
 window/size/resizable=false
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 
 [editor_plugins]
 
@@ -35,4 +37,5 @@ textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
 textures/webp_compression/compression_method=3

@@ -8,17 +8,21 @@ var pause_menu: CanvasLayer
 signal player_data_loaded()  # ← НОВЫЙ СИГНАЛ
 
 func _ready():
+	# Создаем систему сохранения ОДИН РАЗ
+	var save_system = get_tree().get_first_node_in_group("save_system")
+	if not save_system:
+		save_system = SaveSystem.new()
+		save_system.add_to_group("save_system")
+		add_child(save_system)
+
 	# Проверяем, идет ли загрузка сохранения
 	var is_loading = GameState.is_loading
 	
 	if is_loading:
 		get_tree().paused = false
 		
-		# Загружаем сохранение ПОСЛЕ создания сцены
-		var save_system = SaveSystem.new()
-		add_child(save_system)
+		# Загружаем сохранение
 		if save_system.load_game():
-			
 			# ← Ждем инициализации
 			await get_tree().process_frame
 			
@@ -40,7 +44,6 @@ func _ready():
 			
 	else:
 		get_tree().paused = true
-	
 	
 	# Проверяем, нет ли уже меню в дереве
 	if has_node("Menu"):
@@ -78,7 +81,8 @@ func _ready():
 
 	# Сбрасываем флаг после использования
 	GameState.is_loading = false
-
+	
+	
 func _emit_data_loaded_signal():
 	player_data_loaded.emit()
 
@@ -110,9 +114,11 @@ func _on_new_game_pressed():
 
 func _on_save_game():
 	print("Сохранение игры из меню паузы...")
+	var save_system = get_tree().get_first_node_in_group("save_system")
+	if save_system:
+		save_system.save_game()
 
 func _on_load_game():
-
 	# Устанавливаем флаг загрузки
 	GameState.is_loading = true
 	# Перезагружаем сцену - теперь Game.gd обработает флаг корректно
@@ -128,8 +134,6 @@ func _on_player_level_up(level: int, available_points: int):
 		if spawner:
 			spawner.set("player_level", level)
 		return
-	
-
 	
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	if not player_stats:
@@ -148,17 +152,11 @@ func _on_player_level_up(level: int, available_points: int):
 	if spawner:
 		spawner.set("player_level", level)
 
-
 func _upgrade_monsters(player_level: int):
-
-	
 	var monsters = get_tree().get_nodes_in_group("monsters")
-
-	
 	for monster in monsters:
 		if monster and monster.has_method("apply_level_scaling"):
 			monster.apply_level_scaling(player_level)
-
 
 func _input(event):
 	if event.is_action_pressed("ui_cancel"):
@@ -190,15 +188,11 @@ func _on_restart_game():
 func _on_quit_game():
 	get_tree().quit()
 
-
 func _scale_static_monsters(player_level: int):
-	
 	var all_monsters = get_tree().get_nodes_in_group("monsters")
-	
 	for monster in all_monsters:
 		if monster and monster.has_node("MonsterStats"):
 			var stats = monster.get_node("MonsterStats")
-			
 			# Если монстр имеет уровень 1 но должен быть выше
 			if stats.monster_level == 1 and player_level > 1:
 				stats.monster_level = player_level  # ← Вручную устанавливаем уровень

@@ -1,0 +1,133 @@
+[gd_scene load_steps=2 format=3 uid="uid://buyn0b5ravut6"]
+
+[ext_resource type="Script" uid="uid://denypdr5y37ua" path="res://game/DevPanel.gd" id="1_8051s"]
+
+[node name="DevPanel" type="CanvasLayer"]
+script = ExtResource("1_8051s")
+
+[node name="DevPanel" type="Panel" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -364.0
+offset_right = 364.0
+offset_bottom = 520.0
+grow_horizontal = 2
+size_flags_vertical = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="DevPanel"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 720.0
+offset_bottom = 512.0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="DevPanel/MarginContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DevPanel/MarginContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Label" type="Label" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "=== ПАНЕЛЬ РАЗРАБОТЧИКА ==="
+horizontal_alignment = 1
+
+[node name="StatusSection" type="VBoxContainer" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="StatusGrid" type="GridContainer" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatusSection"]
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "ХАРАКТЕРИСТИКИ"
+horizontal_alignment = 1
+
+[node name="StatsContainer" type="GridContainer" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="Label" type="Label" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+text = "Сила:"
+horizontal_alignment = 1
+
+[node name="StrengthSpin" type="SpinBox" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+z_index = 1001
+layout_mode = 2
+size_flags_vertical = 0
+max_value = 1000.0
+
+[node name="Label2" type="Label" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+text = "Крепость:"
+
+[node name="FortitudeSpin" type="SpinBox" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+max_value = 1000.0
+
+[node name="Label6" type="Label" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+text = "Ловкость:"
+
+[node name="AgilitySpin" type="SpinBox" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+max_value = 1000.0
+
+[node name="Label5" type="Label" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+text = "Выносливость:"
+
+[node name="EnduranceSpin" type="SpinBox" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+max_value = 1000.0
+
+[node name="Label4" type="Label" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+text = "Удача:"
+
+[node name="LuckSpin" type="SpinBox" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+max_value = 1000.0
+
+[node name="ApplyStatsButton" type="Button" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+text = "Применить"
+
+[node name="Label3" type="Label" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "ДЕЙСТВИЯ:"
+horizontal_alignment = 1
+
+[node name="ActionsContainer" type="HBoxContainer" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="HealButton" type="Button" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/ActionsContainer"]
+layout_mode = 2
+text = "Полное лечение"
+
+[node name="LevelUpButton" type="Button" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/ActionsContainer"]
+layout_mode = 2
+text = "Уровень UP"
+
+[node name="AddExpButton" type="Button" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/ActionsContainer"]
+layout_mode = 2
+text = "+1000 опыта"
+
+[node name="CloseButton" type="Button" parent="DevPanel/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Закрыть"
+
+[connection signal="pressed" from="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/StatsContainer/ApplyStatsButton" to="." method="_on_apply_stats_button_pressed"]
+[connection signal="pressed" from="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/ActionsContainer/HealButton" to="." method="_on_heal_button_pressed"]
+[connection signal="pressed" from="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/ActionsContainer/LevelUpButton" to="." method="_on_level_up_button_pressed"]
+[connection signal="pressed" from="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/ActionsContainer/AddExpButton" to="." method="_on_add_exp_button_pressed"]
+[connection signal="pressed" from="DevPanel/MarginContainer/ScrollContainer/VBoxContainer/CloseButton" to="." method="_on_close_button_pressed"]

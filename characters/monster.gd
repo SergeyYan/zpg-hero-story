@@ -47,15 +47,26 @@ func _ready() -> void:
 			return
 	
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
-	if player_stats and player_stats.level > 1:
-		player_stats.bad_luck_changed.connect(_on_bad_luck_changed)
-		# Если уровень монстра не соответствует уровню игрока
+	if player_stats:
+	# ← ВСЕГДА подписываемся на сигнал, независимо от уровня!
+		if not player_stats.bad_luck_changed.is_connected(_on_bad_luck_changed):
+			player_stats.bad_luck_changed.connect(_on_bad_luck_changed)
+	
+	# ← НЕМЕДЛЕННО применяем текущий статус
+	var has_bad_luck = false
+	for status in player_stats.active_statuses:
+		if status.id == "bad_luck":
+			has_bad_luck = true
+			break
+	_on_bad_luck_changed(has_bad_luck)
+	
+	# ← МАСШТАБИРОВАНИЕ оставляем только для уровней > 1
+	if player_stats.level > 1:
 		if monster_stats.monster_level != player_stats.level:
 			apply_level_scaling(player_stats.level)
-		# Или если уровень правильный но характеристики нет
 		else:
 			var total_stats = monster_stats.strength + monster_stats.fortitude + monster_stats.endurance + monster_stats.luck
-			if total_stats <= 3:  # Характеристики как у 1 уровня
+			if total_stats <= 3:
 				apply_level_scaling(player_stats.level)
 	
 	player = get_tree().get_first_node_in_group(PLAYER_GROUP)
@@ -160,6 +171,10 @@ func take_damage(amount: int):
 		monster_stats.take_damage(amount)
 
 func die():
+	# ОТПИСЫВАЕМСЯ от сигналов перед удалением
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.bad_luck_changed.is_connected(_on_bad_luck_changed):
+		player_stats.bad_luck_changed.disconnect(_on_bad_luck_changed)
 	# ПРОВЕРЯЕМ, не в бою ли мы
 	var battle_system = get_tree().get_first_node_in_group("battle_system")
 	if battle_system and battle_system.visible:

@@ -57,6 +57,7 @@ func _ready():
 	# 1. Сначала базовая инициализация характеристик
 	stats_system.strength = 1
 	stats_system.fortitude = 0
+	stats_system.agility = 0
 	stats_system.endurance = 0
 	stats_system.luck = 0
 	stats_system.base_health = 5  # ↓ Базовое здоровье
@@ -358,8 +359,9 @@ func get_effective_stats() -> Dictionary:
 		"speed": 1.0,
 		"strength": stats_system.strength,
 		"fortitude": stats_system.fortitude, 
+		"agility": stats_system.agility,
 		"endurance": stats_system.endurance,
-		"luck": stats_system.luck,
+		"luck": stats_system.luck
 		#"health_regen": stats_system.get_health_regen()
 	}
 	
@@ -367,6 +369,7 @@ func get_effective_stats() -> Dictionary:
 	var total_speed_bonus = 0.0
 	var total_strength_bonus = 0
 	var total_fortitude_bonus = 0
+	var total_agility_bonus = 0
 	var total_endurance_bonus = 0
 	var total_luck_bonus = 0
 	var total_health_regen_bonus = 0.0
@@ -377,6 +380,7 @@ func get_effective_stats() -> Dictionary:
 		total_speed_bonus += (status.speed_modifier - 1.0)
 		total_strength_bonus += status.strength_modifier
 		total_fortitude_bonus += status.fortitude_modifier
+		total_agility_bonus += status.agility_modifier
 		total_endurance_bonus += status.endurance_modifier
 		total_luck_bonus += status.luck_modifier
 		total_health_regen_bonus += status.health_regen_modifier
@@ -386,6 +390,7 @@ func get_effective_stats() -> Dictionary:
 		"speed": max(0.0, base_stats.speed + total_speed_bonus),
 		"strength": max(0, base_stats.strength + total_strength_bonus),
 		"fortitude": max(0, base_stats.fortitude + total_fortitude_bonus),
+		"agility": max(0, base_stats.agility + total_agility_bonus),
 		"endurance": max(0, base_stats.endurance + total_endurance_bonus),
 		"luck": max(0, base_stats.luck + total_luck_bonus),
 		"health_regen": max(0.0, (base_stats.endurance + total_endurance_bonus) * 0.5 + total_health_regen_bonus)
@@ -401,6 +406,14 @@ func _get_active_statuses_data() -> Array:
 			"duration": status.duration
 		})
 	return statuses_data
+
+func get_dodge_chance_against(attacker_luck: int) -> float:
+	var effective_stats = get_effective_stats()
+	return stats_system.get_dodge_chance(effective_stats["agility"], attacker_luck)
+
+func get_hit_chance_against(defender_agility: int) -> float:
+	var effective_stats = get_effective_stats()
+	return stats_system.get_hit_chance(effective_stats["luck"], defender_agility)
 
 func get_crit_chance_with_modifiers() -> float:
 	var base_chance = stats_system.get_crit_chance()
@@ -438,7 +451,7 @@ func apply_level_up_effects():
 			var positive_statuses = ["thinker", "lucky_day"]
 			add_status(positive_statuses[randi() % positive_statuses.size()])
 		else:
-			var negative_statuses = ["snake_bite", "bad_luck"]
+			var negative_statuses = ["bad_luck"]
 			add_status(negative_statuses[randi() % negative_statuses.size()])
 
 func take_damage(amount: int):
@@ -528,6 +541,16 @@ func increase_strength():
 func increase_fortitude():
 	if available_points > 0:
 		stats_system.fortitude += 1  
+		available_points -= 1
+		stats_changed.emit()
+		# ← ПРОВЕРКА ДОСТИЖЕНИЙ ХАРАКТЕРИСТИК
+		var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
+		if achievement_manager:
+			achievement_manager.check_stats_achievements(stats_system)
+
+func increase_agility():
+	if available_points > 0:
+		stats_system.agility += 1
 		available_points -= 1
 		stats_changed.emit()
 		# ← ПРОВЕРКА ДОСТИЖЕНИЙ ХАРАКТЕРИСТИК

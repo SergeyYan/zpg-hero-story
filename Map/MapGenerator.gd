@@ -1,12 +1,27 @@
-#MapGenerator.gd
+# MapGenerator.gd
 extends Node2D
 
 ## Размер одного тайла в пикселях (должен совпадать с MonsterSpawner)
 @export var TILE_SIZE := 32
-## Радиус в чанках вокруг игрока для генерации тайлов
-@export var SPAWN_RADIUS := 20
-## Радиус в чанках для удаления тайлов (должен быть > SPAWN_RADIUS)
-@export var DESPAWN_RADIUS := 22
+
+## ← НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ АДАПТИВНОСТИ
+var screen_size: Vector2
+var is_mobile: bool = false
+
+## Радиус в чанках вокруг игрока для генерации тайлов (будет вычисляться автоматически)
+@export var SPAWN_RADIUS := 25
+## Радиус в чанках для удаления тайлов (будет вычисляться автоматически)
+@export var DESPAWN_RADIUS := 27
+
+## ← НОВЫЕ ЭКСПОРТНЫЕ ПЕРЕМЕННЫЕ ДЛЯ НАСТРОЙКИ
+@export_group("Adaptive Settings")
+## Запас вокруг экрана в тайлах (сколько тайлов должно быть за пределами видимости)
+@export var SCREEN_MARGIN_TILES := 7
+## Минимальный радиус для мобильных устройств
+@export var MIN_RADIUS_MOBILE := 20
+## Минимальный радиус для десктопа
+@export var MIN_RADIUS_DESKTOP := 25
+
 ## Интервал обновления генерации в секундах
 @export var UPDATE_INTERVAL := 0.2
 ## Включить визуализацию карты высот для отладки
@@ -53,7 +68,38 @@ func _ready() -> void:
 	_load_textures()
 	_init_noise()
 	_find_player()
+	
+	# ← ИНИЦИАЛИЗИРУЕМ АДАПТИВНЫЕ РАДИУСЫ
+	_init_adaptive_radii()
+	
 	_update_chunks()
+
+
+## ← НОВАЯ ФУНКЦИЯ: ИНИЦИАЛИЗАЦИЯ АДАПТИВНЫХ РАДИУСОВ
+func _init_adaptive_radii():
+	# Получаем размер экрана
+	screen_size = get_viewport().get_visible_rect().size
+	is_mobile = screen_size.x < 1024
+	
+	print("MapGenerator: Размер экрана - ", screen_size)
+	print("MapGenerator: Тип устройства - ", "мобильное" if is_mobile else "десктоп")
+	
+	# Вычисляем необходимый радиус в тайлах
+	var screen_width_tiles = ceil(screen_size.x / TILE_SIZE)
+	var screen_height_tiles = ceil(screen_size.y / TILE_SIZE)
+	
+	# Берем максимальное измерение и добавляем запас
+	var max_screen_dimension = max(screen_width_tiles, screen_height_tiles)
+	var calculated_radius = ceil((max_screen_dimension / 2) + SCREEN_MARGIN_TILES)
+	
+	# Устанавливаем радиусы с учетом минимальных значений
+	var min_radius = MIN_RADIUS_MOBILE if is_mobile else MIN_RADIUS_DESKTOP
+	SPAWN_RADIUS = max(calculated_radius, min_radius)
+	DESPAWN_RADIUS = SPAWN_RADIUS + 2  # Всегда на 2 больше чем SPAWN_RADIUS
+	
+	print("MapGenerator: SPAWN_RADIUS = ", SPAWN_RADIUS)
+	print("MapGenerator: DESPAWN_RADIUS = ", DESPAWN_RADIUS)
+	print("MapGenerator: Размер экрана в тайлах - ", Vector2(screen_width_tiles, screen_height_tiles))
 
 
 ## Основной процесс обновления генерации
@@ -197,10 +243,8 @@ func _create_water_collision(chunk: Vector2i, texture: Texture2D) -> void:
 	add_child(water_collision)
 	_water_collisions[chunk] = water_collision
 
+# ... остальные функции остаются без изменений ...
 
-## Выбирает текстуру для тайла на основе высоты и влажности
-## @param chunk: Координаты чанка (Vector2i)
-## @return: Texture2D для отображения
 ## Выбирает текстуру для тайла на основе высоты и влажности
 func _pick_texture(chunk: Vector2i) -> Texture2D:
 	if Engine.is_editor_hint():

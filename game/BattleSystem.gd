@@ -10,14 +10,26 @@ const ENEMY_CRITICAL_MULTIPLIER := 1.5
 @onready var enemy_stats: VBoxContainer = $StatsMonster/EnemyStats
 @onready var battle_log: RichTextLabel = $BattleUI/BattleLog
 @onready var timer: Timer = $Timer
+@onready var stats_player: Control = $StatsPlayer
+@onready var stats_monster: Control = $StatsMonster
+@onready var battle_ui: Control = $BattleUI
+
+# ← НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ АДАПТИВНОСТИ
+var screen_size: Vector2
+var is_mobile: bool = false
+var base_font_size: int = 14
+
+# ← НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ ФИКСИРОВАННОЙ ШИРИНЫ
+var stats_container_width: int = 200
+var label_min_width: int = 180
 
 var player_stats_instance: PlayerStats
 var current_enemy: Node = null
-var current_enemy_stats: MonsterStats = null  # ← ДОБАВИЛИ!
+var current_enemy_stats: MonsterStats = null
 var is_player_turn: bool = true
 
 var player_attack_messages = [
-	"[color=#ff6b6b]Герой нанес ⚔️ %d урона![/color]",  # ← Красный
+	"[color=#ff6b6b]Герой нанес ⚔️ %d урона![/color]",
 	"[color=#ff6b6b]Герой с разбегу ударил на ⚔️ %d урона![/color]",
 	"[color=#ff6b6b]Герой на отмашь ударил на ⚔️ %d урона![/color]", 
 	"[color=#ff6b6b]Герой нанес мощный удар на ⚔️ %d урона![/color]",
@@ -30,7 +42,7 @@ var player_attack_messages = [
 ]
 
 var enemy_attack_messages = [
-	"[color=#ffd93d]%s нанес вам ⚔️ %d урона![/color]",  # ← Желтый
+	"[color=#ffd93d]%s нанес вам ⚔️ %d урона![/color]",
 	"[color=#ffd93d]%s атакует и наносит ⚔️ %d урона![/color]",
 	"[color=#ffd93d]%s бьет вас на ⚔️ %d урона![/color]",
 	"[color=#ffd93d]Атака %sа в голову наносит ⚔️ %d урона![/color]",
@@ -43,47 +55,168 @@ var enemy_attack_messages = [
 ]
 
 var player_critical_messages = [
-	"[color=#ff0000][b]🔥 ГЕРОЙ НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона! 🔥[/b][/color]",  # ← Красный + жирный
+	"[color=#ff0000][b]🔥 ГЕРОЙ НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона! 🔥[/b][/color]",
 	"[color=#ff0000][b]💥 ГЕРОЙ НАНОСИТ СМЕРТЕЛЬНЫЙ УДАР! %d урона! 💥[/b][/color]",
 	"[color=#ff0000][b]⭐ ГЕРОЙ ДЕЛАЕТ ИДЕАЛЬНЫЙ УДАР! %d урона! ⭐[/b][/color]"
 ]
 
 var enemy_critical_messages = [
-	"[color=#ffcc00][b]🔥 %s НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона! 🔥[/b][/color]",  # ← Желтый + жирный
+	"[color=#ffcc00][b]🔥 %s НАНОСИТ КРИТИЧЕСКИЙ УДАР! %d урона! 🔥[/b][/color]",
 	"[color=#ffcc00][b]💥 %s НАНОСИТ СМЕРТЕЛЬНЫЙ УДАР! %d урона! 💥[/b][/color]",
 	"[color=#ffcc00][b]⭐ %s ДЕЛАЕТ ИДЕАЛЬНЫЙ УДАР! %d урона! ⭐[/b][/color]"
 ]
 
-
 func _ready():
 	add_to_group("battle_system")
+	
+	# ← ОПРЕДЕЛЯЕМ ТИП УСТРОЙСТВА
+	_detect_device_type()
+	# ← НАСТРАИВАЕМ АДАПТИВНЫЙ ИНТЕРФЕЙС
+	_setup_responsive_ui()
+	
 	player_stats_instance = get_tree().get_first_node_in_group("player_stats")
 	if not player_stats_instance:
 		push_error("PlayerStats not found!")
 	
-	hide()  # ← ДОБАВИТЬ ЭТУ СТРОКУ!
+	hide()
+
+# ← НОВАЯ ФУНКЦИЯ: ОПРЕДЕЛЕНИЕ ТИПА УСТРОЙСТВА
+func _detect_device_type():
+	screen_size = get_viewport().get_visible_rect().size
+	is_mobile = screen_size.x < 790
+	
+	if is_mobile:
+		print("BattleSystem: обнаружено мобильное устройство")
+		base_font_size = 12
+		stats_container_width = 200
+		label_min_width = 140
+	else:
+		print("BattleSystem: обнаружено десктоп устройство")
+		base_font_size = 14
+		stats_container_width = 220
+		label_min_width = 180
+
+# ← НОВАЯ ФУНКЦИЯ: НАСТРОЙКА АДАПТИВНОГО ИНТЕРФЕЙСА
+func _setup_responsive_ui():
+	if is_mobile:
+		_setup_mobile_layout()
+	else:
+		_setup_desktop_layout()
+	
+	_update_font_sizes()
+
+# ← НОВАЯ ФУНКЦИЯ: МОБИЛЬНАЯ КОМПОНОВКА
+func _setup_mobile_layout():
+	print("BattleSystem: Установка мобильной компоновки")
+	
+	# Скрываем статистику игрока на мобильных
+	if stats_player:
+		stats_player.visible = false
+	
+	# Настраиваем BattleLog - растягиваем по ширине и ограничиваем высоту
+	if battle_ui and battle_log:
+		battle_ui.size = Vector2(screen_size.x * 0.95, screen_size.y * 0.3)
+		battle_ui.position = Vector2(
+			(screen_size.x - battle_ui.size.x) / 2,
+			screen_size.y * 0.25
+		)
+		
+		# BattleLog занимает всю доступную площадь
+		battle_log.size = battle_ui.size
+		battle_log.position = Vector2.ZERO
+		
+		# Ограничиваем количество видимых строк (4-5 строк)
+		battle_log.scroll_following = false
+		battle_log.fit_content = false
+	
+	# Настраиваем EnemyStats - по центру ниже BattleLog
+	if stats_monster:
+		stats_monster.visible = true
+		stats_monster.size = Vector2(stats_container_width, screen_size.y * 0.28)
+		stats_monster.position = Vector2(
+			(screen_size.x - stats_monster.size.x) / 2,
+			screen_size.y * 0.55  # Ниже BattleLog
+		)
+
+# ← НОВАЯ ФУНКЦИЯ: ДЕСКТОПНАЯ КОМПОНОВКА
+func _setup_desktop_layout():
+	print("BattleSystem: Установка десктопной компоновки")
+	
+	# Показываем все элементы на десктопе
+	if stats_player:
+		stats_player.visible = true
+		stats_player.size = Vector2(stats_container_width, 180)
+		stats_player.position = Vector2(
+			(screen_size.x - stats_monster.size.x) * 0.265,  # Левая часть экрана
+			(screen_size.y - stats_player.size.y) / 2.47
+		)
+	
+	if stats_monster:
+		stats_monster.visible = true
+		stats_monster.size = Vector2(stats_container_width, 180)
+		stats_monster.position = Vector2(
+			(screen_size.x - stats_monster.size.x) * 0.735,  # Правая часть экрана
+			(screen_size.y - stats_monster.size.y) / 2.47
+		)
+		
+	# Стандартные размеры для десктопа
+	if battle_ui:
+		battle_ui.size = Vector2(600, 200)
+		battle_ui.position = Vector2(
+			(screen_size.x - battle_ui.size.x) / 2,
+			screen_size.y / 1.7  # Верхняя часть экрана
+		)
+		
+		if battle_log:
+			battle_log.size = battle_ui.size
+			battle_log.position = Vector2.ZERO
+
+# ← НОВАЯ ФУНКЦИЯ: ОБНОВЛЕНИЕ РАЗМЕРОВ ШРИФТОВ
+func _update_font_sizes():
+	if battle_log:
+		battle_log.add_theme_font_size_override("normal_font_size", base_font_size)
+	
+	# Обновляем шрифты в контейнерах статистики
+	_update_stats_font_sizes(player_stats_container)
+	_update_stats_font_sizes(enemy_stats)
+
+# ← НОВАЯ ФУНКЦИЯ: ОБНОВЛЕНИЕ ШРИФТОВ СТАТИСТИКИ
+func _update_stats_font_sizes(container: VBoxContainer):
+	if not container:
+		return
+	
+	for child in container.get_children():
+		if child is Label:
+			child.add_theme_font_size_override("font_size", base_font_size)
+			# Устанавливаем минимальную ширину для выравнивания
+			child.custom_minimum_size.x = label_min_width
+			# Выравнивание текста по левому краю
+			child.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 
 func start_battle(enemy: Node, enemy_stats_ref: MonsterStats):
 	if player_stats_instance.current_health <= 0:
-		#print("Игрок мёртв, бой не начинается")
 		return
+	
 	# Добавить проверку на валидность enemy
 	if not is_instance_valid(enemy) or not is_instance_valid(enemy_stats_ref):
-		#print("Враг невалиден, бой не начинается")
 		return
+	
 	# ЗАЩИТА: не начинаем бой в первые секунды игры
-	if get_tree().get_frame() < 60:  # Первые 60 кадров (≈1 секунда)
-		#print("Слишком рано для боя, пропускаем")
+	if get_tree().get_frame() < 60:
 		return
+	
+	# ← ОБНОВЛЯЕМ РАЗМЕРЫ ПЕРЕД ПОКАЗОМ
+	_detect_device_type()
+	_setup_responsive_ui()
 	
 	current_enemy = enemy
 	current_enemy_stats = enemy_stats_ref
 	show()
 	get_tree().paused = true
+	_disable_menu_button(true)
 	update_stats()
 	battle_log.text = "Бой начался против %s!\n" % current_enemy_stats.enemy_name
 	timer.start(1.0)
-	
 
 func update_stats():
 	# ПРОВЕРКА НА ВАЛИДНОСТЬ ВРАГА И ЕГО СТАТИСТИК
@@ -93,52 +226,85 @@ func update_stats():
 		
 	var effective_stats = player_stats_instance.get_effective_stats()
 	
-	_update_stat_display(player_stats_container, "Игрок", 
-		player_stats_instance.current_health, player_stats_instance.get_max_health(),
-		effective_stats["strength"],      # ← Эффективная сила
-		effective_stats["fortitude"],     # ← Эффективная крепость
-		effective_stats["endurance"],     # ← Эффективная выносливость
-		effective_stats["luck"]           # ← Эффективная удача
-	)
+	# Обновляем статистику игрока только если она видима
+	if stats_player and stats_player.visible:
+		_update_stat_display(player_stats_container, "Игрок", 
+			player_stats_instance.current_health, player_stats_instance.get_max_health(),
+			effective_stats["strength"],
+			effective_stats["fortitude"],
+			effective_stats["agility"],
+			effective_stats["endurance"],
+			effective_stats["luck"]
+		)
 	
-	# ПЕРЕДАЕМ РЕАЛЬНЫЕ ХАРАКТЕРИСТИКИ монстра
+	# Обновляем статистику врага
 	_update_stat_display(enemy_stats, current_enemy_stats.enemy_name, 
 		current_enemy_stats.current_health, current_enemy_stats.get_max_health(),
-		current_enemy_stats.stats_system.strength,        # ← Реальная сила
-		current_enemy_stats.stats_system.fortitude,       # ← Реальная крепость  
-		current_enemy_stats.stats_system.endurance,        # ← Реальная выносливость
-		current_enemy_stats.stats_system.luck             # ← ДОБАВЛЯЕМ УДАЧУ
+		current_enemy_stats.stats_system.strength,
+		current_enemy_stats.stats_system.fortitude,
+		current_enemy_stats.stats_system.agility,
+		current_enemy_stats.stats_system.endurance,
+		current_enemy_stats.stats_system.luck
 	)
 
 func _update_stat_display(container: VBoxContainer, name: String, 
 						 health: int, max_health: int, 
-						 strength: int, fortitude: int, endurance: int, luck: int):  # ← Новые параметры!
+						 strength: int, fortitude: int, agility: int, endurance: int, luck: int):
 	for child in container.get_children():
 		child.queue_free()
 	
+	# Устанавливаем фиксированную ширину контейнера
+	container.custom_minimum_size.x = stats_container_width
+	container.size.x = stats_container_width
+	
 	var name_label = Label.new()
 	name_label.text = name
+	name_label.add_theme_font_size_override("font_size", base_font_size)
+	name_label.custom_minimum_size.x = label_min_width
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	container.add_child(name_label)
 	
 	var health_label = Label.new()
 	health_label.text = "HP: %d/%d ❤️" % [health, max_health]
+	health_label.add_theme_font_size_override("font_size", base_font_size)
+	health_label.custom_minimum_size.x = label_min_width
+	health_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	container.add_child(health_label)
 	
 	# ПОКАЗЫВАЕМ РЕАЛЬНЫЕ ХАРАКТЕРИСТИКИ
 	var strength_label = Label.new()
 	strength_label.text = "Сила: %d ⚔️" % strength
+	strength_label.add_theme_font_size_override("font_size", base_font_size)
+	strength_label.custom_minimum_size.x = label_min_width
+	strength_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	container.add_child(strength_label)
 	
 	var fortitude_label = Label.new()
 	fortitude_label.text = "Крепость: %d 🛡️" % fortitude
+	fortitude_label.add_theme_font_size_override("font_size", base_font_size)
+	fortitude_label.custom_minimum_size.x = label_min_width
+	fortitude_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	container.add_child(fortitude_label)
+	
+	var agility_label = Label.new()
+	agility_label.text = "Ловкость: %d 🐆" % agility 
+	agility_label.add_theme_font_size_override("font_size", base_font_size)
+	agility_label.custom_minimum_size.x = label_min_width
+	agility_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	container.add_child(agility_label)
 	
 	var endurance_label = Label.new()
 	endurance_label.text = "Выносливость: %d 💪" % endurance
+	endurance_label.add_theme_font_size_override("font_size", base_font_size)
+	endurance_label.custom_minimum_size.x = label_min_width
+	endurance_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	container.add_child(endurance_label)
 
 	var luck_label = Label.new()
 	luck_label.text = "Удача: %d 🎲" % luck
+	luck_label.add_theme_font_size_override("font_size", base_font_size)
+	luck_label.custom_minimum_size.x = label_min_width
+	luck_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	container.add_child(luck_label)
 
 func _on_timer_timeout():
@@ -176,13 +342,20 @@ func player_attack():
 		end_battle(false)
 		return
 	
+	# Получаем характеристики
+	var player_luck = player_stats_instance.get_effective_stats()["luck"]
+	var monster_dodge_chance = current_enemy_stats.get_dodge_chance_against(player_luck)  # ← ТОЛЬКО ОДИН АРГУМЕНТ
+	
+	if randf() < monster_dodge_chance:
+		# Монстр увернулся!
+		battle_log.text += "[color=#00ffff]⚡ %s увернулся от вашей атаки![/color]\n" % current_enemy_stats.enemy_name
+		return
+	
 	# РАСЧЕТ УРОНА
-	var base_damage = player_stats_instance.get_effective_damage()  # Эта функция ДОЛЖНА учитывать effective_stats
+	var base_damage = player_stats_instance.get_effective_damage()
 	var enemy_defense = current_enemy_stats.get_defense()
 	var actual_damage = max(1, base_damage - enemy_defense)
 	var crit_chance = player_stats_instance.get_crit_chance_with_modifiers()
-	
-	
 	
 	if randf() < crit_chance:
 		var critical_damage = int((base_damage * PLAYER_CRITICAL_MULTIPLIER) - enemy_defense)
@@ -191,7 +364,6 @@ func player_attack():
 		battle_log.text += message + "\n"
 		current_enemy_stats.take_damage(critical_damage)
 	else:
-		# ПОКАЗЫВАЕМ ФАКТИЧЕСКИЙ урон (после защиты)
 		var message = get_random_attack_message(player_attack_messages) % actual_damage
 		battle_log.text += message + "\n"
 		current_enemy_stats.take_damage(actual_damage)
@@ -199,6 +371,15 @@ func player_attack():
 func enemy_attack():
 	if not is_instance_valid(current_enemy) or not current_enemy_stats:
 		end_battle(false)
+		return
+	
+	# Получаем характеристики  
+	var monster_luck = current_enemy_stats.stats_system.luck
+	var player_dodge_chance = player_stats_instance.get_dodge_chance_against(monster_luck)  # ← ТОЛЬКО ОДИН АРГУМЕНТ
+	
+	if randf() < player_dodge_chance:
+		# Игрок увернулся!
+		battle_log.text += "[color=#00ffff]⚡ Вы увернулись от атаки %s![/color]\n" % current_enemy_stats.enemy_name
 		return
 	
 	# РАСЧЕТ УРОНА
@@ -220,14 +401,11 @@ func enemy_attack():
 
 func end_battle(victory: bool):
 	if victory and current_enemy_stats:
-		var exp_gained = current_enemy_stats.exp_reward
+		var exp_gained = current_enemy_stats.get_exp_reward()
 		player_stats_instance.add_exp(exp_gained)
-		# ПЕРЕМЕЩАЕМ вызов статусов ВНУТРЬ условия victory
 		player_stats_instance.apply_post_battle_effects()
-		# ← ДОБАВЛЯЕМ ПОДСЧЕТ УБИЙСТВ
 		player_stats_instance.add_monster_kill()
 		
-		# ← ПРОВЕРЯЕМ BAD_LUCK ДЛЯ СООБЩЕНИЯ
 		var has_bad_luck = false
 		var has_lucky_day = false
 		for status in player_stats_instance.active_statuses:
@@ -238,7 +416,7 @@ func end_battle(victory: bool):
 		
 		if has_bad_luck and has_lucky_day:
 			battle_log.text += "[color=#ffaa00]Победа! Получено %d опыта (День противоречий!).[/color]\n" % exp_gained
-		elif  has_bad_luck:
+		elif has_bad_luck:
 			battle_log.text += "[color=#ffcc00]Победа! Получено %d опыта (Ужасный день).[/color]\n" % exp_gained
 		elif has_lucky_day:
 			battle_log.text += "[color=#00ff00]Победа! Получено %d опыта (Удачный день).[/color]\n" % exp_gained
@@ -251,14 +429,22 @@ func end_battle(victory: bool):
 		battle_log.text += "[color=#ff0000]Вы проиграли...[/color]\n"
 		
 	timer.stop()
-	# ← ДОБАВЛЯЕМ ТАЙМЕР ПАУЗЫ ДЛЯ ЧТЕНИЯ
 	await get_tree().create_timer(2.5).timeout
 	
-	# ← ВЫЗЫВАЕМ ПРОКАЧКУ ПОСЛЕ БОЯ
 	if victory and player_stats_instance:
 		player_stats_instance.complete_level_up_after_battle()
 	
 	hide()
+	_disable_menu_button(false)
 	battle_ended.emit(victory)
 	current_enemy = null
 	current_enemy_stats = null
+
+func _disable_menu_button(disabled: bool):
+	var menu_button = get_tree().get_first_node_in_group("menu_button")
+	if menu_button:
+		menu_button.disabled = disabled
+		if disabled:
+			menu_button.modulate = Color(1, 1, 1, 0.5)
+		else:
+			menu_button.modulate = Color(1, 1, 1, 1)
