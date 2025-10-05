@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c275gb8fg4035"
-path="res://.godot/imported/first_blood.png-f4f1e0289c01c701518a56ddd641c6b6.ctex"
+uid="uid://c5n4urxwf0rmj"
+path="res://.godot/imported/max_agility.png-96519334a7aa1a8d70ee17de82a4145d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/achievements/first_blood.png"
-dest_files=["res://.godot/imported/first_blood.png-f4f1e0289c01c701518a56ddd641c6b6.ctex"]
+source_file="res://assets/achievements/max_agility.png"
+dest_files=["res://.godot/imported/max_agility.png-96519334a7aa1a8d70ee17de82a4145d.ctex"]
 
 [params]
 

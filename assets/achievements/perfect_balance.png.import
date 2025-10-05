@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c275gb8fg4035"
-path="res://.godot/imported/first_blood.png-f4f1e0289c01c701518a56ddd641c6b6.ctex"
+uid="uid://bcsg0bbmtryhi"
+path="res://.godot/imported/perfect_balance.png-de6b9bb16e523a0067b3704765dae2b1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/achievements/first_blood.png"
-dest_files=["res://.godot/imported/first_blood.png-f4f1e0289c01c701518a56ddd641c6b6.ctex"]
+source_file="res://assets/achievements/perfect_balance.png"
+dest_files=["res://.godot/imported/perfect_balance.png-de6b9bb16e523a0067b3704765dae2b1.ctex"]
 
 [params]
 

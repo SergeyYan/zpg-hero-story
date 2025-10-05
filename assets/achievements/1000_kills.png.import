@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c275gb8fg4035"
-path="res://.godot/imported/first_blood.png-f4f1e0289c01c701518a56ddd641c6b6.ctex"
+uid="uid://c0h4k8xsm4a32"
+path="res://.godot/imported/1000_kills.png-d20e937c09901788a3918b01caf8efe9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/achievements/first_blood.png"
-dest_files=["res://.godot/imported/first_blood.png-f4f1e0289c01c701518a56ddd641c6b6.ctex"]
+source_file="res://assets/achievements/1000_kills.png"
+dest_files=["res://.godot/imported/1000_kills.png-d20e937c09901788a3918b01caf8efe9.ctex"]
 
 [params]
 
