@@ -41,6 +41,7 @@ var distribution_count: int = 0  # Счётчик распределений
 var strategy_time_remaining: int = 30  # Таймер выбора стратегии
 var strategy_timer: Timer  # ← ОТДЕЛЬНЫЙ ТАЙМЕР ДЛЯ СТРАТЕГИИ
 var signals_connected: bool = false  # ← ФЛАГ ПОДКЛЮЧЕНИЯ СИГНАЛОВ
+var level_up_count: int = 0
 
 func _ready():
 	hide()
@@ -152,6 +153,10 @@ func show_menu(player_stats_ref: PlayerStats, points: int):
 	time_remaining = 30
 	strategy_time_remaining = 30  # ← СБРАСЫВАЕМ ТАЙМЕР СТРАТЕГИИ
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	# ← УВЕЛИЧИВАЕМ СЧЕТЧИК ПОВЫШЕНИЙ УРОВНЯ ПРИ КАЖДОМ ОТКРЫТИИ МЕНЮ
+	level_up_count += 1
+	print("Повышение уровня #", level_up_count, " | Стратегия: ", selected_strategy)
 	
 	# Отключаем кнопку меню
 	_disable_menu_button(true)
@@ -287,17 +292,21 @@ func auto_distribute_points():
 	if available_points <= 0:
 		return
 	
-	distribution_count += 1
+	# ← ИСПОЛЬЗУЕМ level_up_count ВМЕСТО distribution_count
+	print("Автораспределение | Уровень: ", level_up_count, " | Стратегия: ", selected_strategy)
 	
 	# ← ЛОГИКА АВТОРАСПРЕДЕЛЕНИЯ ПО СТРАТЕГИИ
 	if selected_strategy == "":
 		# Случайное распределение по всем 5 характеристикам
+		print("→ Случайное распределение (нет стратегии)")
 		_random_distribute_all()
-	elif distribution_count % 2 == 1:
-		# Каждое первое распределение - случайное
+	elif level_up_count % 2 == 1:
+		# Каждое нечетное повышение - случайное
+		print("→ Случайное распределение (нечетный уровень)")
 		_random_distribute_all()
 	else:
-		# Каждое второе распределение - по стратегии
+		# Каждое четное повышение - по стратегии
+		print("→ Распределение по стратегии: ", selected_strategy)
 		_strategy_distribute()
 
 # ← НОВАЯ ФУНКЦИЯ: СЛУЧАЙНОЕ РАСПРЕДЕЛЕНИЕ ПО ВСЕМ ХАРАКТЕРИСТИКАМ
@@ -308,14 +317,19 @@ func _random_distribute_all():
 		match random_stat:
 			0:
 				player_stats.increase_strength()
+				print("→ +1 Сила (случайно)")
 			1:
 				player_stats.increase_fortitude()
+				print("→ +1 Крепость (случайно)")
 			2: 
 				player_stats.increase_agility()
+				print("→ +1 Ловкость (случайно)")
 			3:
 				player_stats.increase_endurance()
+				print("→ +1 Выносливость (случайно)")
 			4:
 				player_stats.increase_luck()
+				print("→ +1 Удача (случайно)")
 		
 		available_points = player_stats.available_points
 		update_display()
@@ -324,6 +338,8 @@ func _random_distribute_all():
 
 # ← НОВАЯ ФУНКЦИЯ: РАСПРЕДЕЛЕНИЕ ПО СТРАТЕГИИ
 func _strategy_distribute():
+	print("Стратегия распределения: ", selected_strategy)
+	
 	while available_points > 0:
 		var random_stat: int
 		
@@ -332,25 +348,43 @@ func _strategy_distribute():
 				# Воин: сила, выносливость, удача
 				random_stat = randi() % 3
 				match random_stat:
-					0: player_stats.increase_strength()
-					1: player_stats.increase_endurance()
-					2: player_stats.increase_luck()
+					0: 
+						player_stats.increase_strength()
+						print("→ +1 Сила (Воин)")
+					1: 
+						player_stats.increase_endurance()
+						print("→ +1 Выносливость (Воин)")
+					2: 
+						player_stats.increase_luck()
+						print("→ +1 Удача (Воин)")
 			
 			"assassin":
 				# Ассасин: ловкость, выносливость, удача
 				random_stat = randi() % 3
 				match random_stat:
-					0: player_stats.increase_agility()
-					1: player_stats.increase_endurance()
-					2: player_stats.increase_luck()
+					0: 
+						player_stats.increase_agility()
+						print("→ +1 Ловкость (Ассасин)")
+					1: 
+						player_stats.increase_endurance()
+						print("→ +1 Выносливость (Ассасин)")
+					2: 
+						player_stats.increase_luck()
+						print("→ +1 Удача (Ассасин)")
 			
 			"tank":
 				# Танк: сила, выносливость, крепость
 				random_stat = randi() % 3
 				match random_stat:
-					0: player_stats.increase_strength()
-					1: player_stats.increase_endurance()
-					2: player_stats.increase_fortitude()
+					0: 
+						player_stats.increase_strength()
+						print("→ +1 Сила (Танк)")
+					1: 
+						player_stats.increase_endurance()
+						print("→ +1 Выносливость (Танк)")
+					2: 
+						player_stats.increase_fortitude()
+						print("→ +1 Крепость (Танк)")
 		
 		available_points = player_stats.available_points
 		update_display()

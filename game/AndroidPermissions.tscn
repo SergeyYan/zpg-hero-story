@@ -1,0 +1,56 @@
+[gd_scene load_steps=2 format=3 uid="uid://bsp6ld82gm87s"]
+
+[sub_resource type="GDScript" id="GDScript_3yq00"]
+script/source = "extends Node
+
+func _ready():
+	if OS.get_name() == \"Android\":
+		print(\"🤖 Android device detected, version: \" + OS.get_version())
+		await get_tree().create_timer(1.0).timeout
+		check_and_request_permissions()
+
+func check_and_request_permissions():
+	print(\"=== Android Storage Check ===\")
+	
+	# Просто запрашиваем разрешения через OS (Godot 4.x)
+	if OS.has_method(\"request_permissions\"):
+		print(\"🔐 Requesting permissions via OS.request_permissions()\")
+		OS.request_permissions()
+		await get_tree().create_timer(0.5).timeout
+	
+	# Всегда проверяем фактический доступ
+	test_storage_access()
+
+func test_storage_access() -> bool:
+	print(\"--- Testing Storage Access ---\")
+	
+	var test_path = \"user://zpg_storage_test.tmp\"
+	var success = false
+	
+	# Пробуем записать файл
+	var file = FileAccess.open(test_path, FileAccess.WRITE)
+	if file:
+		file.store_string(\"ZPG Storage Test\")
+		file.close()
+		
+		# Проверяем что файл создался
+		if FileAccess.file_exists(test_path):
+			print(\"✅ Storage access: WORKING\")
+			success = true
+			# Чистим тестовый файл
+			DirAccess.remove_absolute(test_path)
+		else:
+			print(\"❌ Storage access: FILE NOT CREATED\")
+	else:
+		print(\"❌ Storage access: CANNOT WRITE\")
+	
+	print(\"-----------------------------\")
+	return success
+
+# Простая проверка для других скриптов
+func has_storage_permission() -> bool:
+	return test_storage_access()
+"
+
+[node name="AndroidPermissions" type="Node2D"]
+script = SubResource("GDScript_3yq00")
