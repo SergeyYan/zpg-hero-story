@@ -91,6 +91,7 @@ func _init_status_library():
 	)
 	status_library["well_fed"].strength_modifier = max(1, now_level/1.5)
 	status_library["well_fed"].fortitude_modifier = max(1, now_level/1.5)
+	status_library["well_fed"].agility_modifier = max(1, now_level/1.5)
 	status_library["well_fed"].endurance_modifier = max(1, now_level/1.5)
 	status_library["well_fed"].luck_modifier = max(1, now_level/1.5)
 	
@@ -99,6 +100,7 @@ func _init_status_library():
 		StatusEffect.StatusType.POSITIVE, randf_range(120, 600)
 	)
 	status_library["good_shoes"].speed_modifier = 1.25
+	status_library["good_shoes"].agility_modifier = max(1, now_level/2.5)
 	
 	status_library["inspired"] = StatusEffect.new(
 		"inspired", "Вдохновился игрой", "Тебе кажется, что ты можешь всё!", 
@@ -114,13 +116,14 @@ func _init_status_library():
 	status_library["adrenaline"].speed_modifier = 1.25
 	status_library["adrenaline"].strength_modifier = max(3, now_level - 5)
 	status_library["adrenaline"].fortitude_modifier = min(-3, 10 - now_level)
-	status_library["adrenaline"].health_regen_modifier = min(-0.5, 10 - now_level/2)
+	status_library["adrenaline"].health_regen_modifier = min(-0.5, 10 - now_level/2.0)
 	
 	status_library["lucky_day"] = StatusEffect.new(
 		"lucky_day", "Счастливый день", "Даже монеты падают ребром!", 
 		StatusEffect.StatusType.POSITIVE, randf_range(300, 900)  # 10-15 минут
 	)
 	status_library["lucky_day"].luck_modifier = max(10, now_level - 5)
+	status_library["lucky_day"].agility_modifier = min(-10, -now_level/2.0)
 	status_library["lucky_day"].health_regen_modifier = 10
 	
 	status_library["potion_splash"] = StatusEffect.new(
@@ -135,6 +138,8 @@ func _init_status_library():
 		StatusEffect.StatusType.POSITIVE, randf_range(60, 300)  # 20-30 секунд
 	)
 	status_library["strange_mushroom"].speed_modifier = 2.0  # ×2 скорости
+	status_library["strange_mushroom"].agility_modifier = max(1, now_level/2.0)
+	status_library["strange_mushroom"].luck_modifier = min(-1, -now_level/2.0) 
 	
 	# 3. "Надел плащ-палатку" - невидимость (специальная логика)
 	status_library["cloak_tent"] = StatusEffect.new(
@@ -165,7 +170,7 @@ func _init_status_library():
 		"thinker", "Звездой по голове", "Опыт течет рекой, а голова болит как после экзамена!", 
 		StatusEffect.StatusType.POSITIVE, randf_range(10, 30)  # 10-30 секунд
 	)
-	status_library["thinker"].endurance_modifier = min(-1, 5 - now_level/2)
+	status_library["thinker"].endurance_modifier = min(-1, 5 - now_level/2.0)
 		# Особый статус - обрабатывается отдельно
 	
 	# НЕГАТИВНЫЕ СТАТУСЫ (красный)
@@ -174,6 +179,7 @@ func _init_status_library():
 		StatusEffect.StatusType.NEGATIVE, randf_range(180, 600)
 	)
 	status_library["sore_knees"].speed_modifier = 0.85
+	status_library["sore_knees"].agility_modifier = min(-1, 10 - now_level/3.0)
 	
 	status_library["crying"] = StatusEffect.new(
 		"crying", "Плакал", "Слезы мешают видеть врагов... и вообще все!", 
@@ -181,6 +187,7 @@ func _init_status_library():
 	)
 	status_library["crying"].strength_modifier = min(-1, 10 - now_level)
 	status_library["crying"].fortitude_modifier = min(-1, 10 - now_level)
+	status_library["crying"].agility_modifier = min(-1, 10 - now_level)
 	status_library["crying"].endurance_modifier = min(-1, 10 - now_level)
 	status_library["crying"].luck_modifier = min(-1, 10 - now_level)
 	
@@ -189,13 +196,15 @@ func _init_status_library():
 		StatusEffect.StatusType.NEGATIVE, randf_range(180, 540)  # 7-12 минут
 	)
 	status_library["exhausted"].speed_modifier = 0.75
-	status_library["exhausted"].health_regen_modifier = min(-0.5, 3 - now_level/3)
+	status_library["crying"].agility_modifier = min(-1, 3 - now_level/3.0)
+	status_library["exhausted"].health_regen_modifier = min(-0.5, 3 - now_level/3.0)
 	
 	status_library["bad_luck"] = StatusEffect.new(
 		"bad_luck", "Неудачный день", "Теперь даже стул подставляет подножку!", 
 		StatusEffect.StatusType.NEGATIVE, randf_range(120, 660)  # 2-7 минут
 	)
-	status_library["bad_luck"].luck_modifier = min(-5, - now_level)
+	status_library["bad_luck"].luck_modifier = min(-5, - now_level + 5)
+	status_library["bad_luck"].agility_modifier = max(5, now_level - 5)
 	status_library["bad_luck"].health_regen_modifier = 10
 	
 	status_library["minor_injury"] = StatusEffect.new(
@@ -203,8 +212,8 @@ func _init_status_library():
 		StatusEffect.StatusType.NEGATIVE, randf_range(120, 480)  # 4-8 минут
 	)
 	status_library["minor_injury"].strength_modifier = max(3, now_level - 8)
-	status_library["minor_injury"].endurance_modifier = min(-1, 5 - now_level/2)
-	status_library["minor_injury"].fortitude_modifier = min(-1, 5 - now_level/2)
+	status_library["minor_injury"].endurance_modifier = min(-1, 5 - now_level/2.0)
+	status_library["minor_injury"].fortitude_modifier = min(-1, 5 - now_level/2.0)
 	status_library["minor_injury"].speed_modifier = 0.6  # ×0.4 скорости
 
 	# 6. "Увяз в болоте" - замедление
@@ -213,6 +222,7 @@ func _init_status_library():
 		StatusEffect.StatusType.NEGATIVE, randf_range(30, 240)  # 12-15 секунд
 	)
 	status_library["swamp_bog"].speed_modifier = 0.4  # ×0.4 скорости
+	status_library["swamp_bog"].agility_modifier = min(-1, 5 - now_level/3.0)
 	
 	# 7. "Укус ядовитой змеи" - периодический урон
 	status_library["snake_bite"] = StatusEffect.new(
@@ -234,9 +244,10 @@ func _init_status_library():
 	"sleepy", "Не выспался", "Зевнул так, что челюсть хрустнула!", 
 	StatusEffect.StatusType.NEGATIVE, randf_range(120, 360)
 )
-	status_library["sleepy"].strength_modifier = max(5, now_level + 2)
-	status_library["sleepy"].fortitude_modifier = min(-5, 5 - now_level)
-	status_library["sleepy"].endurance_modifier = min(-1, 5 - now_level/2)
+	status_library["sleepy"].strength_modifier = max(5, now_level + 5)
+	status_library["sleepy"].fortitude_modifier = min(-5, 5 - now_level/2.0)
+	status_library["swamp_bog"].agility_modifier = min(-1, 3 - now_level/3.0)
+	status_library["sleepy"].endurance_modifier = min(-1, 5 - now_level/2.5)
 	status_library["sleepy"].luck_modifier = max(5, now_level + 2)
 	status_library["sleepy"].speed_modifier = 0.5
 	
@@ -277,7 +288,7 @@ func _update_statuses():
 				is_invisible = true
 			"thinker":
 				if current_exp >= 0:
-					current_exp = current_exp + max(2, level + level/4)   # от 2 exp в секунду
+					current_exp = current_exp + max(2, level + level/4.0)   # от 2 exp в секунду
 					exp_gained.emit()  # Обновляем UI опыта
 			
 		if status.duration <= 0:
