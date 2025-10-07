@@ -183,6 +183,46 @@ offset_bottom = 160.0
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="StrategyTimerLabel" type="Label" parent="Panel"]
+layout_mode = 2
+offset_left = 64.0
+offset_top = 232.0
+offset_right = 368.0
+offset_bottom = 296.0
+scale = Vector2(1.05164, 1)
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StrategyContainer" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -128.0
+offset_top = -80.0
+offset_right = 85.0
+offset_bottom = -47.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(1.2, 1.2)
+
+[node name="WarriorButton" type="Button" parent="Panel/StrategyContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Воин"
+
+[node name="AssassinButton" type="Button" parent="Panel/StrategyContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Ассасин"
+
+[node name="TankButton" type="Button" parent="Panel/StrategyContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Танк"
+
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
 layout_mode = 1
 anchors_preset = 8
@@ -307,6 +347,9 @@ layout_mode = 2
 
 [node name="AutoDistributeTimer" type="Timer" parent="Panel/VBoxTimer"]
 
+[connection signal="pressed" from="Panel/StrategyContainer/WarriorButton" to="." method="_on_warrior_button_pressed"]
+[connection signal="pressed" from="Panel/StrategyContainer/AssassinButton" to="." method="_on_assasin_button_pressed"]
+[connection signal="pressed" from="Panel/StrategyContainer/TankButton" to="." method="_on_tank_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HBOXstr/StrengthButton" to="." method="_on_strength_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HBOXfort/FortitudeButton" to="." method="_on_fortitude_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HBOXagil/AgilityButton" to="." method="_on_agility_button_pressed"]

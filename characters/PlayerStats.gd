@@ -536,7 +536,7 @@ func increase_strength():
 		# ← ПРОВЕРКА ДОСТИЖЕНИЙ ХАРАКТЕРИСТИК
 		var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
 		if achievement_manager:
-			achievement_manager.check_stats_achievements(stats_system)
+			achievement_manager.check_stats_achievements(self)  # Передаем сам PlayerStats
 
 func increase_fortitude():
 	if available_points > 0:
@@ -546,7 +546,7 @@ func increase_fortitude():
 		# ← ПРОВЕРКА ДОСТИЖЕНИЙ ХАРАКТЕРИСТИК
 		var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
 		if achievement_manager:
-			achievement_manager.check_stats_achievements(stats_system)
+			achievement_manager.check_stats_achievements(self)  # Передаем сам PlayerStats
 
 func increase_agility():
 	if available_points > 0:
@@ -556,7 +556,7 @@ func increase_agility():
 		# ← ПРОВЕРКА ДОСТИЖЕНИЙ ХАРАКТЕРИСТИК
 		var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
 		if achievement_manager:
-			achievement_manager.check_stats_achievements(stats_system)
+			achievement_manager.check_stats_achievements(self)  # Передаем сам PlayerStats
 
 func increase_endurance():
 	if available_points > 0:
@@ -566,7 +566,7 @@ func increase_endurance():
 		# ← ПРОВЕРКА ДОСТИЖЕНИЙ ХАРАКТЕРИСТИК
 		var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
 		if achievement_manager:
-			achievement_manager.check_stats_achievements(stats_system)
+			achievement_manager.check_stats_achievements(self)  # Передаем сам PlayerStats
 
 func increase_luck():
 	if available_points > 0:
@@ -576,7 +576,7 @@ func increase_luck():
 		# ← ПРОВЕРКА ДОСТИЖЕНИЙ ХАРАКТЕРИСТИК
 		var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
 		if achievement_manager:
-			achievement_manager.check_stats_achievements(stats_system)
+			achievement_manager.check_stats_achievements(self)  # Передаем сам PlayerStats
 
 
 func get_exp_for_next_level(current_level: int) -> int:
@@ -638,7 +638,6 @@ func load_from_data(data: Dictionary):
 	health_changed.emit(current_health)  # ← Только здоровье обновляем
 	monsters_killed_changed.emit(monsters_killed)  # ← ОБНОВЛЯЕМ ИНТЕРФЕЙС
 	stats_changed.emit()  # ← Добавьте это для обновления характеристик
-
 
 func _load_active_statuses(statuses_data: Array):
 	# Очищаем текущие статусы
