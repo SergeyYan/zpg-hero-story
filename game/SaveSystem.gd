@@ -1,4 +1,3 @@
-#SaveSystem.gd
 extends Node
 class_name SaveSystem
 
@@ -7,65 +6,40 @@ var SAVE_FILENAME: String = "zpg_savegame.save"
 var SAVE_DIR: String = "ZPG Hero Story"
 var has_valid_save: bool = false
 
-# Сигнал для уведомления об успешном сохранении
 signal save_completed
 
 func _init():
-	# Определяем путь для сохранения в зависимости от платформы
 	_setup_save_paths()
-	# Создаем папку если она не существует
 	_create_save_directory()
-	# Проверяем наличие сохранения при инициализации
 	_check_save_exists()
+	_debug_android_storage()
 
 func _setup_save_paths():
 	match OS.get_name():
 		"Windows":
-			# На Windows используем папку Documents
 			var documents_path = OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
 			SAVE_PATH = documents_path.path_join(SAVE_DIR).path_join(SAVE_FILENAME)
 			print("Windows save path: " + SAVE_PATH)
 		"macOS":
-			# На macOS используем папку Documents
 			var documents_path = OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
 			SAVE_PATH = documents_path.path_join(SAVE_DIR).path_join(SAVE_FILENAME)
-		"X11":  # ← Linux использует X11
-			# На Linux используем домашнюю директорию в .local/share
+		"X11":
 			var home_path = OS.get_environment("HOME")
 			if home_path.is_empty():
 				home_path = "user://"
 			SAVE_PATH = home_path.path_join(".local/share/" + SAVE_DIR.to_lower().replace(" ", "_")).path_join(SAVE_FILENAME)
 		"Android":
-			# На Android используем user:// директорию
+			var user_data_dir = OS.get_user_data_dir()
+			SAVE_PATH = user_data_dir.path_join(SAVE_FILENAME)
+			print("🎯 Android FULL path: " + SAVE_PATH)
+			print("📍 User data dir: " + user_data_dir)
+		"iOS", "HTML5", "_":
 			SAVE_PATH = "user://" + SAVE_FILENAME
-			print("Android save path: " + SAVE_PATH)
-		"iOS":
-			SAVE_PATH = "user://" + SAVE_FILENAME
-		"HTML5":
-			SAVE_PATH = "user://" + SAVE_FILENAME
-		_:
-			# Для неизвестных платформ используем user://
-			SAVE_PATH = "user://" + SAVE_FILENAME
-			print("Unknown platform, using user://: " + OS.get_name())
+			print("Using user:// path: " + SAVE_PATH)
 
 func _create_save_directory():
 	match OS.get_name():
 		"Windows", "macOS":
-			# Для Windows и macOS создаем папку вручную
-			var save_dir = SAVE_PATH.get_base_dir()
-			var dir = DirAccess.open(save_dir.get_base_dir())  # Открываем родительскую директорию
-			if dir:
-				var folder_name = save_dir.get_file()
-				if !dir.dir_exists(folder_name):
-					var error = dir.make_dir(folder_name)
-					if error == OK:
-						print("Создана папка для сохранений: " + save_dir)
-					else:
-						push_error("Не удалось создать папку для сохранений: " + str(error))
-				else:
-					print("Папка для сохранений уже существует: " + save_dir)
-		"X11":  # Linux
-			# Для Linux создаем папку в ~/.local/share
 			var save_dir = SAVE_PATH.get_base_dir()
 			var dir = DirAccess.open(save_dir.get_base_dir())
 			if dir:
@@ -78,16 +52,41 @@ func _create_save_directory():
 						push_error("Не удалось создать папку для сохранений: " + str(error))
 				else:
 					print("Папка для сохранений уже существует: " + save_dir)
+		"X11":
+			var save_dir = SAVE_PATH.get_base_dir()
+			var dir = DirAccess.open(save_dir.get_base_dir())
+			if dir:
+				var folder_name = save_dir.get_file()
+				if !dir.dir_exists(folder_name):
+					var error = dir.make_dir(folder_name)
+					if error == OK:
+						print("Создана папка для сохранений: " + save_dir)
+					else:
+						push_error("Не удалось создать папку для сохранений: " + str(error))
+				else:
+					print("Папка для сохранений уже существует: " + save_dir)
+		"Android":
+			var save_dir = SAVE_PATH.get_base_dir()
+			print("🔧 Android save directory: " + save_dir)
+			
+			var dir = DirAccess.open("user://")
+			if dir:
+				print("✅ user:// directory accessible")
+			else:
+				print("❌ Cannot open user:// directory")
 		_:
-			# Для мобильных платформ папка создается автоматически
 			pass
 
 func _check_save_exists():
-	# Проверяем наличие сохранения и обновляем флаг
 	has_valid_save = FileAccess.file_exists(SAVE_PATH)
 	print("Save exists: " + str(has_valid_save) + " at path: " + SAVE_PATH)
 
 func save_game():
+	print("💾 Starting save process...")
+	
+	# ДОБАВЛЕНО: Вызов диагностики перед сохранением
+	_pre_save_diagnostic()
+	
 	var save_data = {
 		"player_stats": _get_player_stats_data(),
 		"player_position": _get_player_position(),
@@ -96,37 +95,78 @@ func save_game():
 		"version": "1.0",
 		"platform": OS.get_name(),
 		"save_timestamp": Time.get_unix_time_from_system(),
-		"save_path": SAVE_PATH  # ← Добавляем путь для отладки
+		"save_path": SAVE_PATH
 	}
 	
-	# Для отладки
 	debug_save_info()
 	
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
-		var json = JSON.stringify(save_data, "\t")  # ← Красивый формат с отступами
+		var json = JSON.stringify(save_data, "\t")
 		var bytes_written = file.store_string(json)
 		file.close()
 		
-		print("✅ Игра сохранена: " + SAVE_PATH)
-		print("📊 Записано байт: " + str(bytes_written))
+		print("✅ File write completed, bytes: " + str(bytes_written))
+		_post_save_verification()
 		
-		# Обновляем флаг наличия сохранения
-		has_valid_save = true
-		
-		# Сигнализируем об успешном сохранении
-		save_completed.emit()  # ← ПРАВИЛЬНЫЙ ВЫЗОВ СИГНАЛА
-		
-		# Дополнительная проверка для Windows
+		# ДОБАВЛЕНО: Проверка для Windows
 		if OS.get_name() == "Windows":
 			_verify_windows_save()
 	else:
-		push_error("❌ Ошибка сохранения игры: " + SAVE_PATH)
-		# Пробуем альтернативный путь
+		var error = FileAccess.get_open_error()
+		print("❌ FileAccess.open FAILED with error: " + str(error))
 		_try_alternative_save()
 
+func _debug_android_storage():
+	if OS.get_name() == "Android":
+		print("=== ANDROID STORAGE DEBUG ===")
+		print("📱 Device: " + OS.get_model_name())
+		print("🔧 Android: " + OS.get_version())
+		print("💾 User data dir: " + OS.get_user_data_dir())
+		print("💾 Data dir: " + OS.get_data_dir())
+		print("💾 Cache dir: " + OS.get_cache_dir())
+		print("🎯 Save path: " + SAVE_PATH)
+		
+		var test_path = "user://android_test.tmp"
+		print("🧪 Testing write to: " + test_path)
+		
+		var file = FileAccess.open(test_path, FileAccess.WRITE)
+		if file:
+			file.store_string("Android user:// test")
+			file.close()
+			
+			if FileAccess.file_exists(test_path):
+				print("✅ user:// WRITE TEST PASSED")
+				var read_file = FileAccess.open(test_path, FileAccess.READ)
+				if read_file:
+					var content = read_file.get_as_text()
+					read_file.close()
+					print("✅ user:// READ TEST PASSED, content: " + content)
+				DirAccess.remove_absolute(test_path)
+			else:
+				print("❌ user:// WRITE TEST FAILED - file not created")
+		else:
+			print("❌ user:// WRITE TEST FAILED - cannot open file")
+		
+		var target_test_path = SAVE_PATH.get_base_dir().path_join("target_test.tmp")
+		print("🧪 Testing write to target: " + target_test_path)
+		
+		var target_file = FileAccess.open(target_test_path, FileAccess.WRITE)
+		if target_file:
+			target_file.store_string("Android target test")
+			target_file.close()
+			
+			if FileAccess.file_exists(target_test_path):
+				print("✅ TARGET WRITE TEST PASSED")
+				DirAccess.remove_absolute(target_test_path)
+			else:
+				print("❌ TARGET WRITE TEST FAILED")
+		else:
+			print("❌ TARGET WRITE TEST FAILED")
+		
+		print("==============================")
+
 func _verify_windows_save():
-	# Дополнительная проверка для Windows
 	if FileAccess.file_exists(SAVE_PATH):
 		var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
 		if file:
@@ -134,26 +174,58 @@ func _verify_windows_save():
 			file.close()
 			print("✅ Файл подтвержден, размер: " + str(content.length()) + " символов")
 			
-			# Показываем полный путь для удобства
 			var absolute_path = ProjectSettings.globalize_path(SAVE_PATH)
 			print("📍 Полный путь к файлу: " + absolute_path)
 	else:
 		print("❌ Файл не найден после сохранения!")
 
-func _try_alternative_save():
-	# Альтернативные пути для разных платформ
-	var alt_paths = []
+func _pre_save_diagnostic():
+	print("=== PRE-SAVE DIAGNOSTIC ===")
+	print("📁 Target: " + SAVE_PATH)
 	
-	match OS.get_name():
-		"Windows", "macOS", "X11":
-			# Для десктопов пробуем user:// как запасной вариант
-			alt_paths.append("user://" + SAVE_FILENAME)
-			alt_paths.append("user://backup_" + SAVE_FILENAME)
-		_:
-			# Для мобильных пробуем backup
-			alt_paths.append("user://backup_" + SAVE_FILENAME)
+	var dir_path = SAVE_PATH.get_base_dir()
+	var dir = DirAccess.open(dir_path)
+	if dir:
+		print("✅ Directory accessible: " + dir_path)
+	else:
+		print("❌ Directory NOT accessible: " + dir_path)
+	print("===========================")
+
+func _post_save_verification():
+	print("=== POST-SAVE VERIFICATION ===")
+	
+	if FileAccess.file_exists(SAVE_PATH):
+		print("✅ Save file EXISTS: " + SAVE_PATH)
+		
+		var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
+		if file:
+			var content = file.get_as_text()
+			file.close()
+			print("✅ Save file READABLE, size: " + str(content.length()) + " chars")
+			
+			if content.length() > 50:
+				print("✅ Save file CONTENT VALID")
+				has_valid_save = true
+				save_completed.emit()
+			else:
+				print("❌ Save file TOO SMALL")
+		else:
+			print("❌ Save file NOT READABLE")
+	else:
+		print("❌ Save file DOES NOT EXIST")
+	
+	print("=============================")
+
+func _try_alternative_save():
+	print("🔄 Trying alternative save paths...")
+	
+	var alt_paths = [
+		"user://" + SAVE_FILENAME,
+		"user://backup_" + SAVE_FILENAME
+	]
 	
 	for alt_path in alt_paths:
+		print("🔄 Trying: " + alt_path)
 		var file = FileAccess.open(alt_path, FileAccess.WRITE)
 		if file:
 			var save_data = {
@@ -163,49 +235,44 @@ func _try_alternative_save():
 				"game_time": Time.get_ticks_msec(),
 				"version": "1.0",
 				"platform": OS.get_name(),
-				"is_backup": true,
-				"original_path": SAVE_PATH
+				"is_backup": true
 			}
 			var json = JSON.stringify(save_data, "\t")
 			file.store_string(json)
 			file.close()
-			print("🔄 Игра сохранена в альтернативный путь: " + alt_path)
+			print("✅ Saved to backup: " + alt_path)
 			has_valid_save = true
 			break
 
 func load_game() -> bool:
 	debug_save_info()
 	
-	# Сначала пробуем основной путь
 	if FileAccess.file_exists(SAVE_PATH):
-		print("Найден основной файл сохранения")
+		print("✅ Save file found")
 		var success = _load_from_path(SAVE_PATH)
 		if success:
 			has_valid_save = true
 		return success
 	
-	# Пробуем альтернативные пути
+	print("❌ Save file not found, checking alternatives...")
+	
 	var alt_paths = [
-		"user://backup_zpg_savegame.save",
-		"user://zpg_savegame.save",
-		"user://savegame.save"
+		"user://" + SAVE_FILENAME,
+		"user://backup_" + SAVE_FILENAME
 	]
 	
 	for alt_path in alt_paths:
 		if FileAccess.file_exists(alt_path):
-			print("Найден альтернативный файл сохранения: " + alt_path)
-			SAVE_PATH = alt_path
+			print("✅ Found alternative: " + alt_path)
 			var success = _load_from_path(alt_path)
 			if success:
 				has_valid_save = true
 			return success
 	
-	print("Файл сохранения не найден: " + SAVE_PATH)
 	has_valid_save = false
 	return false
 
 func can_load_game() -> bool:
-	# Проверяем можно ли загрузить игру
 	return has_valid_save
 
 func _load_from_path(path: String) -> bool:
@@ -225,7 +292,6 @@ func _load_from_path(path: String) -> bool:
 			push_error("Ошибка парсинга сохранения: " + path)
 	return false
 
-# Остальные методы без изменений...
 func _get_player_stats_data() -> Dictionary:
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	if player_stats:
@@ -264,7 +330,6 @@ func _get_player_position() -> Dictionary:
 	return {"x": 0, "y": 0}
 
 func _apply_save_data(save_data: Dictionary):
-	# Загружаем статистику игрока
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	if player_stats and save_data.has("player_stats"):
 		var stats = save_data["player_stats"]
@@ -280,18 +345,14 @@ func _apply_save_data(save_data: Dictionary):
 		player_stats.stats_system.luck = stats.get("luck", 1)
 		player_stats.monsters_killed = stats.get("monsters_killed", 0)
 		
-		# ЗАГРУЗКА АКТИВНЫХ СТАТУСОВ
 		if stats.has("active_statuses"):
 			player_stats._load_active_statuses(stats["active_statuses"])
 			
-		# Только обновляем здоровье, НЕ вызываем level_up
 		player_stats.health_changed.emit(player_stats.current_health)
 		
-	# Загружаем достижения
 	if save_data.has("achievements"):
 		_apply_achievements_data(save_data["achievements"])
 		
-	# Загружаем позицию игрока
 	var player = get_tree().get_first_node_in_group("player")
 	if player and save_data.has("player_position"):
 		var pos = save_data["player_position"]
@@ -311,7 +372,6 @@ func debug_save_info():
 	print("Save Path: " + SAVE_PATH)
 	print("User Data Dir: " + OS.get_user_data_dir())
 	
-	# Показываем абсолютный путь для Windows
 	if OS.get_name() == "Windows":
 		var absolute_path = ProjectSettings.globalize_path(SAVE_PATH)
 		print("Absolute Save Path: " + absolute_path)
@@ -319,13 +379,12 @@ func debug_save_info():
 	print("Save File Exists: " + str(FileAccess.file_exists(SAVE_PATH)))
 	print("Has Valid Save: " + str(has_valid_save))
 	
-	# Показываем файлы в соответствующих директориях
 	var debug_dirs = []
 	match OS.get_name():
 		"Windows", "macOS":
 			var documents_path = OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
 			debug_dirs.append(documents_path)
-		"X11":  # Linux
+		"X11":
 			var home_path = OS.get_environment("HOME")
 			if not home_path.is_empty():
 				debug_dirs.append(home_path)

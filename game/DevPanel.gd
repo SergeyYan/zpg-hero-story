@@ -561,6 +561,29 @@ func _on_apply_stats_button_pressed():
 		player_stats.stats_system.endurance = int(endurance_spin.value)
 		player_stats.stats_system.luck = int(luck_spin.value)
 		player_stats.stats_changed.emit()
+		
+		_force_achievement_check()
+
+# ← НОВАЯ ФУНКЦИЯ: Принудительная проверка ачивок
+func _force_achievement_check():
+	var achievement_manager = get_tree().get_first_node_in_group("achievement_manager")
+	if not achievement_manager:
+		print("❌ AchievementManager не найден!")
+		return
+	
+	if achievement_manager.has_method("check_stats_achievements"):
+		print("🎯 ВЫЗЫВАЕМ ПРИНУДИТЕЛЬНУЮ ПРОВЕРКУ АЧИВОК")
+		achievement_manager.check_stats_achievements(player_stats)
+		
+		# Дополнительно: выводим отладочную информацию
+		print("📊 Текущие характеристики для проверки ачивок:")
+		print("   Сила:", player_stats.stats_system.strength)
+		print("   Крепость:", player_stats.stats_system.fortitude)
+		print("   Ловкость:", player_stats.stats_system.agility)
+		print("   Выносливость:", player_stats.stats_system.endurance)
+		print("   Удача:", player_stats.stats_system.luck)
+	else:
+		print("❌ Метод check_stats_achievements не найден")
 
 func _on_heal_button_pressed():
 	print("Лечение нажато")

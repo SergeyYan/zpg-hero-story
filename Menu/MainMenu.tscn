@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://b8rkyxljegw7a" path="res://assets/hero/hero-r1.png" id="6_gk4pn"]
 [ext_resource type="Texture2D" uid="uid://bc7hne1ugncpx" path="res://assets/hero/hero-r2.png" id="7_xcttp"]
 [ext_resource type="Script" uid="uid://bdrd7le8umv0y" path="res://Menu/DanceMenu.gd" id="8_sfxdn"]
-[ext_resource type="Texture2D" uid="uid://lr33of2c2hs6" path="res://assets/monster/monster.png" id="9_u0a2j"]
+[ext_resource type="Texture2D" uid="uid://c3lsskl4oim4h" path="res://assets/monster/monster.png" id="9_u0a2j"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_gcihc"]
 animations = [{
