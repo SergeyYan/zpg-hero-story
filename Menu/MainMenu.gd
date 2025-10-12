@@ -264,16 +264,31 @@ func _setup_menu_style():
 
 
 func _check_save_file():
-	var save_path = ""
-	var SAVE_DIR: String = "ZPG Hero story"
-	var documents_path = OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
-	save_path = documents_path.path_join(SAVE_DIR).path_join("savegame.save")
-	if FileAccess.file_exists(save_path):
-		load_game_button.disabled = false
-		load_game_button.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0, 1.0))
+	print("=== MAIN MENU SAVE CHECK ===")
+	
+	# Используем SaveSystem для проверки
+	if save_system:
+		print("SaveSystem found in menu")
+		print("Can load game: ", save_system.can_load_game())
+		print("Has valid save: ", save_system.has_valid_save)
+		print("Save path: ", save_system.SAVE_PATH)
+		print("File exists: ", FileAccess.file_exists(save_system.SAVE_PATH))
+		
+		# ВКЛЮЧАЕМ/ВЫКЛЮЧАЕМ кнопку на основе SaveSystem
+		if save_system.can_load_game():
+			load_game_button.disabled = false
+			load_game_button.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0, 1.0))
+			print("✅ Load button ENABLED")
+		else:
+			load_game_button.disabled = true
+			load_game_button.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6, 0.7))
+			print("❌ Load button DISABLED")
 	else:
+		print("❌ SaveSystem NOT found in menu!")
 		load_game_button.disabled = true
 		load_game_button.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6, 0.7))
+	
+	print("============================")
 
 func _on_new_game_pressed():
 	GameState.is_loading = false
@@ -291,6 +306,7 @@ func _on_quit_pressed():
 
 func show_menu():
 	show()
+	await get_tree().create_timer(0.1).timeout
 	_check_save_file()
 	new_game_button.grab_focus()
 	_detect_device_type()

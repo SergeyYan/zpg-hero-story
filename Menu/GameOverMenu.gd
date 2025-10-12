@@ -41,17 +41,30 @@ func _ready():
 	_connect_to_player_stats()
 
 func _check_save_file():
-	# Проверяем есть ли файл сохранения
-	var save_path = ""
-	var SAVE_DIR: String = "ZPG Hero story"
-	var documents_path = OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
-	save_path = documents_path.path_join(SAVE_DIR).path_join("savegame.save")
-	if FileAccess.file_exists(save_path):
+	print("=== GAME OVER MENU SAVE CHECK ===")
+	
+	# Используем SaveSystem для проверки
+	if save_system:
+		print("SaveSystem found in game over menu")
+		print("Can load game: ", save_system.can_load_game())
+		print("Has valid save: ", save_system.has_valid_save)
+		print("Save path: ", save_system.SAVE_PATH)
+		print("File exists: ", FileAccess.file_exists(save_system.SAVE_PATH))
+		
+		# ВКЛЮЧАЕМ/ВЫКЛЮЧАЕМ кнопку загрузки на основе SaveSystem
 		if load_button:
-			load_button.disabled = false
+			if save_system.can_load_game():
+				load_button.disabled = false
+				print("✅ Load button ENABLED in game over menu")
+			else:
+				load_button.disabled = true
+				print("❌ Load button DISABLED in game over menu")
 	else:
+		print("❌ SaveSystem NOT found in game over menu!")
 		if load_button:
 			load_button.disabled = true
+	
+	print("================================")
 
 
 func _connect_to_player_stats():
@@ -74,6 +87,8 @@ func show_game_over():
 	# ВКЛЮЧАЕМ обработку ввода UI
 	set_process_input(true)
 	set_process_unhandled_input(true)
+	# ПЕРЕПРОВЕРЯЕМ СОХРАНЕНИЯ ПРИ ПОКАЗЕ МЕНЮ
+	_check_save_file()
 	# Фокусируемся на кнопке рестарта
 	if restart_button:
 		restart_button.grab_focus()
@@ -121,9 +136,15 @@ func _on_restart_button_pressed():
 
 # ← НОВАЯ ФУНКЦИЯ ДЛЯ КНОПКИ ЗАГРУЗКИ
 func _on_load_button_pressed():
+	print("=== LOAD FROM GAME OVER ===")
+	
 	# Устанавливаем флаг загрузки и перезагружаем сцену
-	GameState.is_loading = true
-	get_tree().reload_current_scene()
+	if save_system and save_system.can_load_game():
+		print("✅ Loading game from game over menu...")
+		GameState.is_loading = true
+		get_tree().reload_current_scene()
+	else:
+		print("❌ Cannot load - no valid save found")
 
 func _on_quit_button_pressed():
 	get_tree().quit()

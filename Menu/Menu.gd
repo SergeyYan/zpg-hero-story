@@ -107,15 +107,28 @@ func _update_fullscreen_button_text():
 			fullscreen_button.text = "Полноэкранный режим: ВКЛ"
 
 func _check_save_file():
-	# Проверяем есть ли файл сохранения
-	var save_path = ""
-	var SAVE_DIR: String = "ZPG Hero story"
-	var documents_path = OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
-	save_path = documents_path.path_join(SAVE_DIR).path_join("savegame.save")
-	if FileAccess.file_exists(save_path):
-		load_button.disabled = false
+	print("=== PAUSE MENU SAVE CHECK ===")
+	
+	# Используем SaveSystem для проверки
+	if save_system:
+		print("SaveSystem found in pause menu")
+		print("Can load game: ", save_system.can_load_game())
+		print("Has valid save: ", save_system.has_valid_save)
+		print("Save path: ", save_system.SAVE_PATH)
+		print("File exists: ", FileAccess.file_exists(save_system.SAVE_PATH))
+		
+		# ВКЛЮЧАЕМ/ВЫКЛЮЧАЕМ кнопку загрузки на основе SaveSystem
+		if save_system.can_load_game():
+			load_button.disabled = false
+			print("✅ Load button ENABLED in pause menu")
+		else:
+			load_button.disabled = true
+			print("❌ Load button DISABLED in pause menu")
 	else:
+		print("❌ SaveSystem NOT found in pause menu!")
 		load_button.disabled = true
+	
+	print("=============================")
 
 func _input(event):
 	if visible and event is InputEventKey:
@@ -166,23 +179,32 @@ func _on_quit_button_pressed():
 	quit_game.emit()
 
 func _on_save_button_pressed():
+	print("=== SAVE FROM PAUSE MENU ===")
+	
 	var save_system = get_tree().get_first_node_in_group("save_system")
 	if save_system:
 		save_system.save_game()
 		# После сохранения активируем кнопку загрузки
-		load_button.disabled = false
+		await get_tree().create_timer(0.5).timeout  # Ждем завершения сохранения
+		_check_save_file()  # Обновляем состояние кнопки
 		_show_save_confirmation()
+	else:
+		print("❌ SaveSystem not found for saving!")
 
 func _on_load_button_pressed():
+	print("=== LOAD FROM PAUSE MENU ===")
+	
 	var save_system = get_tree().get_first_node_in_group("save_system")
-	if save_system and save_system.has_method("can_load_game") and save_system.can_load_game():
+	if save_system and save_system.can_load_game():
+		print("✅ Loading game from pause menu...")
 		GameState.is_loading = true
 		# Закрываем меню
 		hide_menu()
 		# Перезагружаем сцену
 		get_tree().reload_current_scene()
 	else:
-		print("Нет доступных сохранений для загрузки")
+		print("❌ No saves available or SaveSystem not found")
+		print("Can load: ", save_system.can_load_game() if save_system else "No SaveSystem")
 
 func _show_save_confirmation():
 	var original_text = save_button.text

@@ -10,6 +10,11 @@ signal save_completed
 
 func _init():
 	_setup_save_paths()
+	print("=== PATH VERIFICATION ===")
+	print("SAVE_PATH: ", SAVE_PATH)
+	print("User Data Dir: ", OS.get_user_data_dir())
+	print("File exists: ", FileAccess.file_exists(SAVE_PATH))
+	print("=========================")
 	_create_save_directory()
 	_check_save_exists()
 	_debug_android_storage()
@@ -29,10 +34,13 @@ func _setup_save_paths():
 				home_path = "user://"
 			SAVE_PATH = home_path.path_join(".local/share/" + SAVE_DIR.to_lower().replace(" ", "_")).path_join(SAVE_FILENAME)
 		"Android":
-			var user_data_dir = OS.get_user_data_dir()
-			SAVE_PATH = user_data_dir.path_join(SAVE_FILENAME)
-			print("🎯 Android FULL path: " + SAVE_PATH)
-			print("📍 User data dir: " + user_data_dir)
+			# ДЛЯ ANDROID ИСПОЛЬЗУЕМ user:// КАК ЕСТЬ
+			SAVE_PATH = "user://" + SAVE_FILENAME
+			print("🎯 Android save path: " + SAVE_PATH)
+			print("📍 User data dir: " + OS.get_user_data_dir())
+			
+			# ТЕСТИРУЕМ ПУТЬ СРАЗУ
+			_test_android_path()
 		"iOS", "HTML5", "_":
 			SAVE_PATH = "user://" + SAVE_FILENAME
 			print("Using user:// path: " + SAVE_PATH)
@@ -66,6 +74,7 @@ func _create_save_directory():
 				else:
 					print("Папка для сохранений уже существует: " + save_dir)
 		"Android":
+			# НА ANDROID ПАПКА СОЗДАЕТСЯ АВТОМАТИЧЕСКИ
 			var save_dir = SAVE_PATH.get_base_dir()
 			print("🔧 Android save directory: " + save_dir)
 			
@@ -76,6 +85,43 @@ func _create_save_directory():
 				print("❌ Cannot open user:// directory")
 		_:
 			pass
+
+func _test_android_path():
+	if OS.get_name() == "Android":
+		print("=== ANDROID PATH TEST ===")
+		
+		# Тест 1: Запись в user://
+		var test_file = "user://android_test.txt"
+		var file = FileAccess.open(test_file, FileAccess.WRITE)
+		if file:
+			file.store_string("Test " + str(Time.get_unix_time_from_system()))
+			file.close()
+			print("✅ Write to user://: OK")
+		else:
+			print("❌ Write to user://: FAILED")
+		
+		# Тест 2: Чтение из user://
+		if FileAccess.file_exists(test_file):
+			var read_file = FileAccess.open(test_file, FileAccess.READ)
+			if read_file:
+				var content = read_file.get_as_text()
+				read_file.close()
+				print("✅ Read from user://: OK - " + content)
+			else:
+				print("❌ Read from user://: FAILED")
+		else:
+			print("❌ File not found after write")
+		
+		# Тест 3: Проверяем основной файл сохранения
+		print("Main save path: " + SAVE_PATH)
+		print("Main save exists: " + str(FileAccess.file_exists(SAVE_PATH)))
+		
+		# Очистка тестового файла
+		var dir = DirAccess.open("user://")
+		if dir:
+			dir.remove(test_file)
+		
+		print("=========================")
 
 func _check_save_exists():
 	has_valid_save = FileAccess.file_exists(SAVE_PATH)
@@ -127,6 +173,7 @@ func _debug_android_storage():
 		print("💾 Cache dir: " + OS.get_cache_dir())
 		print("🎯 Save path: " + SAVE_PATH)
 		
+		# ТЕСТИРУЕМ ТОЛЬКО user:// ДЛЯ ANDROID 14
 		var test_path = "user://android_test.tmp"
 		print("🧪 Testing write to: " + test_path)
 		
@@ -148,24 +195,9 @@ func _debug_android_storage():
 		else:
 			print("❌ user:// WRITE TEST FAILED - cannot open file")
 		
-		var target_test_path = SAVE_PATH.get_base_dir().path_join("target_test.tmp")
-		print("🧪 Testing write to target: " + target_test_path)
-		
-		var target_file = FileAccess.open(target_test_path, FileAccess.WRITE)
-		if target_file:
-			target_file.store_string("Android target test")
-			target_file.close()
-			
-			if FileAccess.file_exists(target_test_path):
-				print("✅ TARGET WRITE TEST PASSED")
-				DirAccess.remove_absolute(target_test_path)
-			else:
-				print("❌ TARGET WRITE TEST FAILED")
-		else:
-			print("❌ TARGET WRITE TEST FAILED")
-		
 		print("==============================")
 
+# Остальные функции остаются без изменений...
 func _verify_windows_save():
 	if FileAccess.file_exists(SAVE_PATH):
 		var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
@@ -205,14 +237,19 @@ func _post_save_verification():
 			
 			if content.length() > 50:
 				print("✅ Save file CONTENT VALID")
+				# ← ВОТ ЭТОГО НЕ ХВАТАЛО!
 				has_valid_save = true
 				save_completed.emit()
+				print("✅ has_valid_save updated to: true")
 			else:
 				print("❌ Save file TOO SMALL")
+				has_valid_save = false
 		else:
 			print("❌ Save file NOT READABLE")
+			has_valid_save = false
 	else:
 		print("❌ Save file DOES NOT EXIST")
+		has_valid_save = false
 	
 	print("=============================")
 
@@ -273,7 +310,10 @@ func load_game() -> bool:
 	return false
 
 func can_load_game() -> bool:
-	return has_valid_save
+	# Всегда проверяем актуальное состояние файла
+	var can_load = FileAccess.file_exists(SAVE_PATH)
+	print("🔍 can_load_game check: " + str(can_load))
+	return can_load
 
 func _load_from_path(path: String) -> bool:
 	var file = FileAccess.open(path, FileAccess.READ)

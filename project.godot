@@ -13,6 +13,7 @@ config_version=5
 config/name="ZPG start"
 run/main_scene="uid://3mjqyq4itqfw"
 config/features=PackedStringArray("4.5", "GL Compatibility")
+config/icon="uid://c3lsskl4oim4h"
 
 [autoload]
 
@@ -26,10 +27,6 @@ window/size/viewport_height=576
 window/size/resizable=false
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-
-[editor_plugins]
-
-enabled=PackedStringArray()
 
 [rendering]
 
