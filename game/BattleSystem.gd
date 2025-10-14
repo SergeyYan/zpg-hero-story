@@ -344,23 +344,35 @@ func player_attack():
 	
 	# Получаем характеристики
 	var player_luck = player_stats_instance.get_effective_stats()["luck"]
-	var monster_dodge_chance = current_enemy_stats.get_dodge_chance_against(player_luck)  # ← ТОЛЬКО ОДИН АРГУМЕНТ
+	var monster_dodge_chance = current_enemy_stats.get_balanced_dodge_chance_against(player_luck)
 	
 	if randf() < monster_dodge_chance:
-		# Монстр увернулся!
 		battle_log.text += "[color=#00ffff]⚡ %s увернулся от вашей атаки![/color]\n" % current_enemy_stats.enemy_name
 		return
 	
-	# РАСЧЕТ УРОНА
-	var base_damage = player_stats_instance.get_effective_damage()
+	# ← НОВАЯ СИСТЕМА КОМПЕНСАЦИИ УРОНА
 	var enemy_defense = current_enemy_stats.get_defense()
-	var actual_damage = max(1, base_damage - enemy_defense)
-	var crit_chance = player_stats_instance.get_crit_chance_with_modifiers()
+	var damage_data = player_stats_instance.get_balanced_damage_against(enemy_defense)
+	var actual_damage = damage_data["total_damage"]
+	var compensation_bonus = damage_data["compensation_bonus"]
+	
+	# Визуализация компенсации в логе
+	if compensation_bonus > 0:
+		battle_log.text += "[color=#ff8080]Вы пробиваете броню! (+%.0f%%)[/color]\n" % (compensation_bonus * 100)
+	
+	# Расчет крита
+	var monster_endurance = current_enemy_stats.stats_system.endurance
+	var crit_chance = player_stats_instance.get_crit_chance_with_modifiers(monster_endurance)
 	
 	if randf() < crit_chance:
-		var critical_damage = int((base_damage * PLAYER_CRITICAL_MULTIPLIER) - enemy_defense)
-		critical_damage = max(1, critical_damage)
+		# ← КРИТИЧЕСКИЙ УДАР: полное игнорирование брони!
+		var base_damage = player_stats_instance.get_effective_damage()  # Базовый урон без вычета защиты
+		var piercing_damage = int(base_damage * compensation_bonus)    # Пробивающий урон
+		var raw_crit_damage = base_damage + piercing_damage            # Сумма без защиты
+		var critical_damage = int(raw_crit_damage * PLAYER_CRITICAL_MULTIPLIER)
+		
 		var message = get_random_attack_message(player_critical_messages) % critical_damage
+		battle_log.text += "[color=#ff0000]💥 КРИТИЧЕСКИЙ УДАР! Игнорирует броню! 💥[/color]\n"
 		battle_log.text += message + "\n"
 		current_enemy_stats.take_damage(critical_damage)
 	else:
@@ -375,23 +387,38 @@ func enemy_attack():
 	
 	# Получаем характеристики  
 	var monster_luck = current_enemy_stats.stats_system.luck
-	var player_dodge_chance = player_stats_instance.get_dodge_chance_against(monster_luck)  # ← ТОЛЬКО ОДИН АРГУМЕНТ
+	var player_dodge_chance = player_stats_instance.get_balanced_dodge_chance_against(monster_luck)
 	
 	if randf() < player_dodge_chance:
-		# Игрок увернулся!
 		battle_log.text += "[color=#00ffff]⚡ Вы увернулись от атаки %s![/color]\n" % current_enemy_stats.enemy_name
 		return
 	
-	# РАСЧЕТ УРОНА
-	var base_damage = current_enemy_stats.get_damage()
+	# ← НОВАЯ СИСТЕМА КОМПЕНСАЦИИ УРОНА
 	var player_defense = player_stats_instance.get_effective_defense()
-	var actual_damage = max(1, base_damage - player_defense)
-	var crit_chance = current_enemy_stats.stats_system.get_crit_chance()
+	var damage_data = current_enemy_stats.get_balanced_damage_against(player_defense)
+	var actual_damage = damage_data["total_damage"]
+	var compensation_bonus = damage_data["compensation_bonus"]
+	
+	# Визуализация компенсации в логе
+	if compensation_bonus > 0:
+		battle_log.text += "[color=#ff8080]%s пробивает броню! (+%.0f%%)[/color]\n" % [
+			current_enemy_stats.enemy_name, 
+			compensation_bonus * 100
+		]
+	
+	# Расчет крита
+	var player_endurance = player_stats_instance.get_effective_stats()["endurance"]
+	var crit_chance = current_enemy_stats.get_crit_chance_against(player_endurance)
 	
 	if randf() < crit_chance:
-		var critical_damage = int((base_damage * ENEMY_CRITICAL_MULTIPLIER) - player_defense)
-		critical_damage = max(1, critical_damage)
+		# ← КРИТИЧЕСКИЙ УДАР: полное игнорирование брони!
+		var base_damage = current_enemy_stats.get_damage()              # Базовый урон без вычета защиты
+		var piercing_damage = int(base_damage * compensation_bonus)     # Пробивающий урон
+		var raw_crit_damage = base_damage + piercing_damage             # Сумма без защиты
+		var critical_damage = int(raw_crit_damage * ENEMY_CRITICAL_MULTIPLIER)
+		
 		var message = get_random_attack_message(enemy_critical_messages) % [current_enemy_stats.enemy_name, critical_damage]
+		battle_log.text += "[color=#ffcc00]💥 КРИТИЧЕСКИЙ УДАР! Игнорирует броню! 💥[/color]\n"
 		battle_log.text += message + "\n"
 		player_stats_instance.take_damage(critical_damage)
 	else:
@@ -439,6 +466,7 @@ func end_battle(victory: bool):
 	battle_ended.emit(victory)
 	current_enemy = null
 	current_enemy_stats = null
+	
 
 func _disable_menu_button(disabled: bool):
 	var menu_button = get_tree().get_first_node_in_group("menu_button")

@@ -335,7 +335,7 @@ func _load_from_path(path: String) -> bool:
 func _get_player_stats_data() -> Dictionary:
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	if player_stats:
-		return {
+		var data = {  # ← ОБЪЯВЛЯЕМ ПЕРЕМЕННУЮ data
 			"level": player_stats.level,
 			"current_exp": player_stats.current_exp,
 			"exp_to_level": player_stats.exp_to_level,
@@ -349,6 +349,14 @@ func _get_player_stats_data() -> Dictionary:
 			"monsters_killed": player_stats.monsters_killed,
 			"active_statuses": player_stats._get_active_statuses_data()
 		}
+		
+		# ← ДОБАВЛЯЕМ СОХРАНЕНИЕ СТРАТЕГИИ
+		var level_up_menu = get_tree().get_first_node_in_group("level_up_menu")
+		if level_up_menu and level_up_menu.has_method("get_strategy_data"):
+			data["level_up_strategy"] = level_up_menu.get_strategy_data()
+			print("💾 Strategy saved: ", data["level_up_strategy"])
+		
+		return data
 	return {}
 
 func _get_achievements_data() -> Dictionary:
@@ -387,6 +395,13 @@ func _apply_save_data(save_data: Dictionary):
 		
 		if stats.has("active_statuses"):
 			player_stats._load_active_statuses(stats["active_statuses"])
+			
+		if stats.has("level_up_strategy"):
+			var strategy_data = stats["level_up_strategy"]
+			var level_up_menu = get_tree().get_first_node_in_group("level_up_menu")
+			if level_up_menu and level_up_menu.has_method("load_strategy_data"):
+				level_up_menu.load_strategy_data(strategy_data)
+				print("💾 Strategy loaded: ", strategy_data)
 			
 		player_stats.health_changed.emit(player_stats.current_health)
 		
