@@ -14,6 +14,7 @@ signal menu_closed
 @onready var save_button: Button = %SaveButton
 @onready var load_button: Button = %LoadButton
 @onready var fullscreen_button: Button = %FullscreenButton
+@onready var menu_container: VBoxContainer = $VBoxContainer
 
 var save_system: SaveSystem
 var is_mobile: bool = false
@@ -22,19 +23,50 @@ func _ready():
 	add_to_group("pause_menu")
 	hide()
 	set_process_unhandled_input(false)
-	
 	# Определяем тип устройства
 	_detect_device_type()
-	
 	# Создаем систему сохранений
 	save_system = SaveSystem.new()
 	add_child(save_system)
-	
 	# Подключаем кнопки
 	_connect_buttons()
-	
 	# Проверяем наличие сохранений
 	_check_save_file()
+
+func _unhandled_input(event):
+	if not visible:
+		return
+
+	if event is InputEventMouseButton and event.pressed:
+		var clicked_inside = false
+
+		if menu_container and menu_container.visible:
+			# Получаем глобальный прямоугольник контейнера меню
+			var menu_rect = menu_container.get_global_rect()
+			# Добавляем небольшой отступ для удобства (опционально)
+			var padded_rect = Rect2(
+				menu_rect.position - Vector2(10, 10),
+				menu_rect.size + Vector2(20, 20)
+			)
+			clicked_inside = padded_rect.has_point(event.global_position)
+		else:
+			# Если нет menu_container, проверяем все видимые кнопки и панели
+			var menu_nodes = [continue_button, restart_button, quit_button, save_button, load_button, fullscreen_button]
+			for node in menu_nodes:
+				if node and node.visible and node.get_global_rect().has_point(event.global_position):
+					clicked_inside = true
+					break
+
+		if not clicked_inside:
+			resume_game.emit()
+			hide_menu()
+			get_viewport().set_input_as_handled()
+			
+	# Также закрываем меню при нажатии Escape
+	elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+		resume_game.emit()
+		hide_menu()
+		get_viewport().set_input_as_handled()
 
 func _detect_device_type():
 	var screen_size = get_viewport().get_visible_rect().size
@@ -140,15 +172,13 @@ func _input(event):
 func show_menu():
 	show()
 	set_process_input(true)
+	set_process_unhandled_input(true)
 	# Проверяем сохранения при каждом открытии меню
 	_check_save_file()
-	
 	# Обновляем настройки кнопок
 	_update_button_sizes()
-	
 	# Обновляем текст полноэкранной кнопки
 	_update_fullscreen_button_text()
-	
 	if continue_button:
 		continue_button.grab_focus()
 
@@ -163,6 +193,7 @@ func _update_button_sizes():
 func hide_menu():
 	hide()
 	set_process_input(false)
+	set_process_unhandled_input(false)
 	menu_closed.emit()
 
 # Обработчики кнопок

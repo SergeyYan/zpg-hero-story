@@ -130,13 +130,104 @@ func _generate_random_stats():
 	current_health = get_max_health()
 
 func get_max_health() -> int: return stats_system.get_max_health()
-func get_damage() -> int: return stats_system.get_damage()
-func get_defense() -> int: return stats_system.get_defense()
+func get_damage() -> int:
+	# Сила: 1 = 1-3 урона, 5 = 5-15, 10 = 10-30
+	var base_dmg = stats_system.base_damage + stats_system.strength
+	var min_damage = max(1, base_dmg)  # Минимальный урон
+	var max_damage = base_dmg + 3      # Максимальный урон (×3)
+	
+	# Добавляем бонус баланса
+	var balanced_bonus = get_balanced_damage_bonus()
+	return randi_range(min_damage + balanced_bonus, max_damage + balanced_bonus)
+
+func get_defense() -> int:
+	# Крепость: 1 = 1-3 защиты, 5 = 5-15, 10 = 10-30  
+	var base_def = stats_system.base_defense + stats_system.fortitude
+	var min_defense = max(1, base_def)  # Минимальная защита
+	var max_defense = base_def + 3      # Максимальная защита (×3)
+	
+	# Добавляем бонус баланса
+	var balanced_bonus = get_balanced_defense_bonus()
+	return randi_range(min_defense + balanced_bonus, max_defense + balanced_bonus)
+
+func get_crit_chance_against(defender_endurance: int) -> float:
+	var base_chance = stats_system.get_crit_chance(stats_system.luck, defender_endurance)
+	
+	# Добавляем бонус баланса
+	var balanced_bonus = get_balanced_crit_chance_bonus()
+	var final_chance = base_chance + balanced_bonus
+	
+	return clamp(final_chance, 0.01, 0.95)
+
+func get_crit_defense_chance_against(attacker_luck: int) -> float:
+	return stats_system.get_crit_defense_chance(attacker_luck, endurance)
+
 func get_dodge_chance_against(attacker_luck: int) -> float:
 	return stats_system.get_dodge_chance(agility, attacker_luck)
 
 func get_hit_chance_against(defender_agility: int) -> float:
-	return stats_system.get_hit_chance(luck, defender_agility)
+	var base_chance = stats_system.get_hit_chance(stats_system.luck, defender_agility)
+	
+	# Добавляем бонус баланса
+	var balanced_bonus = get_balanced_hit_chance_bonus()
+	var final_chance = base_chance + balanced_bonus
+	
+	return clamp(final_chance, 0.01, 0.99)
+
+func get_balanced_dodge_chance_against(attacker_luck: int) -> float:
+	var base_chance = get_dodge_chance_against(attacker_luck)
+	var compensation_bonus = _get_defense_compensation_bonus()
+	var final_chance = base_chance + compensation_bonus
+	
+	# Ограничиваем максимальный уворот (например, 75%)
+	return clamp(final_chance, 0.01, 0.99)
+
+func _get_defense_compensation_bonus() -> float:
+	var agility_fortitude_diff = agility - fortitude
+	
+	# Прогрессивный бонус за разницу Ловкость > Крепость
+	if agility_fortitude_diff >= 80:
+		return 0.3  # +30% за разницу 80+
+	elif agility_fortitude_diff >= 50:
+		return 0.2  # +20% за разницу 50-79
+	elif agility_fortitude_diff >= 30:
+		return 0.10  # +10% за разницу 30-49
+	elif agility_fortitude_diff >= 15:
+		return 0.05  # +5% за разницу 15-29
+	else:
+		return 0.0   # Нет бонуса
+
+func get_balanced_damage_against(defender_endurance: int) -> Dictionary:
+	var base_damage = get_damage()
+	var compensation_bonus = _get_strength_compensation_bonus()
+	
+	# Базовый урон (учитывает защиту)
+	var base_after_defense = max(1, base_damage - defender_endurance)
+	
+	# Пробивающий урон (игнорирует защиту)
+	var piercing_damage = int(base_damage * compensation_bonus)
+	
+	return {
+		"base_damage": base_after_defense,
+		"piercing_damage": piercing_damage,
+		"total_damage": base_after_defense + piercing_damage,
+		"compensation_bonus": compensation_bonus
+	}
+
+func _get_strength_compensation_bonus() -> float:
+	var strength_endurance_diff = endurance - strength  # ← Сравниваем СВОИ характеристики
+	
+	# Прогрессивный бонус за разницу Выносливость > Силы
+	if strength_endurance_diff >= 90:
+		return 2.0  # +20% пробивающего урона
+	elif strength_endurance_diff >= 70:
+		return 1.6  # +15% пробивающего урона
+	elif strength_endurance_diff >= 50:
+		return 1.3  # +10% пробивающего урона
+	elif strength_endurance_diff >= 30:
+		return 1.0  # +5% пробивающего урона
+	else:
+		return 0.0   # Нет бонуса
 
 func take_damage(amount: int):
 	var actual_damage = max(1, amount)
@@ -176,8 +267,110 @@ func get_exp_reward() -> int:
 	elif has_bad_luck:
 		final_exp = int(base_exp / 2)  # ← 50% при bad_luck
 	elif has_lucky_day:
-		final_exp = int(base_exp * 1.5)  # ← 150% при lucky_day
+		final_exp = int(base_exp * 2)  # ← 150% при lucky_day
 
 	# Добавляем небольшую случайность
 	final_exp += randi() % 10
 	return final_exp
+
+func is_balanced_build() -> bool:
+	var stats = [
+		stats_system.strength,
+		stats_system.fortitude, 
+		stats_system.agility,
+		stats_system.endurance,
+		stats_system.luck
+	]
+	
+	# Находим минимальную и максимальную характеристику
+	var min_stat = stats[0]
+	var max_stat = stats[0]
+	for stat in stats:
+		min_stat = min(min_stat, stat)
+		max_stat = max(max_stat, stat)
+	
+	# Проверяем, что разница между самой большой и самой маленькой характеристикой ≤ 5
+	return (max_stat - min_stat) <= 5 and min_stat >= 10
+
+# Бонус урона за баланс (зависит от уровня монстра)
+func get_balanced_damage_bonus() -> int:
+	if not is_balanced_build():
+		return 0
+	# +1 урон за уровень, минимум +5, максимум +30 (монстры слабее игроков)
+	return clamp(monster_level, 1, 300000)
+
+# Бонус шанса попадания за баланс
+func get_balanced_hit_chance_bonus() -> float:
+	if not is_balanced_build():
+		return 0.0
+	
+	var stats = [
+		stats_system.strength,
+		stats_system.fortitude,
+		stats_system.agility, 
+		stats_system.endurance,
+		stats_system.luck
+	]
+	
+	# Рассчитываем насколько равномерно распределены характеристики
+	var min_stat = stats[0]
+	var max_stat = stats[0]
+	for stat in stats:
+		min_stat = min(min_stat, stat)
+		max_stat = max(max_stat, stat)
+	
+	# Чем меньше разница между min и max, тем выше бонус (максимум 20%)
+	var diff = max_stat - min_stat
+	if diff <= 1:
+		return 0.20  # Почти идеальный баланс
+	elif diff <= 3:
+		return 0.15  # Хороший баланс
+	elif diff <= 5:
+		return 0.10  # Базовый баланс
+	else:
+		return 0.0
+
+# Бонус шанса крита за баланс  
+func get_balanced_crit_chance_bonus() -> float:
+	if not is_balanced_build():
+		return 0.0
+	
+	var stats = [
+		stats_system.strength,
+		stats_system.fortitude,
+		stats_system.agility,
+		stats_system.endurance,
+		stats_system.luck
+	]
+	
+	# Рассчитываем "гармонию" характеристик
+	var total = 0.0
+	for stat in stats:
+		total += stat
+	var average = total / stats.size()
+	
+	# Считаем среднее отклонение от среднего
+	var total_deviation = 0.0
+	for stat in stats:
+		total_deviation += abs(stat - average)
+	var avg_deviation = total_deviation / stats.size()
+	
+	# Чем меньше отклонение, тем выше бонус (максимум 20%)
+	if avg_deviation <= 0.0:
+		return 0.25  # Идеальный баланс
+	elif avg_deviation <= 1.0:
+		return 0.20  # Отличный баланс
+	elif avg_deviation <= 3.0:
+		return 0.15  # Хороший баланс
+	elif avg_deviation <= 5.0:
+		return 0.10  # Умеренный баланс
+	else:
+		return 0.00  # Минимальный баланс
+
+# Бонус защиты за баланс (подавление урона)
+func get_balanced_defense_bonus() -> int:
+	if not is_balanced_build():
+		return 0
+	
+	# +1 защита за уровень, минимум +5, максимум +30 (монстры слабее игроков)
+	return clamp(monster_level, 1, 300000)

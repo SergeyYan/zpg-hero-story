@@ -121,3 +121,9 @@ sprite_frames = SubResource("SpriteFrames_r8mnh")
 animation = &"walk_up_right"
 
 [node name="MonsterStats" parent="." instance=ExtResource("3_jlo68")]
+enemy_name = "Монстр"
+strength = 0
+fortitude = 0
+agility = 0
+endurance = 0
+luck = 0

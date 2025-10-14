@@ -344,11 +344,11 @@ func show_achievement_popup(achievement_data: Dictionary) -> void:
 	
 	# Создаем попап как RigidBody2D для физики
 	var panel = RigidBody2D.new()
-	panel.gravity_scale = 0.0  # Отключаем гравитацию
-	panel.linear_damp = 2.0    # Сопротивление движению
-	panel.angular_damp = 5.0   # Сопротивление вращению
-	panel.mass = 2.0           # Масса попапа
-	panel.lock_rotation = true # Запрещаем вращение
+	panel.gravity_scale = 0.0
+	panel.linear_damp = 2.0
+	panel.angular_damp = 5.0
+	panel.mass = 2.0
+	panel.lock_rotation = true
 	
 	# Создаем CollisionShape2D для физического тела
 	var collision_shape = CollisionShape2D.new()
@@ -359,7 +359,10 @@ func show_achievement_popup(achievement_data: Dictionary) -> void:
 	# Создаем основную панель как дочерний нод
 	var panel_visual = Panel.new()
 	panel_visual.size = Vector2(calculated_width, panel_height)
-	panel_visual.position = -panel_visual.size / 2  # Центрируем визуал относительно физического тела
+	panel_visual.position = -panel_visual.size / 2
+	
+	# Устанавливаем начальную прозрачность ДО анимации
+	panel_visual.modulate = Color(1, 1, 1, 0)
 	
 	# Стилизуем панель
 	panel_visual.add_theme_stylebox_override("panel", create_panel_style())
@@ -376,7 +379,7 @@ func show_achievement_popup(achievement_data: Dictionary) -> void:
 	var content_container = Control.new()
 	content_container.size = Vector2(calculated_width - 30, panel_height - 20)
 	
-	# Контейнер для иконки (сдвигаем влево и вверх)
+	# Контейнер для иконки
 	var icon_container = Control.new()
 	icon_container.custom_minimum_size = Vector2(220, 220)
 	icon_container.size = Vector2(220, 220)
@@ -433,7 +436,7 @@ func show_achievement_popup(achievement_data: Dictionary) -> void:
 	icon_center_container.add_child(icon_texture)
 	icon_container.add_child(icon_center_container)
 	
-	# Контейнер для текста (позиционируем справа от иконки)
+	# Контейнер для текста
 	var text_container = VBoxContainer.new()
 	text_container.size = Vector2(calculated_width - 30 - 140, panel_height - 20)
 	text_container.position = Vector2(140, 0)
@@ -485,6 +488,9 @@ func show_achievement_popup(achievement_data: Dictionary) -> void:
 	# Добавляем на сцену
 	get_tree().current_scene.add_child(panel)
 	
+	# Ждем один кадр, чтобы все узлы были полностью инициализированы
+	await get_tree().process_frame
+	
 	# Функция для проверки столкновений с игроком и монстрами
 	panel.body_entered.connect(_on_popup_collision.bind(panel))
 	
@@ -492,29 +498,34 @@ func show_achievement_popup(achievement_data: Dictionary) -> void:
 	var tween = create_tween()
 	tween.set_parallel(true)
 	
-	# Анимация прозрачности
-	tween.tween_property(panel_visual, "modulate:a", 1.0, 0.6).from(0.0)
+	# Анимация прозрачности - проверяем что panel_visual валиден
+	if panel_visual and is_instance_valid(panel_visual):
+		tween.tween_property(panel_visual, "modulate:a", 1.0, 0.6)
 	
 	# Анимация масштаба иконки
-	icon_center_container.scale = Vector2(0.3, 0.3)
-	tween.tween_property(icon_center_container, "scale", Vector2(1.0, 1.0), 0.8).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	
-	# Небольшой импульс для "оживления" попапа
-	await get_tree().create_timer(0.1).timeout
-	panel.apply_impulse(Vector2(randf_range(-50, 50), randf_range(-30, 30)))
+	if icon_center_container and is_instance_valid(icon_center_container):
+		icon_center_container.scale = Vector2(0.3, 0.3)
+		tween.tween_property(icon_center_container, "scale", Vector2(1.0, 1.0), 0.8).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	
 	await tween.finished
+	
+	# Небольшой импульс для "оживления" попапа
+	if panel and is_instance_valid(panel):
+		panel.apply_impulse(Vector2(randf_range(-50, 50), randf_range(-30, 30)))
+	
 	await get_tree().create_timer(3.0).timeout
 	
 	# Анимация исчезновения
-	tween = create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(panel_visual, "modulate:a", 0.0, 0.5)
-	
-	await tween.finished
+	if panel_visual and is_instance_valid(panel_visual):
+		tween = create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(panel_visual, "modulate:a", 0.0, 0.5)
+		await tween.finished
 	
 	# Удаляем попап
-	panel.queue_free()
+	if panel and is_instance_valid(panel):
+		panel.queue_free()
+	
 	is_showing_popup = false
 	
 	print("ДОСТИЖЕНИЕ РАЗБЛОКИРОВАНО: ", achievement_data["name"])

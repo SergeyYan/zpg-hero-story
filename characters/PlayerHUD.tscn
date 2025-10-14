@@ -59,8 +59,8 @@ text = "EXP:"
 [node name="StatsContainer" type="VBoxContainer" parent="."]
 offset_left = 8.0
 offset_top = 8.0
-offset_right = 120.0
-offset_bottom = 181.0
+offset_right = 160.0
+offset_bottom = 304.0
 
 [node name="StrengthLabel" type="Label" parent="StatsContainer"]
 layout_mode = 2
@@ -143,5 +143,19 @@ grow_horizontal = 0
 grow_vertical = 0
 action_mode = 0
 text = "☰"
+
+[node name="StrategyContainer" type="VBoxContainer" parent="."]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -56.0
+offset_right = 56.0
+grow_vertical = 0
+
+[node name="StrategyIcon" type="TextureRect" parent="StrategyContainer"]
+clip_contents = true
+custom_minimum_size = Vector2(40, 60)
+layout_mode = 2
 
 [connection signal="pressed" from="MenuButton" to="." method="_on_menu_button_pressed"]

@@ -26,6 +26,7 @@ signal points_distributed
 @onready var assassin_button: Button = $Panel/StrategyContainer/AssassinButton
 @onready var tank_button: Button = $Panel/StrategyContainer/TankButton
 @onready var strategy_timer_label: Label = $Panel/StrategyTimerLabel
+@onready var strategy_nobutton: Button = $Panel/NoButton
 
 var is_mobile: bool = false
 var screen_size: Vector2
@@ -62,6 +63,9 @@ func _ready():
 	
 	# ← ПОДКЛЮЧАЕМ СИГНАЛЫ КНОПОК СТРАТЕГИИ (ОДИН РАЗ)
 	_connect_strategy_signals()
+
+func get_current_strategy() -> String:
+	return selected_strategy
 
 func _connect_strategy_signals():
 	if signals_connected:
@@ -163,15 +167,16 @@ func show_menu(player_stats_ref: PlayerStats, points: int):
 	
 	# ← УПРАВЛЕНИЕ ВИДИМОСТЬЮ КНОПОК СТРАТЕГИИ И ХАРАКТЕРИСТИК
 	if strategy_container:
-		if is_first_time:
-			# Первый показ - показываем выбор стратегии
+		if is_first_time and selected_strategy == "":
+			# Первый показ И стратегия не выбрана - показываем выбор стратегии
 			strategy_container.visible = true
 			if strategy_timer_label:
 				strategy_timer_label.visible = true
+				strategy_nobutton.visible = true
 				strategy_timer_label.text = "Выбор стратегии: %d сек" % strategy_time_remaining
 				strategy_timer_label.modulate = Color(1, 1, 1)
 			
-			# ← СКРЫВАЕМ ВСЕ ЭЛЕМЕНТЫ РАСПРЕДЕЛЕНИЯ ХАРАКТЕРИСТИК
+			# Скрываем элементы распределения характеристик
 			_set_distribution_elements_visible(false)
 			
 			# Останавливаем основной таймер распределения
@@ -180,17 +185,22 @@ func show_menu(player_stats_ref: PlayerStats, points: int):
 			# Запускаем таймер выбора стратегии
 			_start_strategy_timer()
 		else:
-			# Не первый показ - скрываем выбор стратегии
+			# Стратегия уже выбрана или не первый раз - сразу показываем распределение
 			strategy_container.visible = false
 			if strategy_timer_label:
+				strategy_nobutton.visible = false
 				strategy_timer_label.visible = false
 			
-			# ← ПОКАЗЫВАЕМ ЭЛЕМЕНТЫ РАСПРЕДЕЛЕНИЯ ХАРАКТЕРИСТИК
+			# Показываем элементы распределения характеристик
 			_set_distribution_elements_visible(true)
 			
 			# Запускаем основной таймер распределения
 			if auto_timer:
 				auto_timer.start(1.0)
+	
+	# ← УВЕЛИЧИВАЕМ СЧЕТЧИК ПОВЫШЕНИЙ УРОВНЯ ПРИ КАЖДОМ ОТКРЫТИИ МЕНЮ
+	level_up_count += 1
+	print("🎯 Level Up #", level_up_count, " | Strategy: ", selected_strategy, " | First time: ", is_first_time)
 	
 	update_display()
 	show()
@@ -238,8 +248,10 @@ func _on_strategy_timer_timeout():
 	
 	if strategy_time_remaining <= 0:
 		# Время вышло - автоматически закрываем выбор стратегии
-		print("Время выбора стратегии истекло - будет случайное распределение")
+		selected_strategy = "???"
+		print("Время выбора стратегии истекло, выбрана стратегия '???' - будет случайное распределение")
 		_finalize_strategy_selection()
+		_update_hud_strategy_icon()
 
 # ← СТАРАЯ ФУНКЦИЯ (ОСТАВЛЯЕМ ДЛЯ СОВМЕСТИМОСТИ)
 func _set_distribution_buttons_visible(visible: bool):
@@ -296,9 +308,9 @@ func auto_distribute_points():
 	print("Автораспределение | Уровень: ", level_up_count, " | Стратегия: ", selected_strategy)
 	
 	# ← ЛОГИКА АВТОРАСПРЕДЕЛЕНИЯ ПО СТРАТЕГИИ
-	if selected_strategy == "":
+	if selected_strategy == "" or selected_strategy == "???":
 		# Случайное распределение по всем 5 характеристикам
-		print("→ Случайное распределение (нет стратегии)")
+		print("→ Случайное распределение (нет стратегии или стратегия '???')")
 		_random_distribute_all()
 	elif level_up_count % 2 == 1:
 		# Каждое нечетное повышение - случайное
@@ -334,7 +346,7 @@ func _random_distribute_all():
 		available_points = player_stats.available_points
 		update_display()
 		
-		await get_tree().create_timer(0.1).timeout
+		await get_tree().create_timer(0.01).timeout
 
 # ← НОВАЯ ФУНКЦИЯ: РАСПРЕДЕЛЕНИЕ ПО СТРАТЕГИИ
 func _strategy_distribute():
@@ -349,11 +361,11 @@ func _strategy_distribute():
 				random_stat = randi() % 3
 				match random_stat:
 					0: 
-						player_stats.increase_strength()
-						print("→ +1 Сила (Воин)")
-					1: 
 						player_stats.increase_endurance()
 						print("→ +1 Выносливость (Воин)")
+					1: 
+						player_stats.increase_strength()
+						print("→ +1 Сила (Воин)")
 					2: 
 						player_stats.increase_luck()
 						print("→ +1 Удача (Воин)")
@@ -363,11 +375,11 @@ func _strategy_distribute():
 				random_stat = randi() % 3
 				match random_stat:
 					0: 
-						player_stats.increase_agility()
-						print("→ +1 Ловкость (Ассасин)")
-					1: 
 						player_stats.increase_endurance()
 						print("→ +1 Выносливость (Ассасин)")
+					1: 
+						player_stats.increase_agility()
+						print("→ +1 Ловкость (Ассасин)")
 					2: 
 						player_stats.increase_luck()
 						print("→ +1 Удача (Ассасин)")
@@ -377,11 +389,11 @@ func _strategy_distribute():
 				random_stat = randi() % 3
 				match random_stat:
 					0: 
-						player_stats.increase_strength()
-						print("→ +1 Сила (Танк)")
-					1: 
 						player_stats.increase_endurance()
 						print("→ +1 Выносливость (Танк)")
+					1: 
+						player_stats.increase_strength()
+						print("→ +1 Сила (Танк)")
 					2: 
 						player_stats.increase_fortitude()
 						print("→ +1 Крепость (Танк)")
@@ -389,29 +401,44 @@ func _strategy_distribute():
 		available_points = player_stats.available_points
 		update_display()
 		
-		await get_tree().create_timer(0.1).timeout
+		await get_tree().create_timer(0.01).timeout
 
 # ← НОВЫЕ ФУНКЦИИ ДЛЯ КНОПОК СТРАТЕГИИ
 func _on_warrior_button_pressed():
 	selected_strategy = "warrior"
 	_finalize_strategy_selection()
 	print("Выбрана стратегия: Воин")
+	# ← ОБНОВЛЯЕМ HUD
+	_update_hud_strategy_icon()
 
 func _on_assassin_button_pressed():
 	selected_strategy = "assassin"
 	_finalize_strategy_selection()
 	print("Выбрана стратегия: Ассасин")
+	# ← ОБНОВЛЯЕМ HUD
+	_update_hud_strategy_icon()
 
 func _on_tank_button_pressed():
 	selected_strategy = "tank"
 	_finalize_strategy_selection()
 	print("Выбрана стратегия: Танк")
+	# ← ОБНОВЛЯЕМ HUD
+	_update_hud_strategy_icon()
+
+func _update_hud_strategy_icon():
+	var hud = get_tree().get_first_node_in_group("hud")
+	if hud and hud.has_method("update_strategy_icon"):
+		print("🎯 Sending strategy to HUD: ", selected_strategy)
+		hud.update_strategy_icon(selected_strategy)
+	else:
+		print("❌ HUD not found or missing update_strategy_icon method")
 
 # ← ОБНОВЛЕННАЯ ФУНКЦИЯ: ЗАВЕРШЕНИЕ ВЫБОРА СТРАТЕГИИ
 func _finalize_strategy_selection():
 	is_first_time = false
 	strategy_container.visible = false
 	if strategy_timer_label:
+		strategy_nobutton.visible = false
 		strategy_timer_label.visible = false
 	
 	# ← ПОКАЗЫВАЕМ ВСЕ ЭЛЕМЕНТЫ РАСПРЕДЕЛЕНИЯ ХАРАКТЕРИСТИК
@@ -426,6 +453,7 @@ func _finalize_strategy_selection():
 	# Запускаем основной таймер распределения
 	if auto_timer:
 		auto_timer.start(1.0)
+	_update_hud_strategy_icon()
 
 func _on_strength_button_pressed():
 	if available_points > 0:
@@ -480,3 +508,24 @@ func _on_confirm_button_pressed():
 	get_tree().paused = false
 	
 	points_distributed.emit()
+
+
+func get_strategy_data() -> Dictionary:
+	return {
+		"selected_strategy": selected_strategy,
+		"is_first_time": is_first_time,
+		"level_up_count": level_up_count,
+		"distribution_count": distribution_count
+	}
+
+func load_strategy_data(strategy_data: Dictionary):
+	if strategy_data.has("selected_strategy"):
+		selected_strategy = strategy_data["selected_strategy"]
+	if strategy_data.has("is_first_time"):
+		is_first_time = strategy_data["is_first_time"]
+	if strategy_data.has("level_up_count"):
+		level_up_count = strategy_data["level_up_count"]
+	if strategy_data.has("distribution_count"):
+		distribution_count = strategy_data["distribution_count"]
+	
+	print("🎯 Strategy loaded - First time: ", is_first_time, " | Strategy: ", selected_strategy, " | Level ups: ", level_up_count)

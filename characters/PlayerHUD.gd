@@ -12,9 +12,11 @@ extends CanvasLayer
 @onready var endurance_label: Label = $StatsContainer/EnduranceLabel
 @onready var luck_label: Label = $StatsContainer/LuckLabel
 @onready var regen_label: Label = $StatsContainer/RegenLabel
+@onready var strategy_icon: TextureRect = $StrategyContainer/StrategyIcon
 @onready var kills_label: Label = $KillBox/KillsLabel
 @onready var status_container: HBoxContainer = $StatusContainer
 
+@onready var strategy_container: VBoxContainer = $StrategyContainer
 @onready var stats_container: VBoxContainer = $StatsContainer
 @onready var kill_box: VBoxContainer = $KillBox
 
@@ -22,6 +24,13 @@ extends CanvasLayer
 
 var player_stats_instance: PlayerStats
 
+var strategy_icons = {
+	"warrior": preload("res://assets/hero/warrior.png"),  # Создай эти иконки
+	"assassin": preload("res://assets/hero/Assaassin.png"),
+	"tank": preload("res://assets/hero/Tank.png"),
+	"???": preload("res://assets/hero/noStrategy.png")
+}
+var current_strategy: String = ""
 # Кастомные тултипы
 var custom_tooltip: Control
 var current_tooltip_status: StatusEffect = null
@@ -52,6 +61,9 @@ func _ready():
 	if not player_stats_instance:
 		push_error("PlayerStats not found!")
 		return
+	
+	# ← ДОБАВЛЯЕМ ПОДПИСКУ НА СТРАТЕГИЮ
+	_check_strategy_on_start()
 	
 	# Подключаемся к сигналам
 	player_stats_instance.health_changed.connect(update_health)
@@ -113,6 +125,11 @@ func _setup_responsive_ui():
 		_setup_mobile_layout()
 	else:
 		_setup_desktop_layout()
+	
+	if strategy_icon:
+		var icon_size = 32 if is_small_mobile else (32 if is_mobile else 36)
+		strategy_icon.custom_minimum_size = Vector2(icon_size, icon_size)
+		strategy_icon.size = Vector2(icon_size, icon_size)
 	
 	# Показываем кнопку меню только на мобильных устройствах
 	if menu_button:
@@ -836,3 +853,89 @@ func _safe_unpause_game():
 		scene_tree.call_deferred("set", "paused", false)
 	else:
 		print("Scene tree is not available - cannot unpause (this is normal during scene restart)")
+
+func update_strategy_icon(strategy: String = ""):
+	print("🎯 Updating strategy icon: ", strategy)
+	
+	# Если стратегия не передана, используем текущую
+	if strategy == "":
+		strategy = current_strategy
+	
+	current_strategy = strategy
+	
+	if strategy_icon:
+		if strategy != "" and strategy in strategy_icons:
+			# Показываем иконку если стратегия выбрана (включая "???")
+			strategy_icon.texture = strategy_icons[strategy]
+			strategy_icon.visible = true
+			
+			# Настраиваем тултип в зависимости от стратегии
+			var tooltip_text = _get_strategy_tooltip(strategy)
+			strategy_icon.tooltip_text = tooltip_text
+			print("✅ Strategy icon updated: ", strategy)
+		else:
+			# Скрываем иконку, если стратегия не выбрана
+			strategy_icon.visible = true
+			print("❌ No strategy selected - hiding icon")
+
+# ← НОВАЯ ФУНКЦИЯ: СОЗДАНИЕ ИКОНКИ СТРАТЕГИИ
+func _create_strategy_icon():
+	if not status_container:
+		return
+	
+	strategy_icon = TextureRect.new()
+	strategy_icon.name = "StrategyIcon"
+	strategy_icon.custom_minimum_size = Vector2(40, 60)
+	strategy_icon.size = Vector2(40, 60)
+	strategy_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	strategy_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	strategy_icon.visible = false  # ← ИЗНАЧАЛЬНО СКРЫТА
+	
+	# Добавляем рамку для иконки
+	var style_box = StyleBoxFlat.new()
+	style_box.bg_color = Color(0.1, 0.1, 0.2, 0.8)
+	style_box.border_color = Color(0.4, 0.4, 0.6)
+	style_box.border_width_left = 2
+	style_box.border_width_top = 2
+	style_box.border_width_right = 2
+	style_box.border_width_bottom = 2
+	style_box.corner_radius_top_left = 6
+	style_box.corner_radius_top_right = 6
+	style_box.corner_radius_bottom_left = 6
+	style_box.corner_radius_bottom_right = 6
+	
+	strategy_icon.add_theme_stylebox_override("panel", style_box)
+	
+	# Добавляем в начало контейнера статусов
+	status_container.add_child(strategy_icon)
+	status_container.move_child(strategy_icon, 0)
+	
+	print("✅ Strategy icon created")
+
+# ← ОБНОВЛЕННАЯ ФУНКЦИЯ: ТУЛТИП ДЛЯ СТРАТЕГИЙ
+func _get_strategy_tooltip(strategy: String) -> String:
+	match strategy:
+		"warrior":
+			return "Стратегия: Воин\n• Сила, Выносливость, Удача\n• Чередование: случайное/стратегия"
+		"assassin":
+			return "Стратегия: Ассасин\n• Ловкость, Выносливость, Удача\n• Чередование: случайное/стратегия"
+		"tank":
+			return "Стратегия: Танк\n• Сила, Выносливость, Крепость\n• Чередование: случайное/стратегия"
+		"???":
+			return "Стратегия: Случайное распределение\n• Все характеристики равномерно\n• Полностью случайный выбор"
+		_:
+			return "Стратегия не выбрана\n• Характеристики распределяются случайно"
+
+func _check_strategy_on_start():
+	# Ждем немного чтобы LevelUpMenu успел загрузиться
+	await get_tree().create_timer(0.5).timeout
+	
+	var level_up_menu = get_tree().get_first_node_in_group("level_up_menu")
+	if level_up_menu and level_up_menu.has_method("get_current_strategy"):
+		var strategy = level_up_menu.get_current_strategy()
+		update_strategy_icon(strategy)
+		print("🎯 Initial strategy check: ", strategy)
+	else:
+		print("❌ LevelUpMenu not found for strategy check")
+		# Если LevelUpMenu не найден, стратегия не выбрана - скрываем иконку
+		update_strategy_icon("")

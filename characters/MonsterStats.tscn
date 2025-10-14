@@ -4,9 +4,3 @@
 
 [node name="MonsterStats" type="Node"]
 script = ExtResource("1_vfymw")
-enemy_name = null
-strength = null
-fortitude = null
-agility = null
-endurance = null
-luck = null

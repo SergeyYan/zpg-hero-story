@@ -1,31 +1,10 @@
-[gd_scene load_steps=29 format=3 uid="uid://cx0spg7oxsiid"]
+[gd_scene load_steps=30 format=3 uid="uid://cx0spg7oxsiid"]
 
 [ext_resource type="Script" uid="uid://baqdapvh5tjas" path="res://Menu/LevelUpMenu.gd" id="1_huaid"]
 [ext_resource type="Texture2D" uid="uid://0t40wf5780cr" path="res://assets/hero/warrior.png" id="2_4vseo"]
+[ext_resource type="Texture2D" uid="uid://brw1shi8w6tlm" path="res://assets/hero/noStrategy.png" id="2_40kaa"]
 [ext_resource type="Texture2D" uid="uid://b6yafalmcfet2" path="res://assets/hero/Assaassin.png" id="3_40kaa"]
 [ext_resource type="Texture2D" uid="uid://cr34vwhl32crt" path="res://assets/hero/Tank.png" id="4_qcnve"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ngxes"]
-bg_color = Color(0.36862746, 0, 0.05490196, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r48ci"]
-bg_color = Color(0, 0.50980395, 0.13725491, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mkju8"]
 bg_color = Color(0, 0, 0, 1)
@@ -38,8 +17,8 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_eksgj"]
-bg_color = Color(0.36862746, 0, 0.05490196, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r48ci"]
+bg_color = Color(0, 0.509804, 0.137255, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -49,8 +28,8 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tol5g"]
-bg_color = Color(0, 0.50980395, 0.13725491, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ngxes"]
+bg_color = Color(0.368627, 0, 0.054902, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -71,8 +50,8 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ybph8"]
-bg_color = Color(0.36862746, 0, 0.05490196, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tol5g"]
+bg_color = Color(0, 0.509804, 0.137255, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -82,8 +61,8 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x3d0e"]
-bg_color = Color(0, 0.50980395, 0.13725491, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_eksgj"]
+bg_color = Color(0.368627, 0, 0.054902, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -104,8 +83,8 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qn4f0"]
-bg_color = Color(0.37, 0, 0.0554999, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x3d0e"]
+bg_color = Color(0, 0.509804, 0.137255, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -115,8 +94,8 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_40kaa"]
-bg_color = Color(0, 0.51, 0.136, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ybph8"]
+bg_color = Color(0.368627, 0, 0.054902, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -137,8 +116,8 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sh74m"]
-bg_color = Color(0.368627, 0, 0.054902, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_40kaa"]
+bg_color = Color(0, 0.51, 0.136, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -148,8 +127,8 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qcnve"]
-bg_color = Color(0, 0.509804, 0.137255, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qn4f0"]
+bg_color = Color(0.37, 0, 0.0554999, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -170,8 +149,8 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7670b"]
-bg_color = Color(0.368627, 0, 0.054902, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qcnve"]
+bg_color = Color(0, 0.509804, 0.137255, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -181,8 +160,8 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gsfb0"]
-bg_color = Color(0, 0.509804, 0.137255, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sh74m"]
+bg_color = Color(0.368627, 0, 0.054902, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -203,8 +182,8 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_on1oe"]
-bg_color = Color(0.368627, 0, 0.054902, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gsfb0"]
+bg_color = Color(0, 0.509804, 0.137255, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -214,8 +193,8 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5u3m4"]
-bg_color = Color(0, 0.509804, 0.137255, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7670b"]
+bg_color = Color(0.368627, 0, 0.054902, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -236,8 +215,30 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4vseo"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5u3m4"]
+bg_color = Color(0, 0.509804, 0.137255, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_on1oe"]
 bg_color = Color(0.368627, 0, 0.054902, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7q0sg"]
+bg_color = Color(0, 0, 0, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -258,8 +259,8 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7q0sg"]
-bg_color = Color(0, 0, 0, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4vseo"]
+bg_color = Color(0.368627, 0, 0.054902, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -284,6 +285,22 @@ offset_right = 224.0
 offset_bottom = 160.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="NoButton" type="Button" parent="Panel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.8
+anchor_right = 0.5
+anchor_bottom = 0.8
+offset_left = -54.5
+offset_top = -40.0
+offset_right = 54.5
+grow_horizontal = 2
+grow_vertical = 0
+button_mask = 0
+text = "кто это?"
+icon = ExtResource("2_40kaa")
 
 [node name="StrategyTimerLabel" type="Label" parent="Panel"]
 layout_mode = 0
@@ -313,27 +330,27 @@ scale = Vector2(1.2, 1.2)
 [node name="WarriorButton" type="Button" parent="Panel/StrategyContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_ngxes")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_r48ci")
 theme_override_styles/hover = SubResource("StyleBoxFlat_mkju8")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_r48ci")
+theme_override_styles/normal = SubResource("StyleBoxFlat_ngxes")
 text = "Воин"
 icon = ExtResource("2_4vseo")
 
 [node name="AssassinButton" type="Button" parent="Panel/StrategyContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_eksgj")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_tol5g")
 theme_override_styles/hover = SubResource("StyleBoxFlat_cdgua")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_tol5g")
+theme_override_styles/normal = SubResource("StyleBoxFlat_eksgj")
 text = "Ассасин"
 icon = ExtResource("3_40kaa")
 
 [node name="TankButton" type="Button" parent="Panel/StrategyContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_ybph8")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_x3d0e")
 theme_override_styles/hover = SubResource("StyleBoxFlat_5k7sv")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_x3d0e")
+theme_override_styles/normal = SubResource("StyleBoxFlat_ybph8")
 text = "Танк"
 icon = ExtResource("4_qcnve")
 
@@ -367,9 +384,9 @@ layout_mode = 2
 [node name="StrengthButton" type="Button" parent="Panel/VBoxContainer/HBOXstr"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_qn4f0")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_40kaa")
 theme_override_styles/hover = SubResource("StyleBoxFlat_dputm")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_40kaa")
+theme_override_styles/normal = SubResource("StyleBoxFlat_qn4f0")
 text = "  +1  "
 
 [node name="HBOXfort" type="HBoxContainer" parent="Panel/VBoxContainer"]
@@ -382,9 +399,9 @@ layout_mode = 2
 [node name="FortitudeButton" type="Button" parent="Panel/VBoxContainer/HBOXfort"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_sh74m")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_qcnve")
 theme_override_styles/hover = SubResource("StyleBoxFlat_n4eh1")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_qcnve")
+theme_override_styles/normal = SubResource("StyleBoxFlat_sh74m")
 text = "  +1  "
 
 [node name="HBOXagil" type="HBoxContainer" parent="Panel/VBoxContainer"]
@@ -397,9 +414,9 @@ layout_mode = 2
 [node name="AgilityButton" type="Button" parent="Panel/VBoxContainer/HBOXagil"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_7670b")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_gsfb0")
 theme_override_styles/hover = SubResource("StyleBoxFlat_vy18r")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_gsfb0")
+theme_override_styles/normal = SubResource("StyleBoxFlat_7670b")
 text = "  +1  "
 
 [node name="HBOXend" type="HBoxContainer" parent="Panel/VBoxContainer"]
@@ -412,9 +429,9 @@ layout_mode = 2
 [node name="EnduranceButton" type="Button" parent="Panel/VBoxContainer/HBOXend"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_on1oe")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_5u3m4")
 theme_override_styles/hover = SubResource("StyleBoxFlat_qymkp")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_5u3m4")
+theme_override_styles/normal = SubResource("StyleBoxFlat_on1oe")
 text = "  +1  "
 
 [node name="HBOXluck" type="HBoxContainer" parent="Panel/VBoxContainer"]
@@ -427,9 +444,9 @@ layout_mode = 2
 [node name="LuckButton" type="Button" parent="Panel/VBoxContainer/HBOXluck"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_4vseo")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_70tvn")
 theme_override_styles/hover = SubResource("StyleBoxFlat_7q0sg")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_70tvn")
+theme_override_styles/normal = SubResource("StyleBoxFlat_4vseo")
 text = "  +1  "
 
 [node name="PointsLabel" type="Label" parent="Panel/VBoxContainer"]

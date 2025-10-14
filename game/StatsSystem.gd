@@ -41,8 +41,30 @@ func get_health_regen() -> float:
 	return endurance * 0.5  # 0.5 здоровья в секунду за 1 выносливости
 
 #Механика критического удара
-func get_crit_chance() -> float:
-	return base_crit_chance + (luck * 0.01)  # 1% за каждую удачу
+func get_crit_chance(attacker_luck: int, defender_endurance: int) -> float:
+	# Вычисляем разницу характеристик
+	var stat_difference = attacker_luck - defender_endurance
+	
+	# Прогрессия на основе разницы
+	if stat_difference <= 0:
+		return 0.01  # Минимум 1% если выносливость больше удачи
+	elif stat_difference <= 20:
+		return stat_difference * 0.01  # 1-20%
+	elif stat_difference <= 50:
+		return 0.20 + (stat_difference - 20) * 0.005  # 20-35%
+	elif stat_difference <= 100:
+		return 0.35 + (stat_difference - 50) * 0.005  # 35-60%
+	elif stat_difference <= 200:
+		return 0.6 + (stat_difference - 100) * 0.003  # 70-90%
+	else:
+		return 0.90  # Максимум 90%
+
+func get_crit_defense_chance(attacker_luck: int, defender_endurance: int) -> float:
+	var crit_chance = get_crit_chance(attacker_luck, defender_endurance)
+	var crit_defense_chance = 1.0 - crit_chance
+	
+	# Ограничиваем от 1% до 99%
+	return clamp(crit_defense_chance, 0.01, 0.99)
 
 #Расчет шанса уворота
 func get_dodge_chance(defender_agility: int, attacker_luck: int) -> float:
@@ -59,9 +81,9 @@ func get_dodge_chance(defender_agility: int, attacker_luck: int) -> float:
 	elif stat_difference <= 100:
 		return 0.35 + (stat_difference - 50) * 0.003  # 35-50%
 	elif stat_difference <= 200:
-		return 0.50 + (stat_difference - 100) * 0.001  # 50-60%
+		return 0.50 + (stat_difference - 100) * 0.002  # 50-70%
 	else:
-		return 0.60  # Максимум 60%
+		return 0.70  # Максимум 70%
 
 #Расчет шанса попадания (против уворота)
 func get_hit_chance(attacker_luck: int, defender_agility: int) -> float:
@@ -70,4 +92,36 @@ func get_hit_chance(attacker_luck: int, defender_agility: int) -> float:
 	var hit_chance = 1.0 - dodge_chance
 	
 	# Ограничиваем от 10% до 99%
-	return clamp(hit_chance, 0.1, 0.99)
+	return clamp(hit_chance, 0.01, 0.99)
+
+func get_balanced_damage_against(defender_fortitude: int) -> Dictionary:
+	var base_damage = get_damage()
+	var compensation_bonus = _get_strength_compensation_bonus()  # ← Без параметра!
+	
+	# Базовый урон (учитывает защиту)
+	var base_after_defense = max(1, base_damage - defender_fortitude)
+	
+	# Пробивающий урон (игнорирует защиту)
+	var piercing_damage = int(base_damage * compensation_bonus)
+	
+	return {
+		"base_damage": base_after_defense,
+		"piercing_damage": piercing_damage,
+		"total_damage": base_after_defense + piercing_damage,
+		"compensation_bonus": compensation_bonus
+	}
+
+func _get_strength_compensation_bonus() -> float:
+	var strength_endurance_diff = endurance - strength  # ← Сравниваем СВОИ характеристики
+	
+	# Прогрессивный бонус за разницу Выносливость > Силы
+	if strength_endurance_diff >= 90:
+		return 0.30  # +20% пробивающего урона
+	elif strength_endurance_diff >= 70:
+		return 0.20  # +15% пробивающего урона
+	elif strength_endurance_diff >= 50:
+		return 0.15  # +10% пробивающего урона
+	elif strength_endurance_diff >= 30:
+		return 0.10  # +5% пробивающего урона
+	else:
+		return 0.0   # Нет бонуса
