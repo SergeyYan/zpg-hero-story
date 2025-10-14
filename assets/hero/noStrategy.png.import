@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cke3kab2quxon"
-path="res://.godot/imported/level_100.png-bbea34236a963d3983430a1793ca1026.ctex"
+uid="uid://brw1shi8w6tlm"
+path="res://.godot/imported/noStrategy.png-346c9a7b6ac334bfe7ed26519c5bb9af.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/achievements/level_100.png"
-dest_files=["res://.godot/imported/level_100.png-bbea34236a963d3983430a1793ca1026.ctex"]
+source_file="res://assets/hero/noStrategy.png"
+dest_files=["res://.godot/imported/noStrategy.png-346c9a7b6ac334bfe7ed26519c5bb9af.ctex"]
 
 [params]
 
